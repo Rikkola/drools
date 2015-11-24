@@ -20,11 +20,7 @@ import org.drools.compiler.kproject.xml.DependencyFilter;
 import org.drools.core.rule.TypeMetaInfo;
 import org.junit.Test;
 import org.kie.api.KieServices;
-import org.kie.api.builder.KieBuilder;
-import org.kie.api.builder.KieFileSystem;
-import org.kie.api.builder.KieModule;
-import org.kie.api.builder.Message;
-import org.kie.api.builder.ReleaseId;
+import org.kie.api.builder.*;
 import org.kie.api.builder.model.KieModuleModel;
 import org.kie.api.definition.type.Role;
 
@@ -35,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
 import static org.drools.compiler.kie.builder.impl.KieBuilderImpl.generatePomXml;
 import static org.junit.Assert.*;
@@ -132,6 +129,11 @@ public class KieModuleMetaDataTest extends AbstractKieCiTest {
         final KieModule kieModule = ks.newKieBuilder( kfs ).getKieModule();
         final KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData( kieModule );
         assertTrue( ("" + kieModuleMetaData.getPackages()).contains( "junit" ) );
+
+        Collection<DependencyDescriptor> dependencies = kieModuleMetaData.getDependencies();
+
+        assertContains(dependencies, "junit", "junit", "4.11");
+        assertContains(dependencies, "hamcrest-core", "org.hamcrest", "1.3");
     }
 
     @Test
@@ -143,7 +145,8 @@ public class KieModuleMetaDataTest extends AbstractKieCiTest {
 
         final KieModule kieModule = ks.newKieBuilder( kfs ).getKieModule();
         final KieModuleMetaData kieModuleMetaData = KieModuleMetaData.Factory.newKieModuleMetaData( kieModule, new DependencyFilter.ExcludeScopeFilter("test") );
-        assertFalse( ( "" + kieModuleMetaData.getPackages() ).contains( "junit" ) );
+        assertFalse(("" + kieModuleMetaData.getPackages()).contains("junit"));
+        assertTrue(kieModuleMetaData.getDependencies().isEmpty());
     }
 
     private String getPomWithTestDependency() {
@@ -198,7 +201,7 @@ public class KieModuleMetaDataTest extends AbstractKieCiTest {
 
         Collection<String> rules = kieModuleMetaData.getRuleNamesInPackage( "org.test" );
         assertEquals( 3, rules.size() );
-        assertTrue( rules.containsAll( asList( "A", "B", "C" ) ) );
+        assertTrue(rules.containsAll(asList("A", "B", "C")));
     }
 
     private String createJavaSource() {
@@ -286,7 +289,7 @@ public class KieModuleMetaDataTest extends AbstractKieCiTest {
         assertEquals( 17, kieModuleMetaData.getClasses( "org.drools.runtime" ).size() );
         Class<?> statefulKnowledgeSessionClass = kieModuleMetaData.getClass( "org.drools.runtime", "StatefulKnowledgeSession" );
         assertTrue( statefulKnowledgeSessionClass.isInterface() );
-        assertEquals( 2, statefulKnowledgeSessionClass.getDeclaredMethods().length );
+        assertEquals(2, statefulKnowledgeSessionClass.getDeclaredMethods().length);
     }
 
     private void testKieModuleMetaDataForDependenciesInMemory( boolean useTypeDeclaration ) throws Exception {
@@ -364,6 +367,20 @@ public class KieModuleMetaDataTest extends AbstractKieCiTest {
         if ( fail ) {
             fail( "See console for details." );
         }
+    }
+
+    private void assertContains(Collection<DependencyDescriptor> dependencies,
+                                String artifactID,
+                                String groupID,
+                                String version) {
+        for (DependencyDescriptor dependency : dependencies) {
+            if (dependency.getArtifactId().equals(artifactID)
+                    && dependency.getGroupId().equals(groupID)
+                    && dependency.getVersion().equals(version)) {
+                return;
+            }
+        }
+        fail("Could not find a dependency " + artifactID + ":" + groupID + ":" + version);
     }
 
 }

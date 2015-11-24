@@ -30,13 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -56,6 +50,7 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
 
     private final Map<String, TypeMetaInfo> typeMetaInfos = new HashMap<String, TypeMetaInfo>();
     private final Map<String, Set<String>> rulesByPackage = new HashMap<String, Set<String>>();
+    private final FQCNClassesByDependencyDescriptors fqcnClassesByDependencyDescriptors = new FQCNClassesByDependencyDescriptors();
     private final Set<String> packages = new HashSet<String>();
 
     private final DependencyFilter dependencyFilter;
@@ -95,6 +90,14 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
 
     public Collection<String> getPackages() {
         return packages;
+    }
+
+    public Collection<DependencyDescriptor> getDependencies() {
+        return fqcnClassesByDependencyDescriptors.keySet();
+    }
+
+    public Collection<String> getPackages(DependencyDescriptor dependencyDescriptor) {
+        return fqcnClassesByDependencyDescriptors.get(dependencyDescriptor);
     }
 
     public Collection<String> getClasses(String packageName) {
@@ -151,11 +154,15 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
         }
         if ( kieModule != null ) {
             for ( ReleaseId releaseId : kieModule.getPomModel().getDependencies(dependencyFilter) ) {
-                addArtifact( artifactResolver.resolveArtifact( releaseId ) );
+                fqcnClassesByDependencyDescriptors.put(new DependencyDescriptor(releaseId),
+                        new HashSet<String>());
+                addArtifact(artifactResolver.resolveArtifact(releaseId));
             }
         } else {
             for ( DependencyDescriptor dep : artifactResolver.getAllDependecies(dependencyFilter) ) {
-                addArtifact( artifactResolver.resolveArtifact( dep.getReleaseId() ) );
+                fqcnClassesByDependencyDescriptors.put(dep,
+                        new HashSet<String>());
+                addArtifact(artifactResolver.resolveArtifact(dep.getReleaseId()));
             }
         }
 
@@ -164,20 +171,28 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
     }
 
     private void addArtifact(Artifact artifact) {
-        if (artifact != null && artifact.getExtension() != null && artifact.getExtension().equals("jar")) {
-            addJar(artifact.getFile());
+        if (isArtifactValid(artifact)) {
+            addJar(artifact);
         }
     }
 
-    private void addJar(File jarFile) {
+    private void addJar(Artifact artifact) {
+        File jarFile = artifact.getFile();
+
         URI uri = jarFile.toURI();
         if (!jars.containsKey(uri)) {
             jars.put(uri, jarFile);
-            scanJar(jarFile);
+            scanJar(artifact,
+                    jarFile);
         }
     }
 
-    private void scanJar(File jarFile) {
+    private boolean isArtifactValid(Artifact artifact) {
+        return artifact != null && artifact.getExtension() != null && artifact.getExtension().equals("jar");
+    }
+
+    private void scanJar(Artifact artifact,
+                         File jarFile) {
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile( jarFile );
@@ -190,7 +205,9 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
                 }
                 if (!indexClass(pathName)) {
                     if (pathName.endsWith(KieModuleModelImpl.KMODULE_INFO_JAR_PATH)) {
-                        indexMetaInfo(readBytesFromZipEntry(jarFile, entry));
+                        KieModuleMetaInfo kieModuleMetaInfo = getKieModuleMetaInfo(readBytesFromZipEntry(jarFile, entry));
+                        indexMetaInfo(kieModuleMetaInfo);
+                        fqcnClassesByDependencyDescriptors.addKieModuleMetaInfo(artifact, kieModuleMetaInfo);
                     }
                 }
             }
@@ -226,9 +243,16 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
     }
 
     private void indexMetaInfo(byte[] bytes) {
-        KieModuleMetaInfo info = KieModuleMetaInfo.unmarshallMetaInfos(new String(bytes, IoUtils.UTF8_CHARSET));
+        indexMetaInfo(getKieModuleMetaInfo(bytes));
+    }
+
+    private void indexMetaInfo(KieModuleMetaInfo info) {
         typeMetaInfos.putAll(info.getTypeMetaInfos());
         rulesByPackage.putAll(info.getRulesByPackage());
+    }
+
+    private KieModuleMetaInfo getKieModuleMetaInfo(byte[] bytes) {
+        return KieModuleMetaInfo.unmarshallMetaInfos(new String(bytes, IoUtils.UTF8_CHARSET));
     }
 
     @Override
@@ -236,4 +260,25 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
       return processes;
     }
 
+    private class FQCNClassesByDependencyDescriptors
+            extends HashMap<DependencyDescriptor, Set<String>> {
+
+        public void addKieModuleMetaInfo(final Artifact artifact,
+                                         final KieModuleMetaInfo kieModuleMetaInfo) {
+            for (DependencyDescriptor descriptor : keySet()) {
+                if (isGAVDataEqual(artifact, descriptor)) {
+                    Set<String> stringSet = get(descriptor);
+                    stringSet.addAll(kieModuleMetaInfo.getRulesByPackage().keySet());
+                    stringSet.addAll(kieModuleMetaInfo.getTypeMetaInfos().keySet());
+                }
+            }
+        }
+
+        private boolean isGAVDataEqual(final Artifact artifact,
+                                       final DependencyDescriptor descriptor) {
+            return descriptor.getArtifactId().equals(artifact.getArtifactId())
+                    && descriptor.getGroupId().equals(artifact.getGroupId())
+                    && descriptor.getVersion().equals(artifact.getVersion());
+        }
+    }
 }
