@@ -57,6 +57,7 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
     private final Map<String, TypeMetaInfo> typeMetaInfos = new HashMap<String, TypeMetaInfo>();
     private final Map<String, Set<String>> rulesByPackage = new HashMap<String, Set<String>>();
     private final Set<String> packages = new HashSet<String>();
+    private final Set<DependencyDescriptor> dependencies = new HashSet<DependencyDescriptor>();
 
     private final DependencyFilter dependencyFilter;
 
@@ -95,6 +96,10 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
 
     public Collection<String> getPackages() {
         return packages;
+    }
+
+    public Collection<DependencyDescriptor> getDependencies() {
+        return dependencies;
     }
 
     public Collection<String> getClasses(String packageName) {
@@ -152,10 +157,12 @@ public class KieModuleMetaDataImpl implements KieModuleMetaData {
         if ( kieModule != null ) {
             for ( ReleaseId releaseId : kieModule.getPomModel().getDependencies(dependencyFilter) ) {
                 addArtifact( artifactResolver.resolveArtifact( releaseId ) );
+                dependencies.add(new DependencyDescriptor(releaseId));
             }
         } else {
             for ( DependencyDescriptor dep : artifactResolver.getAllDependecies(dependencyFilter) ) {
                 addArtifact( artifactResolver.resolveArtifact( dep.getReleaseId() ) );
+                dependencies.add(dep);
             }
         }
 
