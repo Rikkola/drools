@@ -31,6 +31,8 @@ public interface KieModuleMetaData {
 
     Collection<DependencyDescriptor> getDependencies();
 
+    Collection<String> getPackages(DependencyDescriptor dependencyDescriptor);
+
     Collection<String> getClasses( String packageName );
 
     Class<?> getClass( String pkgName, String className );
