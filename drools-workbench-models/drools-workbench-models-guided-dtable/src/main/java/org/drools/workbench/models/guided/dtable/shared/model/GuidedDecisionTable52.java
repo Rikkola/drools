@@ -91,7 +91,16 @@ public class GuidedDecisionTable52 implements HasImports,
         LIMITED_ENTRY
     }
 
+    public enum HitPolicy {
+        ANY,
+        UNIQUE_HIT,
+        FIRST_HIT,
+        RULE_ORDER
+    }
+
     private TableFormat tableFormat = TableFormat.EXTENDED_ENTRY;
+
+    private HitPolicy hitPolicy = HitPolicy.ANY;
 
     /**
      * First column is always row number. Second column is description.
@@ -331,6 +340,14 @@ public class GuidedDecisionTable52 implements HasImports,
 
     public void setTableFormat( final TableFormat tableFormat ) {
         this.tableFormat = tableFormat;
+    }
+
+    public HitPolicy getHitPolicy() {
+        return hitPolicy == null ? HitPolicy.ANY : hitPolicy;
+    }
+
+    public void setHitPolicy( final HitPolicy hitPolicy ) {
+        this.hitPolicy = hitPolicy;
     }
 
     /**
