@@ -91,6 +91,7 @@ import org.kie.dmn.feel.util.Msg;
 
 import static org.kie.dmn.feel.codegen.feel11.DirectCompilerResult.mergeFDs;
 
+@Deprecated
 public class DirectCompilerVisitor extends FEEL_1_1BaseVisitor<DirectCompilerResult> {
 
     private static final Expression QUANTIFIER_SOME = JavaParser.parseExpression("org.kie.dmn.feel.lang.ast.QuantifiedExpressionNode.Quantifier.SOME");
@@ -197,7 +198,7 @@ public class DirectCompilerVisitor extends FEEL_1_1BaseVisitor<DirectCompilerRes
     }
 
     @Override
-    public DirectCompilerResult visitBooleanLiteral(FEEL_1_1Parser.BooleanLiteralContext ctx) {
+    public DirectCompilerResult visitBoolLiteral(FEEL_1_1Parser.BoolLiteralContext ctx) {
         Expression result = null;
         String literalText = ParserHelper.getOriginalText(ctx);
         // FEEL spec grammar rule 36. Boolean literal = "true" | "false" ;
@@ -442,10 +443,10 @@ public class DirectCompilerVisitor extends FEEL_1_1BaseVisitor<DirectCompilerRes
             EnclosedExpr leftCasted = castToBigDecimal(left.getExpression());
             EnclosedExpr rightCasted = castToBigDecimal(right.getExpression());
 
-            MethodCallExpr subtractCall = new MethodCallExpr(leftCasted, "pow");
-            subtractCall.addArgument(new MethodCallExpr(rightCasted, "intValue"));
-            subtractCall.addArgument(DECIMAL_128);
-            Expression result = groundToNullIfAnyIsNull(subtractCall, leftCasted, rightCasted);
+            MethodCallExpr powCall = new MethodCallExpr(new NameExpr(CompiledFEELSupport.class.getSimpleName()), "pow");
+            powCall.addArgument(leftCasted);
+            powCall.addArgument(rightCasted);
+            Expression result = groundToNullIfAnyIsNull(powCall, leftCasted, rightCasted);
             return DirectCompilerResult.of(result, BuiltInType.NUMBER, DirectCompilerResult.mergeFDs(left, right));
         }
     }
@@ -1211,7 +1212,7 @@ public class DirectCompilerVisitor extends FEEL_1_1BaseVisitor<DirectCompilerRes
         Expression curForCallTail = forCall;
         IterationContextsContext iCtxs = ctx.iterationContexts();
         for (FEEL_1_1Parser.IterationContextContext ic : iCtxs.iterationContext()) {
-            DirectCompilerResult name = visit(ic.nameDefinition());
+            DirectCompilerResult name = visit(ic.iterationNameDefinition());
             DirectCompilerResult expr = visit(ic.expression().get(0));
             fds.addAll(name.getFieldDeclarations());
             fds.addAll(expr.getFieldDeclarations());
@@ -1322,7 +1323,7 @@ public class DirectCompilerVisitor extends FEEL_1_1BaseVisitor<DirectCompilerRes
         Expression curForCallTail = forCall;
         IterationContextsContext iCtxs = iterationContexts;
         for (FEEL_1_1Parser.IterationContextContext ic : iCtxs.iterationContext()) {
-            DirectCompilerResult name = visit(ic.nameDefinition());
+            DirectCompilerResult name = visit(ic.iterationNameDefinition());
             DirectCompilerResult expr = visit(ic.expression().get(0));
             fds.addAll(name.getFieldDeclarations());
             fds.addAll(expr.getFieldDeclarations());

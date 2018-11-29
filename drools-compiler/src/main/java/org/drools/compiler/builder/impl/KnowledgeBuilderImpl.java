@@ -23,6 +23,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1202,6 +1204,16 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder {
     }
 
     private List<? extends KnowledgeBuilderResult> addRule(RuleBuildContext context) {
+        return System.getSecurityManager() == null ?
+                internalAddRule(context) :
+                AccessController.<List<? extends KnowledgeBuilderResult>>doPrivileged( new PrivilegedAction() {
+                    public List<? extends KnowledgeBuilderResult> run() {
+                        return internalAddRule(context);
+                    }
+                });
+    }
+
+    private List<? extends KnowledgeBuilderResult> internalAddRule(RuleBuildContext context) {
         RuleBuilder.build(context);
 
         context.getRule().setResource(context.getRuleDescr().getResource());
@@ -2480,13 +2492,17 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder {
     // composite build lifecycle
 
     public void buildPackages( Collection<CompositePackageDescr> packages ) {
+        buildPackagesWithoutRules(packages);
+        buildRules(packages);
+    }
+
+    public void buildPackagesWithoutRules(Collection<CompositePackageDescr> packages ) {
         initPackageRegistries(packages);
         normalizeTypeAnnotations( packages );
         buildTypeDeclarations(packages);
         buildEntryPoints( packages );
         buildOtherDeclarations(packages);
         normalizeRuleAnnotations( packages );
-        buildRules(packages);
     }
 
     protected void initPackageRegistries(Collection<CompositePackageDescr> packages) {

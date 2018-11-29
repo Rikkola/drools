@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.drools.compiler.commons.jci.problems.CompilationProblem;
 import org.drools.compiler.commons.jci.readers.ResourceReader;
 import org.drools.compiler.commons.jci.stores.ResourceStore;
 import org.drools.core.rule.builder.dialect.asm.ClassGenerator;
@@ -48,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.kie.internal.jci.CompilationProblem;
 
 /**
  * Eclipse compiler implementation
@@ -276,7 +276,7 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
                         return null;
                     }
 
-                    if ( ClassUtils.isWindows() || ClassUtils.isOSX() ) {
+                    if ( ClassUtils.isCaseSenstiveOS() ) {
                         // check it really is a class, this issue is due to windows case sensitivity issues for the class org.kie.Process and path org/droosl/process
                         try {
                             pClassLoader.loadClass( pClazzName );

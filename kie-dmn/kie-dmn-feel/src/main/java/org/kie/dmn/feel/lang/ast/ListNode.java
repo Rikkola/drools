@@ -64,4 +64,9 @@ public class ListNode
         return elements.toArray( new ASTNode[elements.size()] );
     }
 
+    @Override
+    public <T> T accept(Visitor<T> v) {
+        return v.visit(this);
+    }
+
 }
