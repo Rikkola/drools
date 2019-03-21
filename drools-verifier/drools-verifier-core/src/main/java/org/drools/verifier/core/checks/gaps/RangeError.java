@@ -16,7 +16,6 @@
 package org.drools.verifier.core.checks.gaps;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -24,20 +23,14 @@ import org.drools.verifier.api.reporting.Issue;
 import org.drools.verifier.api.reporting.Severity;
 import org.drools.verifier.api.reporting.gaps.MissingRange;
 import org.drools.verifier.api.reporting.gaps.MissingRangeIssue;
-import org.drools.verifier.core.cache.inspectors.RuleInspector;
-
-import static java.util.stream.Collectors.toSet;
 
 public class RangeError {
 
-    private final Collection<RuleInspector> ruleInspectors;
     private final PartitionKey partitionKey;
     private final Collection<MissingRange> uncoveredRanges;
 
-    public RangeError(final Collection<RuleInspector> ruleInspectors,
-                      final PartitionKey partitionKey,
+    public RangeError(final PartitionKey partitionKey,
                       final Collection<MissingRange> uncoveredRanges) {
-        this.ruleInspectors = ruleInspectors;
         this.partitionKey = partitionKey;
         this.uncoveredRanges = uncoveredRanges;
     }
@@ -46,7 +39,6 @@ public class RangeError {
                          final CheckType checkType) {
         return new MissingRangeIssue(severity,
                                      checkType,
-                                     new HashSet<>(ruleInspectors.stream().map(r -> r.getRowIndex() + 1).collect(toSet())),
                                      partitionKey.getConditions(),
                                      uncoveredRanges
         ).setDebugMessage(getMessage());
