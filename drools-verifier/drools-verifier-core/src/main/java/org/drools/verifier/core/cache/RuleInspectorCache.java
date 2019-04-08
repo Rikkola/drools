@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 
 import org.drools.verifier.api.reporting.Issue;
 import org.drools.verifier.core.cache.inspectors.RuleInspector;
+import org.drools.verifier.core.checks.TheoryCheck;
 import org.drools.verifier.core.checks.base.Check;
 import org.drools.verifier.core.checks.base.CheckFactory;
 import org.drools.verifier.core.checks.base.CheckStorage;
@@ -79,6 +80,8 @@ public class RuleInspectorCache {
                                   configuration));
         }
 
+        generalChecks.add(new TheoryCheck(index,
+                                          configuration));
         generalChecks.add(new SingleRangeCheck(configuration,
                                                ruleInspectors.values()));
     }

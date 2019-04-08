@@ -77,15 +77,17 @@ public class CheckFactory {
     protected Optional<PairCheckBundle> makePairRowCheck(final RuleInspector ruleInspector,
                                                          final RuleInspector other) {
 
-        final List<Check> filteredSet = filter(new DetectConflictingRowsCheck(ruleInspector,
-                                                                              other,
-                                                                              configuration),
-                                               new DetectRedundantRowsCheck(ruleInspector,
-                                                                            other,
-                                                                            configuration),
-                                               new SingleHitCheck(ruleInspector,
-                                                                  other,
-                                                                  configuration));
+        final List<Check> filteredSet = filter(
+//                new DetectConflictingRowsCheck(ruleInspector,
+//                                               other,
+//                                               configuration),
+//                new DetectRedundantRowsCheck(ruleInspector,
+//                                             other,
+//                                             configuration),
+//                new SingleHitCheck(ruleInspector,
+//                                   other,
+//                                   configuration)
+        );
 
         if (filteredSet.isEmpty()) {
             return Optional.empty();

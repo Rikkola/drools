@@ -27,4 +27,9 @@ public class DateTimeFormatProviderMock
     public String format(final Date dateValue) {
         return new SimpleDateFormat("dd-MMM-yyyy").format(dateValue);
     }
+
+    @Override
+    public Date parse(String dateValue) {
+        return null;
+    }
 }
