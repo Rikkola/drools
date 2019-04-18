@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class ContractionRulesTest extends AbstractDTAnalysisTest {
 
@@ -41,7 +42,7 @@ public class ContractionRulesTest extends AbstractDTAnalysisTest {
         List<DMNMessage> validate = validator.validate(getReader("Contraction.dmn"), ANALYZE_DECISION_TABLE);
         DTAnalysis analysis = getAnalysis(validate, "_01d9abb9-b968-49c0-b6ab-909f3e03d8d3");
         assertThat(analysis.getGaps(), hasSize(0));
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
 
         // Contraction count.
         assertThat(analysis.getContractions(), hasSize(2));

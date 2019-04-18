@@ -141,6 +141,13 @@ public class DMNDTAnalyser {
         analysis.compute2ndNFViolations();
         LOG.debug("computeHitPolicyRecommender");
         analysis.computeHitPolicyRecommender();
+
+        analysis.addIssues(new DroolsVerifierDTValidator(FEEL,
+                                                         analysis,
+                                                         ddtaTable,
+                                                         valueFromNodeVisitor,
+                                                         outputClauseVisitor).validateDT(dt));
+
         return analysis;
     }
 
@@ -463,7 +470,7 @@ public class DMNDTAnalyser {
         } else {
             if (lastBound.isLowerBound() && currentBound.isUpperBound()) {
                 return true;
-            } else if (lastBound.isUpperBound() && lastBound.getBoundaryType() == RangeBoundary.OPEN 
+            } else if (lastBound.isUpperBound() && lastBound.getBoundaryType() == RangeBoundary.OPEN
                 && currentBound.isLowerBound() && currentBound.getBoundaryType() == RangeBoundary.OPEN) {
                 return true; // the case x) (x
             } else {
@@ -559,7 +566,7 @@ public class DMNDTAnalyser {
             }
             return result;
         } catch (Throwable e) {
-            return false;    
+            return false;
         }
     }
 

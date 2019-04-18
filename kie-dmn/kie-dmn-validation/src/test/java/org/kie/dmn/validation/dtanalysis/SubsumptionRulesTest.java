@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class SubsumptionRulesTest extends AbstractDTAnalysisTest {
 
@@ -45,7 +46,7 @@ public class SubsumptionRulesTest extends AbstractDTAnalysisTest {
         DTAnalysis analysis = getAnalysis(validate, "_82100fc5-8799-4ee2-981f-215ded39e68a");
         assertThat(analysis.getGaps(), hasSize(0));
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(2));
+        assertThat(collectOverlaps(analysis), hasSize(2));
         @SuppressWarnings({"unchecked", "rawtypes"})
         List<Overlap> overlaps = Arrays.asList(new Overlap(Arrays.asList(2,
                                                                          3),

@@ -22,20 +22,23 @@ import java.util.List;
 import org.junit.Test;
 import org.kie.dmn.api.core.DMNMessage;
 import org.kie.dmn.api.core.DMNMessageType;
+import org.kie.dmn.core.util.Msg;
+import org.kie.dmn.core.util.MsgUtil;
 import org.kie.dmn.feel.runtime.Range.RangeBoundary;
 import org.kie.dmn.validation.dtanalysis.model.Bound;
 import org.kie.dmn.validation.dtanalysis.model.DTAnalysis;
 import org.kie.dmn.validation.dtanalysis.model.Hyperrectangle;
 import org.kie.dmn.validation.dtanalysis.model.Interval;
-import org.kie.dmn.validation.dtanalysis.model.MisleadingRule;
 import org.kie.dmn.validation.dtanalysis.model.Overlap;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class MisleadingRulesTest extends AbstractDTAnalysisTest {
 
@@ -45,7 +48,7 @@ public class MisleadingRulesTest extends AbstractDTAnalysisTest {
         DTAnalysis analysis = getAnalysis(validate, "_BA703D04-803A-44AA-8A31-F5EEDD4FD54E");
         assertThat(analysis.getGaps(), hasSize(0));
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(1));
+//        assertThat(collectOverlaps(analysis), hasSize(1));
         @SuppressWarnings({"unchecked", "rawtypes"})
         List<Overlap> overlaps = Arrays.asList(new Overlap(Arrays.asList(4,
                                                                          2),
@@ -66,12 +69,13 @@ public class MisleadingRulesTest extends AbstractDTAnalysisTest {
         // Assert OVERLAPs same values
         assertThat(analysis.getOverlaps(), contains(overlaps.toArray()));
 
-        // MisleadingRules count.
-        assertThat(analysis.getMisleadingRules(), hasSize(1));
-        List<MisleadingRule> misleadingRules = Arrays.asList(new MisleadingRule(4, 2));
-        assertThat(misleadingRules, hasSize(1));
-        assertThat(analysis.getMisleadingRules(), contains(misleadingRules.toArray()));
         assertTrue("It should contain at least 1 DMNMessage for the MisleadingRule",
                    validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MISLEADING_RULE)));
+        assertEquals("There should be only one MisleadingRule report.",
+                     1,
+                     validate.stream().filter(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MISLEADING_RULE)).count());
+        assertEquals("The MisleadingRule should be for rows 4 and 2.",
+                     "DMN: Rule 4 is a misleading rule. It could be misleading over other rules, such as rule: 2 (DMN id: _BA703D04-803A-44AA-8A31-F5EEDD4FD54E, DMN Validation, Decision Table Analysis, Misleading Rule Analysis) ",
+                     validate.stream().filter(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MISLEADING_RULE)).findFirst().get().getText());
     }
 }

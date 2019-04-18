@@ -33,6 +33,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class RecommenderHitPolicyTest extends AbstractDTAnalysisTest {
 
@@ -68,7 +69,7 @@ public class RecommenderHitPolicyTest extends AbstractDTAnalysisTest {
 
         debugValidatorMsg(validate);
         assertThat(analysis.getGaps(), hasSize(0));
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
         return validate;
     }
 
@@ -93,7 +94,7 @@ public class RecommenderHitPolicyTest extends AbstractDTAnalysisTest {
 
         debugValidatorMsg(validate);
         assertThat(analysis.getGaps(), hasSize(0));
-        assertThat(analysis.getOverlaps(), hasSize(1));
+        assertThat(collectOverlaps(analysis), hasSize(1));
         return validate;
     }
 
@@ -118,7 +119,7 @@ public class RecommenderHitPolicyTest extends AbstractDTAnalysisTest {
 
         debugValidatorMsg(validate);
         assertThat(analysis.getGaps(), hasSize(0));
-        assertThat(analysis.getOverlaps(), hasSize(1));
+        assertThat(collectOverlaps(analysis), hasSize(1));
         return validate;
     }
 }

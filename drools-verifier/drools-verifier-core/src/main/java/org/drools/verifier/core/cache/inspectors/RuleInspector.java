@@ -42,12 +42,14 @@ import org.drools.verifier.core.index.model.Field;
 import org.drools.verifier.core.index.model.FieldCondition;
 import org.drools.verifier.core.index.model.Pattern;
 import org.drools.verifier.core.index.model.Rule;
+import org.drools.verifier.core.index.model.meta.ConditionMaster;
 import org.drools.verifier.core.index.select.AllListener;
 import org.drools.verifier.core.maps.InspectorList;
 import org.drools.verifier.core.maps.util.HasKeys;
 import org.drools.verifier.core.relations.HumanReadable;
 import org.drools.verifier.core.relations.IsConflicting;
 import org.drools.verifier.core.relations.IsDeficient;
+import org.drools.verifier.core.relations.IsOverlapping;
 import org.drools.verifier.core.relations.IsRedundant;
 import org.drools.verifier.core.relations.IsSubsuming;
 import org.drools.verifier.core.util.PortablePreconditions;
@@ -56,6 +58,7 @@ public class RuleInspector
         implements IsRedundant,
                    IsSubsuming,
                    IsConflicting,
+                   IsOverlapping,
                    IsDeficient<RuleInspector>,
                    HumanReadable,
                    HasKeys {
@@ -68,7 +71,7 @@ public class RuleInspector
 
     private final UUIDKey uuidKey;
 
-    private final InspectorList<PatternInspector> patternInspectorList;
+    private final InspectorList<ConditionMasterInspector> conditionMasterInspectorList;
     private final InspectorList<ConditionInspector> brlConditionsInspectors;
     private final InspectorList<ActionInspector> brlActionInspectors;
     private InspectorList<ActionsInspectorMultiMap> actionsInspectors = null;
@@ -88,7 +91,7 @@ public class RuleInspector
                                                                 configuration);
 
         uuidKey = configuration.getUUID(this);
-        patternInspectorList = new InspectorList<>(configuration);
+        conditionMasterInspectorList = new InspectorList<>(configuration);
         brlConditionsInspectors = new InspectorList<>(true,
                                                       configuration);
         brlActionInspectors = new InspectorList<>(true,
@@ -105,8 +108,8 @@ public class RuleInspector
         conditionsInspectors = new InspectorList<>(true,
                                                    configuration);
 
-        for (final PatternInspector patternInspector : patternInspectorList) {
-            conditionsInspectors.add(patternInspector.getConditionsInspector());
+        for (final ConditionMasterInspector conditionMasterInspector : conditionMasterInspectorList) {
+            conditionsInspectors.add(conditionMasterInspector.getConditionsInspector());
         }
     }
 
@@ -114,8 +117,8 @@ public class RuleInspector
         actionsInspectors = new InspectorList<>(true,
                                                 configuration);
 
-        for (final PatternInspector patternInspector : patternInspectorList) {
-            actionsInspectors.add(patternInspector.getActionsInspector());
+        for (final ConditionMasterInspector conditionMasterInspector : conditionMasterInspectorList) {
+            actionsInspectors.add(conditionMasterInspector.getActionsInspector());
         }
     }
 
@@ -156,27 +159,27 @@ public class RuleInspector
     }
 
     private void makePatternsInspectors() {
-        for (final Pattern pattern : rule.getPatterns()
+        for (final ConditionMaster pattern : rule.getPatterns()
                 .where(Pattern.uuid()
                                .any())
                 .select()
                 .all()) {
-            final PatternInspector patternInspector = new PatternInspector(pattern,
-                                                                           new RuleInspectorUpdater() {
+            final ConditionMasterInspector conditionMasterInspector = new ConditionMasterInspector(pattern,
+                                                                                                   new RuleInspectorUpdater() {
 
-                                                                               @Override
-                                                                               public void resetActionsInspectors() {
-                                                                                   actionsInspectors = null;
-                                                                               }
+                                                                                                       @Override
+                                                                                                       public void resetActionsInspectors() {
+                                                                                                           actionsInspectors = null;
+                                                                                                       }
 
-                                                                               @Override
-                                                                               public void resetConditionsInspectors() {
-                                                                                   conditionsInspectors = null;
-                                                                               }
-                                                                           },
-                                                                           configuration);
+                                                                                                       @Override
+                                                                                                       public void resetConditionsInspectors() {
+                                                                                                           conditionsInspectors = null;
+                                                                                                       }
+                                                                                                   },
+                                                                                                   configuration);
 
-            patternInspectorList.add(patternInspector);
+            conditionMasterInspectorList.add(conditionMasterInspector);
         }
     }
 
@@ -210,8 +213,8 @@ public class RuleInspector
         return actionsInspectors;
     }
 
-    public InspectorList<PatternInspector> getPatternsInspector() {
-        return patternInspectorList;
+    public InspectorList<ConditionMasterInspector> getPatternsInspector() {
+        return conditionMasterInspectorList;
     }
 
     public int getRowIndex() {
@@ -243,10 +246,21 @@ public class RuleInspector
     }
 
     @Override
+    public boolean overlaps(Object other) {
+        if (other instanceof RuleInspector && rule.getActivationTime().overlaps(((RuleInspector) other).rule.getActivationTime())) {
+            return getConditionsInspectors().overlaps(((RuleInspector) other).getConditionsInspectors())
+                    && getBrlConditionsInspectors().overlaps(((RuleInspector) other).getBrlConditionsInspectors());
+        }
+        return false;
+    }
+
+    @Override
     public boolean conflicts(final Object other) {
         if (other instanceof RuleInspector && rule.getActivationTime().overlaps(((RuleInspector) other).rule.getActivationTime())) {
+
             if (getActionsInspectors().conflicts(((RuleInspector) other).getActionsInspectors())) {
-                if (getConditionsInspectors().subsumes(((RuleInspector) other).getConditionsInspectors())
+                boolean subsumes = getConditionsInspectors().subsumes(((RuleInspector) other).getConditionsInspectors());
+                if (subsumes
                         && getBrlConditionsInspectors().subsumes(((RuleInspector) other).getBrlConditionsInspectors())) {
                     return true;
                 }
@@ -290,23 +304,24 @@ public class RuleInspector
                     }
                 } else if (condition instanceof FieldCondition) {
                     final FieldCondition fieldCondition = (FieldCondition) condition;
-                    final Conditions conditions = rule.getPatterns()
-                            .where(Pattern.name()
-                                           .is(fieldCondition.getField()
-                                                       .getFactType()))
-                            .select()
-                            .fields()
-                            .where(Field.name()
-                                           .is(fieldCondition.getField()
-                                                       .getName()))
-                            .select()
-                            .conditions();
-                    if (conditions
-                            .where(Condition.value()
-                                           .any())
-                            .select()
-                            .exists()) {
-                        return false;
+                    if (fieldCondition.getField() instanceof Field) {
+                        final Field field = (Field) fieldCondition.getField();
+                        final Conditions conditions = rule.getPatterns()
+                                .where(Pattern.name()
+                                               .is(field.getFactType()))
+                                .select()
+                                .fields()
+                                .where(Field.name()
+                                               .is(field.getName()))
+                                .select()
+                                .conditions();
+                        if (conditions
+                                .where(Condition.value()
+                                               .any())
+                                .select()
+                                .exists()) {
+                            return false;
+                        }
                     }
                 }
             }

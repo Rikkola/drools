@@ -17,8 +17,10 @@
 package org.drools.verifier.core.checks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -34,6 +36,7 @@ import org.drools.verifier.core.checks.base.CheckStorage;
 import org.drools.verifier.core.checks.base.JavaCheckRunner;
 import org.drools.verifier.core.checks.base.SingleCheck;
 import org.drools.verifier.core.configuration.AnalyzerConfiguration;
+import org.drools.verifier.core.index.Index;
 import org.drools.verifier.core.index.model.Rule;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +60,9 @@ public class CheckRunManagerTest {
     @Mock
     private RuleInspectorCache cache;
 
+    @Mock
+    private Index index;
+
     private RuleInspector ruleInspector1;
     private RuleInspector ruleInspector2;
     private RuleInspector ruleInspector3;
@@ -71,7 +77,8 @@ public class CheckRunManagerTest {
         configuration = new AnalyzerConfigurationMock();
 
         checkStorage = new CheckStorage(
-                new CheckFactory(configuration) {
+                new CheckFactory(index,
+                                 configuration) {
                     @Override
                     public HashSet<Check> makeSingleChecks(final RuleInspector ruleInspector) {
                         final HashSet<Check> result = new HashSet<>();
@@ -209,11 +216,11 @@ public class CheckRunManagerTest {
         }
 
         @Override
-        protected Issue makeIssue(final Severity severity,
-                                  final CheckType checkType) {
-            return new Issue(severity,
-                             checkType,
-                             Collections.emptySet());
+        protected List<Issue> makeIssues(final Severity severity,
+                                         final CheckType checkType) {
+            return Arrays.asList(new Issue(severity,
+                                           checkType,
+                                           Collections.emptySet()));
         }
     }
 }

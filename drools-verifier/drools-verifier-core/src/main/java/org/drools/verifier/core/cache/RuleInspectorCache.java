@@ -26,29 +26,28 @@ import java.util.function.Predicate;
 
 import org.drools.verifier.api.reporting.Issue;
 import org.drools.verifier.core.cache.inspectors.RuleInspector;
-import org.drools.verifier.core.checks.SingleRangeCheck;
 import org.drools.verifier.core.checks.base.Check;
 import org.drools.verifier.core.checks.base.CheckFactory;
 import org.drools.verifier.core.checks.base.CheckStorage;
+import org.drools.verifier.core.checks.gaps.SingleRangeCheck;
 import org.drools.verifier.core.configuration.AnalyzerConfiguration;
 import org.drools.verifier.core.index.Index;
 import org.drools.verifier.core.index.matchers.UUIDMatcher;
 import org.drools.verifier.core.index.model.Action;
 import org.drools.verifier.core.index.model.Column;
 import org.drools.verifier.core.index.model.Condition;
-import org.drools.verifier.core.index.model.Field;
-import org.drools.verifier.core.index.model.Fields;
+import org.drools.verifier.core.index.model.ConditionParents;
 import org.drools.verifier.core.index.model.Rule;
+import org.drools.verifier.core.index.model.meta.ConditionParent;
 import org.drools.verifier.core.util.PortablePreconditions;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class RuleInspectorCache {
 
+    protected final Index index;
     private final Map<Rule, RuleInspector> ruleInspectors = new HashMap<>();
     private final Set<Check> generalChecks = new HashSet<>();
-    protected final Index index;
     private final CheckStorage checkStorage;
     private final AnalyzerConfiguration configuration;
 
@@ -56,7 +55,8 @@ public class RuleInspectorCache {
                               final AnalyzerConfiguration configuration) {
         this.index = PortablePreconditions.checkNotNull("index",
                                                         index);
-        this.checkStorage = new CheckStorage(new CheckFactory(PortablePreconditions.checkNotNull("configuration",
+        this.checkStorage = new CheckStorage(new CheckFactory(index,
+                                                              PortablePreconditions.checkNotNull("configuration",
                                                                                                  configuration)));
         this.configuration = configuration;
     }
@@ -80,8 +80,11 @@ public class RuleInspectorCache {
                                   configuration));
         }
 
-        generalChecks.add(new SingleRangeCheck(configuration,
-                                               ruleInspectors.values()));
+        final SingleRangeCheck rangeCheck = new SingleRangeCheck(configuration,
+                                                                 ruleInspectors.values());
+        if (rangeCheck.isActive(configuration.getCheckConfiguration())) {
+            generalChecks.add(rangeCheck);
+        }
     }
 
     public Set<Check> getGeneralChecks() {
@@ -98,19 +101,19 @@ public class RuleInspectorCache {
     }
 
     public Set<Issue> getAllIssues() {
-        Set<Issue> issues = new HashSet<>();
-        issues.addAll(
-                all().stream()
-                        .flatMap(inspector -> inspector.getChecks().stream())
-                        .filter(Check::hasIssues)
-                        .map(Check::getIssue)
-                        .collect(toSet())
-        );
-        issues.addAll(generalChecks.stream()
-                              .filter(Check::hasIssues)
-                              .map(Check::getIssue)
-                              .collect(toSet())
-        );
+        final Set<Issue> issues = new HashSet<>();
+        all().stream()
+                .flatMap(inspector -> inspector.getChecks().stream())
+                .filter(Check::hasIssues)
+                .map(Check::getIssues)
+                .forEach(issues::addAll);
+
+        for (final Check generalCheck : generalChecks) {
+            if (generalCheck.hasIssues()) {
+                issues.addAll(generalCheck.getIssues());
+            }
+        }
+
         return issues;
     }
 
@@ -150,7 +153,7 @@ public class RuleInspectorCache {
                 .select()
                 .all();
 
-        final Fields.FieldSelector fieldSelector =
+        final ConditionParents.FieldSelector fieldSelector =
                 index.getRules()
                         .where(UUIDMatcher.uuid()
                                        .any())
@@ -167,7 +170,7 @@ public class RuleInspectorCache {
         final ArrayList<Action> actions = new ArrayList<>();
         final ArrayList<Condition> conditions = new ArrayList<>();
 
-        for (final Field field : fieldSelector.all()) {
+        for (final ConditionParent field : fieldSelector.all()) {
             for (final Column column : all) {
                 final Collection<Action> all1 = field.getActions()
                         .where(Action.columnUUID()

@@ -33,6 +33,7 @@ import org.kie.dmn.validation.dtanalysis.model.Interval;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class MultipleModelsTest extends AbstractDTAnalysisTest {
 
@@ -85,6 +86,6 @@ public class MultipleModelsTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }

@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class RuleOrderDashTest extends AbstractDTAnalysisTest {
 
@@ -45,7 +46,7 @@ public class RuleOrderDashTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), hasSize(0));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(3));
+        assertThat(collectOverlaps(analysis), hasSize(3));
 
         @SuppressWarnings({"unchecked", "rawtypes"})
         List<Overlap> overlaps = Arrays.asList(new Overlap(Arrays.asList(3,

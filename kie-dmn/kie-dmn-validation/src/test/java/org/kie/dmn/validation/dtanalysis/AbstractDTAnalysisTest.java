@@ -99,13 +99,6 @@ public abstract class AbstractDTAnalysisTest extends AbstractValidatorTest {
         Expression printGaps = DTAnalysisMeta.printGaps(analysis);
         LOG.debug("\n" + printGaps.toString(prettyPrintConfig));
 
-        StringBuilder sbOverlaps = new StringBuilder("\nOverlaps:\n");
-        for (Overlap overlap : analysis.getOverlaps()) {
-            sbOverlaps.append(overlap.toString());
-            sbOverlaps.append("\n");
-        }
-        LOG.debug(sbOverlaps.toString());
-
         Expression printOverlaps = DTAnalysisMeta.printOverlaps(analysis);
         LOG.debug("\n" + printOverlaps.toString(prettyPrintConfig));
     }

@@ -61,23 +61,20 @@ public class DTAnalysis {
     private final Throwable error;
     private final DDTATable ddtaTable;
     private final Collection<DMNMessage> passThruMessages = new ArrayList<>();
-
-
+    private Set<DMNDTAnalysisMessage> issues;
 
     public DTAnalysis(DecisionTable sourceDT, DDTATable ddtaTable) {
+        this(sourceDT, null, ddtaTable);
+    }
+
+    private DTAnalysis(DecisionTable sourceDT, Throwable error, DDTATable ddtaTable) {
         this.sourceDT = sourceDT;
-        this.error = null;
+        this.error = error;
         this.ddtaTable = ddtaTable;
     }
 
-    private DTAnalysis(DecisionTable sourceDT, Throwable error) {
-        this.sourceDT = sourceDT;
-        this.error = error;
-        this.ddtaTable = null;
-    }
-
     public static DTAnalysis ofError(DecisionTable sourceDT, Throwable error) {
-        return new DTAnalysis(sourceDT, error);
+        return new DTAnalysis(sourceDT, error, null);
     }
 
     public boolean isError() {
@@ -165,13 +162,12 @@ public class DTAnalysis {
         }
         results.addAll(passThruMessages());
         results.addAll(gapsAsMessages());
-        results.addAll(overlapsAsMessages());
         warnAboutHitPolicyFirst(results);
-        results.addAll(maskedAndMisleadingRulesAsMessagesIfPriority());
         results.addAll(subsumptionsAsMessages());
         results.addAll(contractionsAsMessages());
         results.addAll(check1stNFViolationAsMessages());
         results.addAll(check2ndNFViolationAsMessages());
+        results.addAll(issues);
 
         // keep last.
         if (results.isEmpty()) {
@@ -182,30 +178,6 @@ public class DTAnalysis {
                                                     Msg.DTANALYSIS_EMPTY.getType());
             results.add(m);
             return results;
-        }
-        return results;
-    }
-
-    private Collection<? extends DMNMessage> maskedAndMisleadingRulesAsMessagesIfPriority() {
-        if (sourceDT.getHitPolicy() != HitPolicy.PRIORITY) {
-            return Collections.emptyList();
-        }
-        List<DMNDTAnalysisMessage> results = new ArrayList<>();
-        for (MaskedRule masked : maskedRules) {
-            results.add(new DMNDTAnalysisMessage(this,
-                                                 Severity.ERROR,
-                                                 MsgUtil.createMessage(Msg.DTANALYSIS_HITPOLICY_PRIORITY_MASKED_RULE,
-                                                                       masked.maskedRule,
-                                                                       masked.maskedBy),
-                                                 Msg.DTANALYSIS_HITPOLICY_PRIORITY_MASKED_RULE.getType(), Collections.singletonList(masked.maskedRule)));
-        }
-        for (MisleadingRule misleading : misleadingRules) {
-            results.add(new DMNDTAnalysisMessage(this,
-                                                 Severity.WARN,
-                                                 MsgUtil.createMessage(Msg.DTANALYSIS_HITPOLICY_PRIORITY_MISLEADING_RULE,
-                                                                       misleading.misleadingRule,
-                                                                       misleading.misleadRule),
-                                                 Msg.DTANALYSIS_HITPOLICY_PRIORITY_MISLEADING_RULE.getType(), Collections.singletonList(misleading.misleadingRule)));
         }
         return results;
     }
@@ -295,59 +267,15 @@ public class DTAnalysis {
         return passThruMessages;
     }
 
-    private Collection overlapsAsMessages() {
-        List<DMNDTAnalysisMessage> results = new ArrayList<>();
-        for (Overlap overlap : overlaps) {
-            switch (sourceDT.getHitPolicy()) {
-                case UNIQUE:
-                    results.add(new DMNDTAnalysisMessage(this,
-                                                         Severity.ERROR,
-                                                         MsgUtil.createMessage(Msg.DTANALYSIS_OVERLAP_HITPOLICY_UNIQUE,
-                                                                               overlap.asHumanFriendly(ddtaTable)),
-                                                         Msg.DTANALYSIS_OVERLAP_HITPOLICY_UNIQUE.getType(), overlap.getRules()));
-                    break;
-                case ANY:
-                    List<Comparable<?>> prevValue = ddtaTable.getRule().get(overlap.getRules().get(0) - 1).getOutputEntry();
-                    for (int i = 1; i < overlap.getRules().size(); i++) { // deliberately start index 1 for 2nd overlapping rule number.
-                        int curIndex = overlap.getRules().get(i) - 1;
-                        List<Comparable<?>> curValue = ddtaTable.getRule().get(curIndex).getOutputEntry();
-                        if (!prevValue.equals(curValue)) {
-                            results.add(new DMNDTAnalysisMessage(this,
-                                                                 Severity.ERROR,
-                                                                 MsgUtil.createMessage(Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY,
-                                                                                       overlap.asHumanFriendly(ddtaTable)),
-                                                                 Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY.getType(), overlap.getRules()));
-                            break;
-                        } else {
-                            prevValue = curValue;
-                        }
-                    }
-                    break;
-                default:
-                    results.add(overlapToStandardDMNMessage(overlap));
-                    break;
-            }
-        }
-        return results;
-    }
-
-    private DMNDTAnalysisMessage overlapToStandardDMNMessage(Overlap overlap) {
-        return new DMNDTAnalysisMessage(this,
-                                        Severity.INFO,
-                                        MsgUtil.createMessage(Msg.DTANALYSIS_OVERLAP,
-                                                              overlap.asHumanFriendly(ddtaTable)),
-                                        Msg.DTANALYSIS_OVERLAP.getType(), overlap.getRules());
-    }
-
     private Collection gapsAsMessages() {
         List<DMNDTAnalysisMessage> results = new ArrayList<>();
         if (!ddtaTable.getColIDsStringWithoutEnum().isEmpty()) {
             List<String> names = ddtaTable.getColIDsStringWithoutEnum()
-                                          .stream()
-                                          .map(id -> sourceDT.getInput().get(id - 1))
-                                          .map(InputClause::getInputExpression)
-                                          .map(LiteralExpression::getText)
-                                          .collect(Collectors.toList());
+                    .stream()
+                    .map(id -> sourceDT.getInput().get(id - 1))
+                    .map(InputClause::getInputExpression)
+                    .map(LiteralExpression::getText)
+                    .collect(Collectors.toList());
             results.add(new DMNDTAnalysisMessage(this,
                                                  Severity.WARN,
                                                  MsgUtil.createMessage(Msg.DTANALYSIS_GAP_SKIPPED_BECAUSE_FREE_STRING,
@@ -425,12 +353,15 @@ public class DTAnalysis {
         return isOtherRuleWider;
     }
 
+    public void addIssues(Set<DMNDTAnalysisMessage> issues) {
+        this.issues = issues;
+    }
+
     public class ComparingRulesWithMultipleInputEntries extends Exception {
 
         public ComparingRulesWithMultipleInputEntries(String message) {
             super(message);
         }
-
     }
 
     public List<MaskedRule> getMaskedRules() {
@@ -462,7 +393,8 @@ public class DTAnalysis {
                             List<Integer> otherRules = listWithoutElement(overlap.getRules(), ruleId);
                             for (Integer otherRuleID : otherRules) {
                                 List<Comparable<?>> otherRuleValues = ddtaTable.getRule().get(otherRuleID - 1).getOutputEntry();
-                                int otherOutputIdx = curOutputClause.getOutputOrder().indexOf(otherRuleValues.get(jOutputIdx));
+                                Comparable<?> o = otherRuleValues.get(jOutputIdx);
+                                int otherOutputIdx = curOutputClause.getOutputOrder().indexOf(o);
                                 if (otherOutputIdx > curOutputIdx) {
                                     misleadingRules.add(new MisleadingRule(ruleId, otherRuleID));
                                 }

@@ -15,16 +15,24 @@
  */
 package org.drools.verifier.core.checks.base;
 
-import org.drools.verifier.core.cache.inspectors.RuleInspector;
 import org.drools.verifier.core.AnalyzerConfigurationMock;
+import org.drools.verifier.core.cache.inspectors.RuleInspector;
 import org.drools.verifier.core.configuration.CheckConfiguration;
+import org.drools.verifier.core.index.Index;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CheckFactoryTest {
+
+    @Mock
+    private Index index;
 
     @Test
     public void emptyWhiteList() throws
@@ -32,10 +40,10 @@ public class CheckFactoryTest {
 
         final AnalyzerConfigurationMock configuration = new AnalyzerConfigurationMock(CheckConfiguration.newEmpty());
 
-        assertTrue(new CheckFactory(configuration).makeSingleChecks(mock(RuleInspector.class))
+        assertTrue(new CheckFactory(index, configuration).makeSingleChecks(mock(RuleInspector.class))
                            .isEmpty());
-        assertFalse(new CheckFactory(configuration).makePairRowCheck(mock(RuleInspector.class),
-                                                                     mock(RuleInspector.class))
+        assertFalse(new CheckFactory(index, configuration).makePairRowCheck(mock(RuleInspector.class),
+                                                                            mock(RuleInspector.class))
                             .isPresent());
     }
 
@@ -45,10 +53,10 @@ public class CheckFactoryTest {
 
         final AnalyzerConfigurationMock configuration = new AnalyzerConfigurationMock(CheckConfiguration.newDefault());
 
-        assertFalse(new CheckFactory(configuration).makeSingleChecks(mock(RuleInspector.class))
+        assertFalse(new CheckFactory(index, configuration).makeSingleChecks(mock(RuleInspector.class))
                             .isEmpty());
-        assertTrue(new CheckFactory(configuration).makePairRowCheck(mock(RuleInspector.class),
-                                                                    mock(RuleInspector.class))
+        assertTrue(new CheckFactory(index, configuration).makePairRowCheck(mock(RuleInspector.class),
+                                                                           mock(RuleInspector.class))
                            .isPresent());
     }
 }

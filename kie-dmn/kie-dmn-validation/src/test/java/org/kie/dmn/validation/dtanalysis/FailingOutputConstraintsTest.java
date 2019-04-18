@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class FailingOutputConstraintsTest extends AbstractDTAnalysisTest {
 
@@ -41,6 +42,6 @@ public class FailingOutputConstraintsTest extends AbstractDTAnalysisTest {
         DTAnalysis analysis = getAnalysis(validate, "_E72BD036-C550-4992-AA6D-A8AD4666C63A");
         assertThat(analysis.isError(), is(false));
         assertThat(analysis.getGaps(), hasSize(1));
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }

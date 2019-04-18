@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_MODEL;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class SimpleStringNoGapTest extends AbstractDTAnalysisTest {
 
@@ -43,6 +44,6 @@ public class SimpleStringNoGapTest extends AbstractDTAnalysisTest {
         DTAnalysis analysis = getAnalysis(validate, "_3D5BDDEF-8B71-4797-8662-5026A9C2A112");
 
         assertThat(analysis.getGaps(), hasSize(0));
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }

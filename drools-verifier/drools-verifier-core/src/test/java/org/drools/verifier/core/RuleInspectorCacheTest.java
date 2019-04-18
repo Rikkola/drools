@@ -41,8 +41,8 @@ public class RuleInspectorCacheTest {
     @Before
     public void setUp() throws
             Exception {
-        final Index index = new IndexImpl();
         final AnalyzerConfiguration configuration = new AnalyzerConfigurationMock();
+        final Index index = new IndexImpl(configuration);
 
         cache = new RuleInspectorCache(index,
                                        configuration);

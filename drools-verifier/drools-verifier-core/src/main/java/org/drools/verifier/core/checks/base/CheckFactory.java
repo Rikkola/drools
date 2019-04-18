@@ -33,9 +33,11 @@ import org.drools.verifier.core.checks.DetectRedundantActionFactFieldCheck;
 import org.drools.verifier.core.checks.DetectRedundantActionValueCheck;
 import org.drools.verifier.core.checks.DetectRedundantConditionsCheck;
 import org.drools.verifier.core.checks.DetectRedundantRowsCheck;
+import org.drools.verifier.core.checks.OverlappingRowsCheck;
 import org.drools.verifier.core.checks.SingleHitCheck;
 import org.drools.verifier.core.configuration.AnalyzerConfiguration;
 import org.drools.verifier.core.configuration.CheckConfiguration;
+import org.drools.verifier.core.index.Index;
 import org.drools.verifier.core.util.PortablePreconditions;
 
 /**
@@ -44,9 +46,13 @@ import org.drools.verifier.core.util.PortablePreconditions;
 public class CheckFactory {
 
     private final CheckConfiguration checkConfiguration;
+    private Index index;
     private final AnalyzerConfiguration configuration;
 
-    public CheckFactory(final AnalyzerConfiguration configuration) {
+    public CheckFactory(final Index index,
+                        final AnalyzerConfiguration configuration) {
+        this.index = PortablePreconditions.checkNotNull("index",
+                                                        index);
         this.configuration = PortablePreconditions.checkNotNull("configuration",
                                                                 configuration);
         checkConfiguration = PortablePreconditions.checkNotNull("checkWhiteList",
@@ -80,6 +86,10 @@ public class CheckFactory {
         final List<Check> filteredSet = filter(new DetectConflictingRowsCheck(ruleInspector,
                                                                               other,
                                                                               configuration),
+                                               new OverlappingRowsCheck(ruleInspector,
+                                                                        other,
+                                                                        index,
+                                                                        configuration),
                                                new DetectRedundantRowsCheck(ruleInspector,
                                                                             other,
                                                                             configuration),

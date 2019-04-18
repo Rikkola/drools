@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class DTNestingTest extends AbstractDTAnalysisTest {
 
@@ -61,7 +62,7 @@ public class DTNestingTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 
     private void checkNegativeTableInBKM(List<DMNMessage> validate) {
@@ -83,6 +84,6 @@ public class DTNestingTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }

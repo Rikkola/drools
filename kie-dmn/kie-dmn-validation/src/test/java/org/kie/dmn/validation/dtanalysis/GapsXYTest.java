@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class GapsXYTest extends AbstractDTAnalysisTest {
 
@@ -99,6 +100,6 @@ public class GapsXYTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }

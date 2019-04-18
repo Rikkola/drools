@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.kie.dmn.api.core.DMNMessage;
+import org.kie.dmn.api.core.DMNMessageType;
 import org.kie.dmn.feel.runtime.Range.RangeBoundary;
 import org.kie.dmn.validation.dtanalysis.model.Bound;
 import org.kie.dmn.validation.dtanalysis.model.DTAnalysis;
@@ -33,6 +34,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collect;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class BuiltinAndOtherValuesTest extends AbstractDTAnalysisTest {
 
@@ -75,7 +78,7 @@ public class BuiltinAndOtherValuesTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(1));
+        assertThat(collect(DMNMessageType.DECISION_TABLE_OVERLAP_HITPOLICY_UNIQUE, analysis), hasSize(1));
         @SuppressWarnings({"unchecked", "rawtypes"})
         List<Overlap> overlaps = Arrays.asList(new Overlap(Arrays.asList(2,
                                                                          3),
@@ -111,7 +114,7 @@ public class BuiltinAndOtherValuesTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 
     @Test
@@ -134,6 +137,6 @@ public class BuiltinAndOtherValuesTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getGaps(), contains(gaps.toArray()));
 
         // assert OVERLAPs count.
-        assertThat(analysis.getOverlaps(), hasSize(0));
+        assertThat(collectOverlaps(analysis), hasSize(0));
     }
 }
