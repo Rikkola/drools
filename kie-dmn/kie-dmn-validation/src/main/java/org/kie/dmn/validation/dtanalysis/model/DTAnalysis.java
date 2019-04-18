@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.drools.verifier.api.reporting.Issue;
 import org.kie.dmn.api.core.DMNMessage;
 import org.kie.dmn.api.core.DMNMessage.Severity;
 import org.kie.dmn.core.util.Msg;
@@ -41,7 +43,7 @@ public class DTAnalysis {
     private final Throwable error;
     private final DDTATable ddtaTable;
     private final Collection passThruMessages = new ArrayList<>();
-
+    private Set<Issue> issues;
 
     public DTAnalysis(DecisionTable sourceDT, DDTATable ddtaTable) {
         this.sourceDT = sourceDT;
@@ -308,6 +310,14 @@ public class DTAnalysis {
             }
         }
         return isOtherRuleWider;
+    }
+
+    public void addIssues(Set<Issue> issues) {
+        this.issues = issues;
+    }
+
+    public Set<Issue> getIssues() {
+        return issues;
     }
 
     public class ComparingRulesWithMultipleInputEntries extends Exception {

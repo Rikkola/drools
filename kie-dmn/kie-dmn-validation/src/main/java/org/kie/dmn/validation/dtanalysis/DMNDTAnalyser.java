@@ -24,11 +24,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
+import org.drools.verifier.api.reporting.Issue;
 import org.kie.dmn.api.core.DMNModel;
 import org.kie.dmn.api.core.ast.DecisionNode;
 import org.kie.dmn.core.compiler.DMNCompilerImpl;
@@ -86,6 +88,266 @@ public class DMNDTAnalyser {
         FEEL = org.kie.dmn.feel.FEEL.newInstance((List) dmnProfiles);
     }
 
+    private static boolean canBeNewCurrIntervalForOverlaps(Bound<?> lastBound, Bound<?> currentBound) {
+        int vCompare = BoundValueComparator.compareValueDispatchingToInf(lastBound, currentBound);
+        if (vCompare != 0) {
+            return true;
+        } else {
+            if (lastBound.getBoundaryType() == RangeBoundary.CLOSED && currentBound.getBoundaryType() == RangeBoundary.CLOSED) {
+                return true; // by Bound order, if they have same value x, interested in only the case [x x]
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private static void findGaps(DTAnalysis analysis, DDTATable ddtaTable, int jColIdx, Interval[] currentIntervals, Collection<Integer> activeRules) {
+        LOG.debug("findGaps jColIdx {}, currentIntervals {}, activeRules {}", jColIdx, currentIntervals, activeRules);
+        if (jColIdx < ddtaTable.inputCols()) {
+            findBoundsSorted(ddtaTable, jColIdx, activeRules);
+            List<Bound> bounds = findBoundsSorted(ddtaTable, jColIdx, activeRules);
+            Interval domainRange = ddtaTable.getInputs().get(jColIdx).getDomainMinMax();
+
+            // from domain start to the 1st bound
+            if (!domainRange.getLowerBound().equals(bounds.get(0))) {
+                currentIntervals[jColIdx] = lastDimensionUncoveredInterval(domainRange.getLowerBound(), bounds.get(0), domainRange);
+                Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
+                analysis.addGap(gap);
+                LOG.debug("STARTLEFT GAP DETECTED {}", gap);
+            }
+            // cycle rule's interval bounds
+            List<Interval> activeIntervals = new ArrayList<>();
+            Bound<?> lastBound = null;
+            for (Bound<?> currentBound : bounds) {
+                LOG.debug("lastBound {} currentBound {}      activeIntervals {} == rules {}", lastBound, currentBound, activeIntervals, activeIntervalsToRules(activeIntervals));
+                if (activeIntervals.isEmpty() && lastBound != null && !Bound.adOrOver(lastBound, currentBound)) {
+                    currentIntervals[jColIdx] = lastDimensionUncoveredInterval(lastBound, currentBound, domainRange);
+                    Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
+                    LOG.debug("GAP DETECTED {}", gap);
+                    analysis.addGap(gap);
+                }
+                if (!activeIntervals.isEmpty() && canBeNewCurrInterval(lastBound, currentBound)) {
+                    Interval missingInterval = new Interval(lastBound.isUpperBound() ? invertBoundary(lastBound.getBoundaryType()) : lastBound.getBoundaryType(),
+                                                            lastBound.getValue(),
+                                                            currentBound.getValue(),
+                                                            currentBound.isLowerBound() ? invertBoundary(currentBound.getBoundaryType()) : currentBound.getBoundaryType(),
+                                                            0, 0);
+                    currentIntervals[jColIdx] = missingInterval;
+                    findGaps(analysis, ddtaTable, jColIdx + 1, currentIntervals, activeIntervalsToRules(activeIntervals));
+                }
+                if (currentBound.isLowerBound()) {
+                    activeIntervals.add(currentBound.getParent());
+                } else {
+                    activeIntervals.remove(currentBound.getParent());
+                }
+                lastBound = currentBound;
+            }
+            // from last Nth bound, to domain end.
+            if (!lastBound.equals(domainRange.getUpperBound())) {
+                currentIntervals[jColIdx] = lastDimensionUncoveredInterval(lastBound, domainRange.getUpperBound(), domainRange);
+                Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
+                LOG.debug("ENDRIGHT GAP DETECTED {}", gap);
+                analysis.addGap(gap);
+            }
+            currentIntervals[jColIdx] = null; // facilitate debugging.
+        }
+        LOG.debug(".");
+    }
+
+    private static List<Bound> findBoundsSorted(DDTATable ddtaTable, int jColIdx, Collection<Integer> activeRules) {
+        List<Interval> intervals = ddtaTable.projectOnColumnIdx(jColIdx);
+        if (!activeRules.isEmpty()) {
+            intervals = intervals.stream().filter(i -> activeRules.contains(i.getRule())).collect(Collectors.toList());
+        }
+        LOG.debug("intervals {}", intervals);
+        List<Bound> bounds = intervals.stream().flatMap(i -> Stream.of(i.getLowerBound(), i.getUpperBound())).collect(Collectors.toList());
+        Collections.sort(bounds);
+        LOG.debug("bounds (sorted) {}", bounds);
+        return bounds;
+    }
+
+    private static List<Interval> buildEdgesForHyperrectangleFromIntervals(Interval[] currentIntervals, int intervalsIndex) {
+        List<Interval> edges = new ArrayList<>();
+        for (int p = 0; p <= intervalsIndex; p++) {
+            edges.add(currentIntervals[p]);
+        }
+        return edges;
+    }
+
+    private static Collection<Integer> activeIntervalsToRules(List<Interval> activeIntervals) {
+        return activeIntervals.stream().map(Interval::getRule).collect(Collectors.toList());
+    }
+
+    /**
+     * Avoid a situation to "open" a new currentInterval for pair of same-side equals bounds like: x], x]
+     */
+    private static boolean canBeNewCurrInterval(Bound<?> lastBound, Bound<?> currentBound) {
+        int vCompare = BoundValueComparator.compareValueDispatchingToInf(lastBound, currentBound);
+        if (vCompare != 0) {
+            return true;
+        } else {
+            if (lastBound.isLowerBound() && currentBound.isUpperBound()) {
+                return true;
+            } else if (lastBound.isUpperBound() && lastBound.getBoundaryType() == RangeBoundary.OPEN
+                    && currentBound.isLowerBound() && currentBound.getBoundaryType() == RangeBoundary.OPEN) {
+                return true; // the case x) (x
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private static Interval lastDimensionUncoveredInterval(Bound<?> l, Bound<?> r, Interval domain) {
+        boolean isLmin = l.isLowerBound() && l.equals(domain.getLowerBound());
+        boolean isRmax = r.isUpperBound() && r.equals(domain.getUpperBound());
+        return new Interval(isLmin ? domain.getLowerBound().getBoundaryType() : invertBoundary(l.getBoundaryType()),
+                            l.getValue(),
+                            r.getValue(),
+                            isRmax ? domain.getUpperBound().getBoundaryType() : invertBoundary(r.getBoundaryType()),
+                            0, 0);
+    }
+
+    private static Range.RangeBoundary invertBoundary(Range.RangeBoundary b) {
+        if (b == RangeBoundary.OPEN) {
+            return RangeBoundary.CLOSED;
+        } else if (b == RangeBoundary.CLOSED) {
+            return RangeBoundary.OPEN;
+        } else {
+            throw new IllegalStateException("invertBoundary for: " + b);
+        }
+    }
+
+    private static List<Interval> toIntervals(List<BaseNode> elements, Interval minMax, List discreteValues, int rule, int col) {
+        List<Interval> results = new ArrayList<>();
+        if (discreteValues != null && !discreteValues.isEmpty() && areAllEQUnaryTest(elements) && elements.size() > 1) {
+            BitSet hitValues = new BitSet(discreteValues.size());
+            for (BaseNode n : elements) {
+                Comparable<?> thisValue = valueFromNode(((UnaryTestNode) n).getValue());
+                int indexOf = discreteValues.indexOf(thisValue);
+                if (indexOf < 0) {
+                    throw new IllegalStateException("Unable to determine discreteValue index for: " + n);
+                }
+                hitValues.set(indexOf);
+            }
+            int lowerBoundIdx = -1;
+            int upperBoundIdx = -1;
+            for (int i = 0; i < hitValues.length(); i++) {
+                boolean curValue = hitValues.get(i);
+                if (curValue) {
+                    if (lowerBoundIdx < 0) {
+                        lowerBoundIdx = i;
+                        upperBoundIdx = i;
+                    } else {
+                        upperBoundIdx = i;
+                    }
+                } else {
+                    if (lowerBoundIdx >= 0 && upperBoundIdx >= 0) {
+                        results.add(createIntervalOfRule(discreteValues, rule, col, lowerBoundIdx, upperBoundIdx));
+                    }
+                }
+            }
+            if (lowerBoundIdx >= 0 && upperBoundIdx >= 0) {
+                results.add(createIntervalOfRule(discreteValues, rule, col, lowerBoundIdx, upperBoundIdx));
+            }
+        } else {
+            for (BaseNode n : elements) {
+                if (n instanceof DashNode) {
+                    results.add(new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col));
+                    continue;
+                }
+                UnaryTestNode ut = (UnaryTestNode) n;
+                results.add(utnToInterval(ut, minMax, discreteValues, rule, col));
+            }
+        }
+        return results;
+    }
+
+    private static Interval createIntervalOfRule(List discreteValues, int rule, int col, int lowerBoundIdx, int upperBoundIdx) {
+        Comparable<?> lowValue = (Comparable<?>) discreteValues.get(lowerBoundIdx);
+        Comparable<?> highValue = (Comparable<?>) discreteValues.get(upperBoundIdx);
+        if (upperBoundIdx + 1 == discreteValues.size()) {
+            return new Interval(RangeBoundary.CLOSED, lowValue, highValue, RangeBoundary.CLOSED, rule, col);
+        } else {
+            return new Interval(RangeBoundary.CLOSED, lowValue, (Comparable<?>) discreteValues.get(upperBoundIdx + 1), RangeBoundary.OPEN, rule, col);
+        }
+    }
+
+    private static boolean areAllEQUnaryTest(List<BaseNode> elements) {
+        try {
+            boolean result = true;
+            for (BaseNode n : elements) {
+                result = result && ((UnaryTestNode) n).getOperator() == UnaryOperator.EQ;
+            }
+            return result;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    private static Interval utnToInterval(UnaryTestNode ut, Interval minMax, List discreteValues, int rule, int col) {
+        if (ut.getOperator() == UnaryOperator.EQ) {
+            if (discreteValues == null || discreteValues.isEmpty()) {
+                return new Interval(RangeBoundary.CLOSED, valueFromNode(ut.getValue()), valueFromNode(ut.getValue()), RangeBoundary.CLOSED, rule, col);
+            } else {
+                Comparable<?> thisValue = valueFromNode(ut.getValue());
+                int indexOf = discreteValues.indexOf(thisValue);
+                if (indexOf < 0) {
+                    throw new IllegalStateException("Unable to determine discreteValue index for: " + ut);
+                }
+                if (indexOf + 1 == discreteValues.size()) {
+                    return new Interval(RangeBoundary.CLOSED, thisValue, thisValue, RangeBoundary.CLOSED, rule, col);
+                }
+                return new Interval(RangeBoundary.CLOSED, thisValue, (Comparable<?>) discreteValues.get(indexOf + 1), RangeBoundary.OPEN, rule, col);
+            }
+        } else if (ut.getOperator() == UnaryOperator.LTE) {
+            return new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), valueFromNode(ut.getValue()), RangeBoundary.CLOSED, rule, col);
+        } else if (ut.getOperator() == UnaryOperator.LT) {
+            return new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), valueFromNode(ut.getValue()), RangeBoundary.OPEN, rule, col);
+        } else if (ut.getOperator() == UnaryOperator.GT) {
+            return new Interval(RangeBoundary.OPEN, valueFromNode(ut.getValue()), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col);
+        } else if (ut.getOperator() == UnaryOperator.GTE) {
+            return new Interval(RangeBoundary.CLOSED, valueFromNode(ut.getValue()), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col);
+        } else if (ut.getValue() instanceof RangeNode) {
+            RangeNode rangeNode = (RangeNode) ut.getValue();
+            return new Interval(rangeNode.getLowerBound() == IntervalBoundary.OPEN ? RangeBoundary.OPEN : RangeBoundary.CLOSED,
+                                valueFromNode(rangeNode.getStart()),
+                                valueFromNode(rangeNode.getEnd()),
+                                rangeNode.getUpperBound() == IntervalBoundary.OPEN ? RangeBoundary.OPEN : RangeBoundary.CLOSED,
+                                rule,
+                                col);
+        } else {
+            throw new UnsupportedOperationException("UnaryTest type: " + ut);
+        }
+    }
+
+    private static Comparable<?> valueFromNode(BaseNode node) {
+        if (node instanceof NumberNode) {
+            NumberNode numberNode = (NumberNode) node;
+            return numberNode.getValue();
+        } else if (node instanceof BooleanNode) {
+            BooleanNode booleanNode = (BooleanNode) node;
+            return booleanNode.getValue();
+        } else if (node instanceof StringNode) {
+            StringNode stringNode = (StringNode) node;
+            return EvalHelper.unescapeString(stringNode.getText());
+        } else if (node instanceof SignedUnaryNode) {
+            SignedUnaryNode signedUnaryNode = (SignedUnaryNode) node;
+            BaseNode signedExpr = signedUnaryNode.getExpression();
+            if (signedExpr instanceof NumberNode) {
+                BigDecimal valueFromNode = (BigDecimal) valueFromNode(signedExpr);
+                if (signedUnaryNode.getSign() == Sign.NEGATIVE) {
+                    return BigDecimal.valueOf(-1).multiply(valueFromNode);
+                } else {
+                    return valueFromNode;
+                }
+            } else {
+                throw new UnsupportedOperationException("valueFromNode: " + node);
+            }
+        } else {
+            throw new UnsupportedOperationException("valueFromNode: " + node);
+        }
+    }
+
     public List<DTAnalysis> analyse(DMNModel model) {
         List<DTAnalysis> results = new ArrayList<>();
 
@@ -94,7 +356,16 @@ public class DMNDTAnalyser {
             if (expression instanceof DecisionTable) {
                 DecisionTable decisionTable = (DecisionTable) expression;
                 try {
+
+
+
                     DTAnalysis result = dmnDTAnalysis(model, dn, decisionTable);
+
+                    Set<Issue> issues = new DroolsVerifierDTValidator(FEEL).validateDT(model, dn, decisionTable);
+                    result.addIssues(issues);
+
+
+
                     results.add(result);
                 } catch (Throwable t) {
                     LOG.debug("Skipped dmnDTAnalysis for table: " + decisionTable.getId(), t);
@@ -323,266 +594,5 @@ public class DMNDTAnalyser {
             throw new IllegalStateException();
         }
         LOG.debug(".");
-    }
-
-    private static boolean canBeNewCurrIntervalForOverlaps(Bound<?> lastBound, Bound<?> currentBound) {
-        int vCompare = BoundValueComparator.compareValueDispatchingToInf(lastBound, currentBound);
-        if (vCompare != 0) {
-            return true;
-        } else {
-            if (lastBound.getBoundaryType() == RangeBoundary.CLOSED && currentBound.getBoundaryType() == RangeBoundary.CLOSED) {
-                return true; // by Bound order, if they have same value x, interested in only the case [x x]
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private static void findGaps(DTAnalysis analysis, DDTATable ddtaTable, int jColIdx, Interval[] currentIntervals, Collection<Integer> activeRules) {
-        LOG.debug("findGaps jColIdx {}, currentIntervals {}, activeRules {}", jColIdx, currentIntervals, activeRules);
-        if (jColIdx < ddtaTable.inputCols()) {
-            findBoundsSorted(ddtaTable, jColIdx, activeRules);
-            List<Bound> bounds = findBoundsSorted(ddtaTable, jColIdx, activeRules);
-            Interval domainRange = ddtaTable.getInputs().get(jColIdx).getDomainMinMax();
-
-            // from domain start to the 1st bound
-            if (!domainRange.getLowerBound().equals(bounds.get(0))) {
-                currentIntervals[jColIdx] = lastDimensionUncoveredInterval(domainRange.getLowerBound(), bounds.get(0), domainRange);
-                Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
-                analysis.addGap(gap);
-                LOG.debug("STARTLEFT GAP DETECTED {}", gap);
-            }
-            // cycle rule's interval bounds
-            List<Interval> activeIntervals = new ArrayList<>();
-            Bound<?> lastBound = null;
-            for (Bound<?> currentBound : bounds) {
-                LOG.debug("lastBound {} currentBound {}      activeIntervals {} == rules {}", lastBound, currentBound, activeIntervals, activeIntervalsToRules(activeIntervals));
-                if (activeIntervals.isEmpty() && lastBound != null && !Bound.adOrOver(lastBound, currentBound)) {
-                    currentIntervals[jColIdx] = lastDimensionUncoveredInterval(lastBound, currentBound, domainRange);
-                    Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
-                    LOG.debug("GAP DETECTED {}", gap);
-                    analysis.addGap(gap);
-                }
-                if (!activeIntervals.isEmpty() && canBeNewCurrInterval(lastBound, currentBound)) {
-                    Interval missingInterval = new Interval(lastBound.isUpperBound() ? invertBoundary(lastBound.getBoundaryType()) : lastBound.getBoundaryType(),
-                                                            lastBound.getValue(),
-                                                            currentBound.getValue(),
-                                                            currentBound.isLowerBound() ? invertBoundary(currentBound.getBoundaryType()) : currentBound.getBoundaryType(),
-                                                            0, 0);
-                    currentIntervals[jColIdx] = missingInterval;
-                    findGaps(analysis, ddtaTable, jColIdx + 1, currentIntervals, activeIntervalsToRules(activeIntervals));
-                }
-                if (currentBound.isLowerBound()) {
-                    activeIntervals.add(currentBound.getParent());
-                } else {
-                    activeIntervals.remove(currentBound.getParent());
-                }
-                lastBound = currentBound;
-            }
-            // from last Nth bound, to domain end.
-            if (!lastBound.equals(domainRange.getUpperBound())) {
-                currentIntervals[jColIdx] = lastDimensionUncoveredInterval(lastBound, domainRange.getUpperBound(), domainRange);
-                Hyperrectangle gap = new Hyperrectangle(ddtaTable.inputCols(), buildEdgesForHyperrectangleFromIntervals(currentIntervals, jColIdx));
-                LOG.debug("ENDRIGHT GAP DETECTED {}", gap);
-                analysis.addGap(gap);
-            }
-            currentIntervals[jColIdx] = null; // facilitate debugging.
-        }
-        LOG.debug(".");
-    }
-
-    private static List<Bound> findBoundsSorted(DDTATable ddtaTable, int jColIdx, Collection<Integer> activeRules) {
-        List<Interval> intervals = ddtaTable.projectOnColumnIdx(jColIdx);
-        if (!activeRules.isEmpty()) {
-            intervals = intervals.stream().filter(i -> activeRules.contains(i.getRule())).collect(Collectors.toList());
-        }
-        LOG.debug("intervals {}", intervals);
-        List<Bound> bounds = intervals.stream().flatMap(i -> Stream.of(i.getLowerBound(), i.getUpperBound())).collect(Collectors.toList());
-        Collections.sort(bounds);
-        LOG.debug("bounds (sorted) {}", bounds);
-        return bounds;
-    }
-
-    private static List<Interval> buildEdgesForHyperrectangleFromIntervals(Interval[] currentIntervals, int intervalsIndex) {
-        List<Interval> edges = new ArrayList<>();
-        for (int p = 0; p <= intervalsIndex; p++) {
-            edges.add(currentIntervals[p]);
-        }
-        return edges;
-    }
-
-    private static Collection<Integer> activeIntervalsToRules(List<Interval> activeIntervals) {
-        return activeIntervals.stream().map(Interval::getRule).collect(Collectors.toList());
-    }
-
-    /**
-     * Avoid a situation to "open" a new currentInterval for pair of same-side equals bounds like: x], x]
-     */
-    private static boolean canBeNewCurrInterval(Bound<?> lastBound, Bound<?> currentBound) {
-        int vCompare = BoundValueComparator.compareValueDispatchingToInf(lastBound, currentBound);
-        if (vCompare != 0) {
-            return true;
-        } else {
-            if (lastBound.isLowerBound() && currentBound.isUpperBound()) {
-                return true;
-            } else if (lastBound.isUpperBound() && lastBound.getBoundaryType() == RangeBoundary.OPEN 
-                && currentBound.isLowerBound() && currentBound.getBoundaryType() == RangeBoundary.OPEN) {
-                return true; // the case x) (x
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private static Interval lastDimensionUncoveredInterval(Bound<?> l, Bound<?> r, Interval domain) {
-        boolean isLmin = l.isLowerBound() && l.equals(domain.getLowerBound());
-        boolean isRmax = r.isUpperBound() && r.equals(domain.getUpperBound());
-        return new Interval(isLmin ? domain.getLowerBound().getBoundaryType() : invertBoundary(l.getBoundaryType()),
-                            l.getValue(),
-                            r.getValue(),
-                            isRmax ? domain.getUpperBound().getBoundaryType() : invertBoundary(r.getBoundaryType()),
-                            0, 0);
-    }
-
-    private static Range.RangeBoundary invertBoundary(Range.RangeBoundary b) {
-        if (b == RangeBoundary.OPEN) {
-            return RangeBoundary.CLOSED;
-        } else if (b == RangeBoundary.CLOSED) {
-            return RangeBoundary.OPEN;
-        } else {
-            throw new IllegalStateException("invertBoundary for: " + b);
-        }
-    }
-
-    private static List<Interval> toIntervals(List<BaseNode> elements, Interval minMax, List discreteValues, int rule, int col) {
-        List<Interval> results = new ArrayList<>();
-        if (discreteValues != null && !discreteValues.isEmpty() && areAllEQUnaryTest(elements) && elements.size() > 1) {
-            BitSet hitValues = new BitSet(discreteValues.size());
-            for (BaseNode n : elements) {
-                Comparable<?> thisValue = valueFromNode(((UnaryTestNode) n).getValue());
-                int indexOf = discreteValues.indexOf(thisValue);
-                if (indexOf < 0) {
-                    throw new IllegalStateException("Unable to determine discreteValue index for: " + n);
-                }
-                hitValues.set(indexOf);
-            }
-            int lowerBoundIdx = -1;
-            int upperBoundIdx = -1;
-            for (int i = 0; i < hitValues.length(); i++) {
-                boolean curValue = hitValues.get(i);
-                if (curValue) {
-                    if (lowerBoundIdx < 0) {
-                        lowerBoundIdx = i;
-                        upperBoundIdx = i;
-                    } else {
-                        upperBoundIdx = i;
-                    }
-                } else {
-                    if (lowerBoundIdx >= 0 && upperBoundIdx >=0) {
-                        results.add(createIntervalOfRule(discreteValues, rule, col, lowerBoundIdx, upperBoundIdx));
-                    }
-                }
-            }
-            if (lowerBoundIdx >= 0 && upperBoundIdx >= 0) {
-                results.add(createIntervalOfRule(discreteValues, rule, col, lowerBoundIdx, upperBoundIdx));
-            }
-        } else {
-            for (BaseNode n : elements) {
-                if (n instanceof DashNode) {
-                    results.add(new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col));
-                    continue;
-                }
-                UnaryTestNode ut = (UnaryTestNode) n;
-                results.add(utnToInterval(ut, minMax, discreteValues, rule, col));
-            }
-        }
-        return results;
-    }
-
-    private static Interval createIntervalOfRule(List discreteValues, int rule, int col, int lowerBoundIdx, int upperBoundIdx) {
-        Comparable<?> lowValue = (Comparable<?>) discreteValues.get(lowerBoundIdx);
-        Comparable<?> highValue = (Comparable<?>) discreteValues.get(upperBoundIdx);
-        if (upperBoundIdx + 1 == discreteValues.size()) {
-            return new Interval(RangeBoundary.CLOSED, lowValue, highValue, RangeBoundary.CLOSED, rule, col);
-        } else {
-            return new Interval(RangeBoundary.CLOSED, lowValue, (Comparable<?>) discreteValues.get(upperBoundIdx + 1), RangeBoundary.OPEN, rule, col);
-        }
-    }
-
-    private static boolean areAllEQUnaryTest(List<BaseNode> elements) {
-        try {
-            boolean result = true;
-            for (BaseNode n : elements) {
-                result = result && ((UnaryTestNode) n).getOperator() == UnaryOperator.EQ;
-            }
-            return result;
-        } catch (Throwable e) {
-            return false;    
-        }
-    }
-
-    private static Interval utnToInterval(UnaryTestNode ut, Interval minMax, List discreteValues, int rule, int col) {
-        if (ut.getOperator() == UnaryOperator.EQ) {
-            if (discreteValues == null || discreteValues.isEmpty()) {
-                return new Interval(RangeBoundary.CLOSED, valueFromNode(ut.getValue()), valueFromNode(ut.getValue()), RangeBoundary.CLOSED, rule, col);
-            } else {
-                Comparable<?> thisValue = valueFromNode(ut.getValue());
-                int indexOf = discreteValues.indexOf(thisValue);
-                if (indexOf < 0) {
-                    throw new IllegalStateException("Unable to determine discreteValue index for: " + ut);
-                }
-                if (indexOf + 1 == discreteValues.size()) {
-                    return new Interval(RangeBoundary.CLOSED, thisValue, thisValue, RangeBoundary.CLOSED, rule, col);
-                }
-                return new Interval(RangeBoundary.CLOSED, thisValue, (Comparable<?>) discreteValues.get(indexOf + 1), RangeBoundary.OPEN, rule, col);
-            }
-        } else if (ut.getOperator() == UnaryOperator.LTE) {
-            return new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), valueFromNode(ut.getValue()), RangeBoundary.CLOSED, rule, col);
-        } else if (ut.getOperator() == UnaryOperator.LT) {
-            return new Interval(minMax.getLowerBound().getBoundaryType(), minMax.getLowerBound().getValue(), valueFromNode(ut.getValue()), RangeBoundary.OPEN, rule, col);
-        } else if (ut.getOperator() == UnaryOperator.GT) {
-            return new Interval(RangeBoundary.OPEN, valueFromNode(ut.getValue()), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col);
-        } else if (ut.getOperator() == UnaryOperator.GTE) {
-            return new Interval(RangeBoundary.CLOSED, valueFromNode(ut.getValue()), minMax.getUpperBound().getValue(), minMax.getUpperBound().getBoundaryType(), rule, col);
-        } else if (ut.getValue() instanceof RangeNode) {
-            RangeNode rangeNode = (RangeNode) ut.getValue();
-            return new Interval(rangeNode.getLowerBound() == IntervalBoundary.OPEN ? RangeBoundary.OPEN : RangeBoundary.CLOSED,
-                                valueFromNode(rangeNode.getStart()),
-                                valueFromNode(rangeNode.getEnd()),
-                                rangeNode.getUpperBound() == IntervalBoundary.OPEN ? RangeBoundary.OPEN : RangeBoundary.CLOSED,
-                                rule,
-                                col);
-        } else {
-            throw new UnsupportedOperationException("UnaryTest type: " + ut);
-        }
-    }
-
-    private static Comparable<?> valueFromNode(BaseNode node) {
-        if (node instanceof NumberNode) {
-            NumberNode numberNode = (NumberNode) node;
-            return numberNode.getValue(); 
-        } else if (node instanceof BooleanNode) {
-            BooleanNode booleanNode = (BooleanNode) node;
-            return booleanNode.getValue();
-        } else if (node instanceof StringNode) {
-            StringNode stringNode = (StringNode) node;
-            return EvalHelper.unescapeString(stringNode.getText());
-        } else if (node instanceof SignedUnaryNode) {
-            SignedUnaryNode signedUnaryNode = (SignedUnaryNode) node;
-            BaseNode signedExpr = signedUnaryNode.getExpression();
-            if (signedExpr instanceof NumberNode) {
-                BigDecimal valueFromNode = (BigDecimal) valueFromNode(signedExpr);
-                if (signedUnaryNode.getSign() == Sign.NEGATIVE) {
-                    return BigDecimal.valueOf(-1).multiply(valueFromNode);
-                } else {
-                    return valueFromNode;
-                }
-
-            } else {
-                throw new UnsupportedOperationException("valueFromNode: " + node);
-            }
-        } else {
-            throw new UnsupportedOperationException("valueFromNode: " + node);
-        }
     }
 }
