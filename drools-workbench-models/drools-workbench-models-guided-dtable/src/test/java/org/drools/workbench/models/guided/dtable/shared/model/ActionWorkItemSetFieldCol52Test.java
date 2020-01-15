@@ -28,7 +28,6 @@ import static org.drools.workbench.models.guided.dtable.shared.model.DTColumnCon
 import static org.drools.workbench.models.guided.dtable.shared.model.DTColumnConfig52.FIELD_HEADER;
 import static org.drools.workbench.models.guided.dtable.shared.model.DTColumnConfig52.FIELD_HIDE_COLUMN;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
@@ -73,7 +72,6 @@ public class ActionWorkItemSetFieldCol52Test extends ColumnTestBase {
     @Test
     public void testDiffEmpty() {
         checkDiffEmpty(column1, column2);
-        assertEquals(column1, column2);
     }
 
     @Test
@@ -82,7 +80,6 @@ public class ActionWorkItemSetFieldCol52Test extends ColumnTestBase {
         column2.setWorkItemName("WID2");
 
         checkSingleDiff(FIELD_WORK_ITEM_NAME, "WID1", "WID2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -91,7 +88,6 @@ public class ActionWorkItemSetFieldCol52Test extends ColumnTestBase {
         column2.setWorkItemResultParameterName("param2");
 
         checkSingleDiff(FIELD_WORK_ITEM_RESULT_PARAM_NAME, "param1", "param2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -100,7 +96,6 @@ public class ActionWorkItemSetFieldCol52Test extends ColumnTestBase {
         column2.setParameterClassName("Type2");
 
         checkSingleDiff(FIELD_PARAMETER_CLASSNAME, "Type1", "Type2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -165,6 +160,5 @@ public class ActionWorkItemSetFieldCol52Test extends ColumnTestBase {
         assertEquals(FIELD_PARAMETER_CLASSNAME, diff.get(10).getFieldName());
         assertEquals("Type1", diff.get(10).getOldValue());
         assertEquals("Type2", diff.get(10).getValue());
-        assertNotEquals(column1, column2);
     }
 }

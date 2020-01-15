@@ -17,22 +17,6 @@ package org.drools.workbench.models.guided.dtable.shared.model;
 
 public class ActionCol52 extends DTColumnConfig52 {
 
-    private static final long serialVersionUID = 729l;
+    private static final long serialVersionUID = 501l;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ActionCol52)) {
-            return false;
-        }
-
-        return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
 }

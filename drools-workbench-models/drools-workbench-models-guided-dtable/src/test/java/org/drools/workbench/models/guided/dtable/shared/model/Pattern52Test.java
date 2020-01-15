@@ -22,7 +22,6 @@ import static org.drools.workbench.models.guided.dtable.shared.model.Pattern52.F
 import static org.drools.workbench.models.guided.dtable.shared.model.Pattern52.FIELD_IS_NEGATED;
 import static org.drools.workbench.models.guided.dtable.shared.model.Pattern52.FIELD_WINDOW;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
@@ -55,7 +54,6 @@ public class Pattern52Test extends ColumnTestBase {
 
     @Test
     public void testDiffEmpty() {
-        assertEquals(column1, column2);
         checkDiffEmpty(column1, column2);
     }
 
@@ -65,7 +63,6 @@ public class Pattern52Test extends ColumnTestBase {
         column2.setFactType("Fact2");
 
         checkSingleDiff(FIELD_FACT_TYPE, "Fact1", "Fact2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -74,7 +71,6 @@ public class Pattern52Test extends ColumnTestBase {
         column2.setBoundName("$var2");
 
         checkSingleDiff(FIELD_BOUND_NAME, "$var1", "$var2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -83,7 +79,6 @@ public class Pattern52Test extends ColumnTestBase {
         column2.setNegated(true);
 
         checkSingleDiff(FIELD_IS_NEGATED, false, true, column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -97,7 +92,6 @@ public class Pattern52Test extends ColumnTestBase {
         column2.setWindow(window2);
 
         checkSingleDiff(FIELD_WINDOW, window1, window2, column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -106,7 +100,6 @@ public class Pattern52Test extends ColumnTestBase {
         column2.setEntryPointName("entryPoint2");
 
         checkSingleDiff(FIELD_ENTRY_POINT_NAME, "entryPoint1", "entryPoint2", column1, column2);
-        assertNotEquals(column1, column2);
     }
 
     @Test
@@ -156,6 +149,5 @@ public class Pattern52Test extends ColumnTestBase {
         assertEquals(column1.getWindow(), clone.getWindow());
         assertEquals(column1.getEntryPointName(), clone.getEntryPointName());
         assertEquals(column1.isNegated(), clone.isNegated());
-        assertEquals(column1, clone);
     }
 }
