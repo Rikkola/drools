@@ -215,6 +215,7 @@ public class GuidedDecisionTableGraphEditorPresenter extends BaseGuidedDecisionT
         this.searchBarComponent = searchBarComponent;
         this.searchableElementFactory = searchableElementFactory;
         this.searchPerformedEvent = searchPerformedEvent;
+        modeller.analysisReportScreen(analysisReportScreen);
     }
 
     @PostConstruct
