@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.drools.verifier.api.reporting.Issue;
 import org.kie.dmn.api.core.DMNMessage;
 import org.kie.dmn.api.core.DMNMessage.Severity;
 import org.kie.dmn.core.util.Msg;
@@ -39,6 +40,7 @@ import org.kie.dmn.model.api.HitPolicy;
 import org.kie.dmn.model.api.InputClause;
 import org.kie.dmn.model.api.LiteralExpression;
 import org.kie.dmn.model.api.NamedElement;
+import org.kie.dmn.validation.dtanalysis.AnalysisMsgConverter;
 import org.kie.dmn.validation.dtanalysis.DMNDTAnalysisMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -353,8 +355,12 @@ public class DTAnalysis {
         return isOtherRuleWider;
     }
 
-    public void addIssues(Set<DMNDTAnalysisMessage> issues) {
-        this.issues = issues;
+    public void addIssues(final Set<Issue> issues) {
+
+        Set<DMNDTAnalysisMessage> convert = new AnalysisMsgConverter(sourceDT,
+                                                                     ddtaTable,
+                                                                     this).convert(issues);
+        this.issues = convert;
     }
 
     public class ComparingRulesWithMultipleInputEntries extends Exception {

@@ -15,6 +15,7 @@
  */
 package org.kie.dmn.validation.dtanalysis;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class AnalysisMsgConverterTest {
     public void uniqueOverlap() {
         issues.add(new OverlappingIssue(Severity.WARNING,
                                         CheckType.OVERLAPPING_ROWS,
-                                        "",
+                                        new ArrayList<>(), // TODO fill this with something?
                                         true,
                                         new HashMap<>(),
                                         getRowNumbers(1, 2)));
@@ -71,7 +72,7 @@ public class AnalysisMsgConverterTest {
     public void needsAtLeastTwoRowNumbers() {
         issues.add(new OverlappingIssue(Severity.WARNING,
                                         CheckType.OVERLAPPING_ROWS,
-                                        "",
+                                        new ArrayList<>(), // TODO fill this with something?
                                         true,
                                         new HashMap<>(),
                                         Collections.emptySet()));

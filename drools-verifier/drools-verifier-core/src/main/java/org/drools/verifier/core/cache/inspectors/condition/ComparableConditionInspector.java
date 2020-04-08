@@ -16,9 +16,12 @@
 
 package org.drools.verifier.core.cache.inspectors.condition;
 
+import org.drools.verifier.api.reporting.model.Bound;
+import org.drools.verifier.api.reporting.model.Interval;
+import org.drools.verifier.api.reporting.model.Range;
 import org.drools.verifier.core.configuration.AnalyzerConfiguration;
-import org.drools.verifier.core.index.model.meta.ConditionParent;
 import org.drools.verifier.core.index.model.FieldCondition;
+import org.drools.verifier.core.index.model.meta.ConditionParent;
 import org.drools.verifier.core.relations.IsConflicting;
 import org.drools.verifier.core.relations.Operator;
 
@@ -288,5 +291,46 @@ public class ComparableConditionInspector<T extends Comparable<T>>
         stringBuilder.append(getValue());
 
         return stringBuilder.toString();
+    }
+
+    // TODO Test
+    public Interval getInterval() {
+        switch (operator) {
+            case LESS_OR_EQUAL:
+                return Interval.newFromBounds(new Bound(Interval.NEG_INF,
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null),
+                                              new Bound(getValue(),
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null));
+            case LESS_THAN:
+                return Interval.newFromBounds(new Bound(Interval.NEG_INF,
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null),
+                                              new Bound(getValue(),
+                                                        Range.RangeBoundary.OPEN,
+                                                        null));
+            case GREATER_OR_EQUAL:
+                return Interval.newFromBounds(new Bound(getValue(),
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null),
+                                              new Bound(Interval.POS_INF,
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null));
+            case GREATER_THAN:
+                return Interval.newFromBounds(new Bound(getValue(),
+                                                        Range.RangeBoundary.OPEN,
+                                                        null),
+                                              new Bound(Interval.POS_INF,
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null));
+            default:
+                return Interval.newFromBounds(new Bound(getValue(),
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null),
+                                              new Bound(getValue(),
+                                                        Range.RangeBoundary.CLOSED,
+                                                        null));
+        }
     }
 }

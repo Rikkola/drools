@@ -15,14 +15,17 @@
  */
 package org.drools.verifier.api.reporting;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.drools.verifier.api.reporting.model.Interval;
+
 public class OverlappingIssue
         extends Issue {
 
-    private String conditionList;
+    private List<Interval> intervals;
     private boolean containsAnyValueField;
     private Map<Integer, String> rhsValues;
 
@@ -31,20 +34,20 @@ public class OverlappingIssue
 
     public OverlappingIssue(final Severity severity,
                             final CheckType checkType,
-                            final String conditionList,
+                            final List<Interval> intervals,
                             final boolean containsAnyValueField,
                             final Map<Integer, String> rhsValues,
                             final Set<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);
-        this.conditionList = conditionList;
+        this.intervals = intervals;
         this.containsAnyValueField = containsAnyValueField;
         this.rhsValues = rhsValues;
     }
 
-    public String getConditionList() {
-        return conditionList;
+    public List<Interval> getIntervals() {
+        return intervals;
     }
 
     public Map<Integer, String> getRhsValues() {
@@ -68,7 +71,7 @@ public class OverlappingIssue
         }
         OverlappingIssue that = (OverlappingIssue) o;
         return containsAnyValueField == that.containsAnyValueField &&
-                Objects.equals(conditionList, that.conditionList) &&
+                Objects.equals(intervals, that.intervals) &&
                 Objects.equals(rhsValues, that.rhsValues);
     }
 
@@ -76,7 +79,7 @@ public class OverlappingIssue
     public int hashCode() {
         int result = ~~super.hashCode();
         result = 31 * result + (containsAnyValueField ? 1 : 0);
-        result = 31 * result + (conditionList != null ? ~~conditionList.hashCode() : 0);
+        result = 31 * result + (intervals != null ? ~~intervals.hashCode() : 0);
         result = 31 * result + (rhsValues != null ? ~~rhsValues.hashCode() : 0);
         return ~~result;
     }

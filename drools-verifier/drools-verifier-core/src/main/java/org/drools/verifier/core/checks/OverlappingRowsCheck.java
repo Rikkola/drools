@@ -16,6 +16,7 @@
 
 package org.drools.verifier.core.checks;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,9 +29,10 @@ import org.drools.verifier.api.reporting.CheckType;
 import org.drools.verifier.api.reporting.Issue;
 import org.drools.verifier.api.reporting.OverlappingIssue;
 import org.drools.verifier.api.reporting.Severity;
+import org.drools.verifier.api.reporting.model.Interval;
 import org.drools.verifier.core.cache.inspectors.RuleInspector;
 import org.drools.verifier.core.cache.inspectors.RuleInspectorDumper;
-import org.drools.verifier.core.cache.inspectors.condition.ConditionInspector;
+import org.drools.verifier.core.cache.inspectors.condition.ComparableConditionInspector;
 import org.drools.verifier.core.checks.base.PairCheck;
 import org.drools.verifier.core.configuration.AnalyzerConfiguration;
 import org.drools.verifier.core.index.Index;
@@ -76,12 +78,12 @@ public class OverlappingRowsCheck
     protected List<Issue> makeIssues(final Severity severity,
                                      final CheckType checkType) {
 
-        final String conditionList = getLongerConditionList();
+        final List<Interval> intervals = getLongerConditionList();
 
         final boolean containsAnyValueField = getContainsAnyValueCell();
         final OverlappingIssue issue = new OverlappingIssue(severity,
                                                             checkType,
-                                                            conditionList,
+                                                            intervals,
                                                             containsAnyValueField,
                                                             getRHSValues(),
                                                             new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1,
@@ -114,20 +116,29 @@ public class OverlappingRowsCheck
         return result;
     }
 
-    private String getLongerConditionList() {
-        final String otherList = other.getConditionsInspectors()
-                .stream().flatMap(x -> x.allValues().stream())
-                .map(ConditionInspector::toHumanReadableString)
-                .collect(Collectors.joining(", "));
-        final String ruleInspectorList = ruleInspector.getConditionsInspectors()
-                .stream().flatMap(x -> x.allValues().stream())
-                .map(ConditionInspector::toHumanReadableString)
-                .collect(Collectors.joining(", "));
+    private List<Interval> getLongerConditionList() {
 
-        if (ruleInspectorList.length() > otherList.length()) {
-            return ruleInspectorList;
+        final List<Interval> intervalsOther = getIntervals(other);
+        final List<Interval> intervals = getIntervals(ruleInspector);
+
+        if (intervals.size() > intervalsOther.size()) {
+            return intervals;
         } else {
-            return otherList;
+            return intervalsOther;
         }
+    }
+
+    private List<Interval> getIntervals(final RuleInspector other) {
+        final List<Interval> intervals = new ArrayList<Interval>();
+
+        for (Object o : other.getConditionsInspectors()
+                .stream().flatMap(x -> x.allValues().stream())
+                .collect(Collectors.toList())) {
+            if (o instanceof ComparableConditionInspector) {
+                intervals.add(((ComparableConditionInspector) o).getInterval());
+            }
+        }
+
+        return intervals;
     }
 }

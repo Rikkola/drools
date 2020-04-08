@@ -75,7 +75,7 @@ public class DroolsVerifierDTValidator {
         return checkConfiguration;
     }
 
-    public Set<DMNDTAnalysisMessage> validateDT(final DecisionTable dt) {
+    public Set<Issue> validateDT(final DecisionTable dt) {
         final Index index = new IndexImpl(analyzerConfiguration);
 
         final ResolverProvider resolverProvider = new ResolverProvider(dt,
@@ -129,9 +129,7 @@ public class DroolsVerifierDTValidator {
 
         analyzer.analyze();
 
-        return new AnalysisMsgConverter(dt,
-                                        ddtaTable,
-                                        analysis).convert(result);
+        return result;
     }
 
     private Reporter makeReporter() {

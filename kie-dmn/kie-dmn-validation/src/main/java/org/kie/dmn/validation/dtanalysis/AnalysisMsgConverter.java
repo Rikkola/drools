@@ -78,12 +78,7 @@ public class AnalysisMsgConverter {
                 overlapAsUniqueMessage(issue);
                 break;
             case ANY:
-                result.add(new DMNDTAnalysisMessage(analysis,
-                                                    DMNMessage.Severity.ERROR,
-                                                    MsgUtil.createMessage(Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY,
-                                                                          formatOverlapMessage(issue)),
-                                                    Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY.getType(),
-                                                    issue.getRowNumbers()));
+                overlapsMessageAny(issue);
                 break;
             case PRIORITY:
 
@@ -226,7 +221,22 @@ public class AnalysisMsgConverter {
     }
 
     private String formatOverlapMessage(final OverlappingIssue issue) {
-        return "Overlap values: " + issue.getConditionList() + " for rules: " + issue.getRowNumbers();
+        return "Overlap values: " + issue.getIntervals() + " for rules: " + issue.getRowNumbers();
+    }
+
+    private void overlapsMessageAny(final OverlappingIssue issue) {
+
+        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
+            return;
+        }
+        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
+
+        result.add(new DMNDTAnalysisMessage(analysis,
+                                            DMNMessage.Severity.ERROR,
+                                            MsgUtil.createMessage(Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY,
+                                                                  formatOverlapMessage(issue)),
+                                            Msg.DTANALYSIS_OVERLAP_HITPOLICY_ANY.getType(),
+                                            issue.getRowNumbers()));
     }
 
     private void overlapAsUniqueMessage(final OverlappingIssue issue) {
