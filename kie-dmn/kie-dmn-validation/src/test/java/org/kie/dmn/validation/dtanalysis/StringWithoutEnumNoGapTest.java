@@ -19,6 +19,7 @@ package org.kie.dmn.validation.dtanalysis;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.kie.dmn.api.core.DMNMessage;
@@ -28,17 +29,15 @@ import org.kie.dmn.validation.dtanalysis.model.Bound;
 import org.kie.dmn.validation.dtanalysis.model.DTAnalysis;
 import org.kie.dmn.validation.dtanalysis.model.Hyperrectangle;
 import org.kie.dmn.validation.dtanalysis.model.Interval;
-import org.kie.dmn.validation.dtanalysis.model.MaskedRule;
-import org.kie.dmn.validation.dtanalysis.model.MisleadingRule;
 import org.kie.dmn.validation.dtanalysis.model.Overlap;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_MODEL;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collect;
 import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class StringWithoutEnumNoGapTest extends AbstractDTAnalysisTest {
@@ -48,11 +47,10 @@ public class StringWithoutEnumNoGapTest extends AbstractDTAnalysisTest {
         List<DMNMessage> validate = validator.validate(getReader("stringWithoutEnumNoGap.dmn"), VALIDATE_COMPILATION, VALIDATE_MODEL, ANALYZE_DECISION_TABLE);
         assertThat(validate, hasSize(7)); // no gap, 2 overlaps, 2 masked, 2 misleading.
         debugValidatorMsg(validate);
-        
+
         DTAnalysis analysis = getAnalysis(validate, "_8b48d1c9-265c-47aa-9378-7f11d55dfe55");
 
         assertThat(analysis.getGaps(), hasSize(0));
-
 
         // assert OVERLAPs count.
         assertThat(collectOverlaps(analysis), hasSize(2));
@@ -94,21 +92,21 @@ public class StringWithoutEnumNoGapTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getOverlaps(), contains(overlaps.toArray()));
 
         // MaskedRules count.
-//        assertThat(analysis.getMaskedRules(), hasSize(2));
-//        List<MaskedRule> maskedRules = Arrays.asList(new MaskedRule(1, 3),
-//                                                     new MaskedRule(2, 3));
-//        assertThat(maskedRules, hasSize(2));
-//        assertThat(analysis.getMaskedRules(), contains(maskedRules.toArray()));
-//        assertTrue("It should contain DMNMessage for the MaskedRule",
-//                   validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MASKED_RULE)));
-//
-//        // MisleadingRules count.
-//        assertThat(analysis.getMisleadingRules(), hasSize(2));
-//        List<MisleadingRule> misleadingRules = Arrays.asList(new MisleadingRule(3, 1),
-//                                                             new MisleadingRule(3, 2));
-//        assertThat(misleadingRules, hasSize(2));
-//        assertThat(analysis.getMisleadingRules(), contains(misleadingRules.toArray()));
-//        assertTrue("It should contain DMNMessage for the MisleadingRule",
-//                   validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MISLEADING_RULE)));
+        List<String> foundMaskedRules = collect(DMNMessageType.DECISION_TABLE_MASKED_RULE, analysis).stream().map(x -> x.getText()).collect(Collectors.toList());
+        assertThat(foundMaskedRules, hasSize(2));
+        List<String> maskedRules = Arrays.asList(
+                "DMN: Rule 3 is masked by rule: 1 (DMN id: _8b48d1c9-265c-47aa-9378-7f11d55dfe55, DMN Validation, Decision Table Analysis, Masked Rule Analysis) ",
+                "DMN: Rule 3 is masked by rule: 2 (DMN id: _8b48d1c9-265c-47aa-9378-7f11d55dfe55, DMN Validation, Decision Table Analysis, Masked Rule Analysis) "
+        );
+        assertThat(foundMaskedRules, contains(maskedRules.toArray()));
+        // MisleadingRules count.
+        List<DMNMessage> collect = collect(DMNMessageType.DECISION_TABLE_MISLEADING_RULE, analysis);
+        List<String> foundMisleadingRules = collect.stream().map(x -> x.getText()).collect(Collectors.toList());
+        assertThat(foundMisleadingRules, hasSize(2));
+        List<String> misleadingRules = Arrays.asList(
+                "DMN: Rule 3 is a misleading rule. It could be misleading over other rules, such as rule: 2 (DMN id: _8b48d1c9-265c-47aa-9378-7f11d55dfe55, DMN Validation, Decision Table Analysis, Misleading Rule Analysis) ",
+                "DMN: Rule 3 is a misleading rule. It could be misleading over other rules, such as rule: 1 (DMN id: _8b48d1c9-265c-47aa-9378-7f11d55dfe55, DMN Validation, Decision Table Analysis, Misleading Rule Analysis) "
+        );
+        assertThat(foundMisleadingRules, contains(misleadingRules.toArray()));
     }
 }

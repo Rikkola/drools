@@ -19,6 +19,7 @@ package org.kie.dmn.validation.dtanalysis;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.kie.dmn.api.core.DMNMessage;
@@ -28,7 +29,6 @@ import org.kie.dmn.validation.dtanalysis.model.Bound;
 import org.kie.dmn.validation.dtanalysis.model.DTAnalysis;
 import org.kie.dmn.validation.dtanalysis.model.Hyperrectangle;
 import org.kie.dmn.validation.dtanalysis.model.Interval;
-import org.kie.dmn.validation.dtanalysis.model.MaskedRule;
 import org.kie.dmn.validation.dtanalysis.model.Overlap;
 
 import static org.hamcrest.Matchers.contains;
@@ -38,6 +38,7 @@ import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_MODEL;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collect;
 import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class SameMsgInAllAPITest extends AbstractDTAnalysisTest {
@@ -115,12 +116,9 @@ public class SameMsgInAllAPITest extends AbstractDTAnalysisTest {
         assertThat(analysis.getOverlaps(), contains(overlaps.toArray()));
 
         // MaskedRules count.
-//        assertThat(analysis.getMaskedRules(), hasSize(2));
-//        List<MaskedRule> maskedRules = Arrays.asList(new MaskedRule(2, 1),
-//                                                     new MaskedRule(4, 3));
-//        assertThat(maskedRules, hasSize(2));
-//        assertThat(analysis.getMaskedRules(), contains(maskedRules.toArray()));
-//        assertTrue("It should contain DMNMessage for the MaskedRule",
-//                   validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MASKED_RULE)));
+        List<String> foundMaskedRules = collect(DMNMessageType.DECISION_TABLE_MASKED_RULE, analysis).stream().map(x -> x.getText()).collect(Collectors.toList());
+        assertThat(foundMaskedRules, hasSize(2));
+        assertTrue(foundMaskedRules.stream().anyMatch(s -> s.startsWith("DMN: Rule 2 is masked by rule: 1")));
+        assertTrue(foundMaskedRules.stream().anyMatch(s -> s.startsWith("DMN: Rule 4 is masked by rule: 3")));
     }
 }

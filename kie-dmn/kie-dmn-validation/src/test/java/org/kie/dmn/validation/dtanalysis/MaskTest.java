@@ -19,6 +19,7 @@ package org.kie.dmn.validation.dtanalysis;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.kie.dmn.api.core.DMNMessage;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.kie.dmn.validation.DMNValidator.Validation.ANALYZE_DECISION_TABLE;
 import static org.kie.dmn.validation.DMNValidator.Validation.VALIDATE_COMPILATION;
+import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collect;
 import static org.kie.dmn.validation.dtanalysis.utils.IssueCounter.collectOverlaps;
 
 public class MaskTest extends AbstractDTAnalysisTest {
@@ -62,13 +64,13 @@ public class MaskTest extends AbstractDTAnalysisTest {
         // Assert OVERLAPs same values
         assertThat(analysis.getOverlaps(), contains(overlaps.toArray()));
 
-//        // MaskedRules count.
-//        assertThat(analysis.getMaskedRules(), hasSize(1));
-//        List<MaskedRule> maskedRules = Arrays.asList(new MaskedRule(1, 2));
-//        assertThat(maskedRules, hasSize(1));
-//        assertThat(analysis.getMaskedRules(), contains(maskedRules.toArray()));
-//        assertTrue("It should contain at least 1 DMNMessage for the MaskedRule",
-//                   validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MASKED_RULE)));
+        // MaskedRules count.
+        List<String> foundMaskedRules = collect(DMNMessageType.DECISION_TABLE_MASKED_RULE, analysis).stream().map(x -> x.getText()).collect(Collectors.toList());
+        assertThat(foundMaskedRules, hasSize(1));
+        List<String> maskedRules = Arrays.asList(
+                "DMN: Rule 2 is masked by rule: 1 (DMN id: _BA703D04-803A-44AA-8A31-F5EEDD4FD54E, DMN Validation, Decision Table Analysis, Masked Rule Analysis) "
+        );
+        assertThat(foundMaskedRules, contains(maskedRules.toArray()));
     }
 
     @Test
@@ -105,12 +107,12 @@ public class MaskTest extends AbstractDTAnalysisTest {
         assertThat(analysis.getOverlaps(), contains(overlaps.toArray()));
 
         // MaskedRules count.
-//        assertThat(analysis.getMaskedRules(), hasSize(1));
-//        List<MaskedRule> maskedRules = Arrays.asList(new MaskedRule(1, 2));
-//        assertThat(maskedRules, hasSize(1));
-//        assertThat(analysis.getMaskedRules(), contains(maskedRules.toArray()));
-//        assertTrue("It should contain at least 1 DMNMessage for the MaskedRule",
-//                   validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DECISION_TABLE_MASKED_RULE)));
+        List<String> foundMaskedRules = collect(DMNMessageType.DECISION_TABLE_MASKED_RULE, analysis).stream().map(x -> x.getText()).collect(Collectors.toList());
+        assertThat(foundMaskedRules, hasSize(1));
+        List<String> maskedRules = Arrays.asList(
+                "DMN: Rule 2 is masked by rule: 1 (DMN id: _BA703D04-803A-44AA-8A31-F5EEDD4FD54E, DMN Validation, Decision Table Analysis, Masked Rule Analysis) "
+        );
+        assertThat(foundMaskedRules, contains(maskedRules.toArray()));
     }
 
 }
