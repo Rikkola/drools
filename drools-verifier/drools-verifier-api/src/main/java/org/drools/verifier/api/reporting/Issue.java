@@ -16,26 +16,27 @@
 
 package org.drools.verifier.api.reporting;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class Issue {
 
     public static final Issue EMPTY = new Issue();
 
     private Severity severity;
-    private Set<Integer> rowNumbers;
+    private List<Integer> rowNumbers;
     private CheckType checkType;
     private String debugMessage;
 
     public Issue() {
         severity = null;
-        rowNumbers = new HashSet<>();
+        rowNumbers = new ArrayList<Integer>();
     }
 
     public Issue(final Severity severity,
                  final CheckType checkType,
-                 final Set<Integer> rowNumbers) {
+                 final List<Integer> rowNumbers) {
         this.severity = severity;
         this.checkType = checkType;
         this.rowNumbers = rowNumbers;
@@ -45,7 +46,7 @@ public class Issue {
         return severity;
     }
 
-    public Set<Integer> getRowNumbers() {
+    public List<Integer> getRowNumbers() {
         return rowNumbers;
     }
 
@@ -70,8 +71,8 @@ public class Issue {
         this.severity = severity;
     }
 
-    public void setRowNumbers(final Set<Integer> rowNumbers) {
-        this.rowNumbers = rowNumbers;
+    public void setRowNumbers(final Collection<Integer> rowNumbers) {
+        this.rowNumbers = new ArrayList<Integer>(rowNumbers);
     }
 
     @Override

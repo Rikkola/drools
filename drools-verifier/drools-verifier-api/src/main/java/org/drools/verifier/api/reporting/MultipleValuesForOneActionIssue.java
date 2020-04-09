@@ -16,7 +16,7 @@
 
 package org.drools.verifier.api.reporting;
 
-import java.util.Set;
+import java.util.List;
 
 public class MultipleValuesForOneActionIssue
         extends Issue {
@@ -31,7 +31,7 @@ public class MultipleValuesForOneActionIssue
                                            final CheckType checkType,
                                            final String conflictedItem,
                                            final String conflictingItem,
-                                           final Set<Integer> rowNumbers) {
+                                           final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);

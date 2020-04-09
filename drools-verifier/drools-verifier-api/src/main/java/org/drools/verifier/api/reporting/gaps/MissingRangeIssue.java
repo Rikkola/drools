@@ -18,7 +18,6 @@ package org.drools.verifier.api.reporting.gaps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.drools.verifier.api.reporting.CheckType;
 import org.drools.verifier.api.reporting.Issue;
@@ -37,7 +36,7 @@ public class MissingRangeIssue
                              final CheckType checkType,
                              final List<PartitionCondition> partition,
                              final Collection<MissingRange> uncoveredRanges,
-                             final Set<Integer> rowNumbers) {
+                             final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);

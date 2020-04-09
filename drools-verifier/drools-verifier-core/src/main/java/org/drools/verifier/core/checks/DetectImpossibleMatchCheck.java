@@ -78,7 +78,7 @@ public class DetectImpossibleMatchCheck
                                                                           .getConflictedItem()),
                                             toHumanReadableString(conflict.getOrigin()
                                                                           .getConflictingItem()),
-                                            Collections.singleton(ruleInspector.getRowIndex() + 1)));
+                                            new ArrayList<Integer>(Collections.singleton(ruleInspector.getRowIndex() + 1))));
         return result;
     }
 

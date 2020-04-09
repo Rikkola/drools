@@ -15,6 +15,7 @@
  */
 package org.kie.dmn.validation.dtanalysis;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,18 +34,28 @@ import org.kie.dmn.api.core.DMNMessageType;
 import org.kie.dmn.core.util.Msg;
 import org.kie.dmn.core.util.MsgUtil;
 import org.kie.dmn.feel.lang.ast.DashNode;
+import org.kie.dmn.feel.runtime.Range;
 import org.kie.dmn.model.api.DecisionTable;
+import org.kie.dmn.validation.dtanalysis.model.Bound;
 import org.kie.dmn.validation.dtanalysis.model.DDTAInputEntry;
 import org.kie.dmn.validation.dtanalysis.model.DDTAOutputClause;
 import org.kie.dmn.validation.dtanalysis.model.DDTATable;
 import org.kie.dmn.validation.dtanalysis.model.DTAnalysis;
+import org.kie.dmn.validation.dtanalysis.model.Hyperrectangle;
 import org.kie.dmn.validation.dtanalysis.model.Interval;
+import org.kie.dmn.validation.dtanalysis.model.MaskedRule;
+import org.kie.dmn.validation.dtanalysis.model.MisleadingRule;
+import org.kie.dmn.validation.dtanalysis.model.Overlap;
 
 public class AnalysisMsgConverter {
 
     private final DecisionTable dt;
     private final DDTATable ddtaTable;
     private final DTAnalysis analysis;
+
+    private final List<Overlap> overlaps = new ArrayList<>();
+    private final List<MaskedRule> maskedRules = new ArrayList<>();
+    private final List<MisleadingRule> misleadingRules = new ArrayList<>();
 
     private final Map<Integer, Integer> existingOverlaps = new HashMap<>();
 
@@ -58,7 +69,7 @@ public class AnalysisMsgConverter {
         this.analysis = analysis;
     }
 
-    public Set<DMNDTAnalysisMessage> convert(final Set<Issue> issues) {
+    public ConversionMessage convert(final Set<Issue> issues) {
 
         for (final Issue issue : issues) {
             if (issue.getCheckType().equals(CheckType.OVERLAPPING_ROWS)) {
@@ -68,10 +79,22 @@ public class AnalysisMsgConverter {
             }
         }
 
-        return result;
+        Collections.reverse(overlaps); // Not sure why this needs to be reverted, but it does the trick.
+
+        return new ConversionMessage(result,
+                                     overlaps);
     }
 
     private void overlapAsMessage(final OverlappingIssue issue) {
+
+        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
+            return;
+        }
+        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
+
+        overlaps.add(new Overlap(issue.getRowNumbers(),
+                                 new Hyperrectangle(2,
+                                                    convert(issue))));
 
         switch (dt.getHitPolicy()) {
             case UNIQUE:
@@ -104,6 +127,35 @@ public class AnalysisMsgConverter {
             default:
                 overlapToStandardDMNMessage(issue);
                 break;
+        }
+    }
+
+    private List<Interval> convert(final OverlappingIssue issue) {
+        final ArrayList<Interval> result = new ArrayList<>();
+
+        for (org.drools.verifier.api.reporting.model.Interval interval : issue.getIntervals()) {
+            result.add(Interval.newFromBounds(convert(interval.getLowerBound()),
+                                              convert(interval.getUpperBound())));
+        }
+
+        Collections.reverse(result); // Not sure why this needs to be reverted, but it does the trick.
+
+        return result;
+    }
+
+    private Bound convert(org.drools.verifier.api.reporting.model.Bound verifierBound) {
+        return new Bound(verifierBound.getValue(),
+                         convert(verifierBound.getBoundaryType()),
+                         null); // Always null at least for now.
+    }
+
+    private Range.RangeBoundary convert(org.drools.verifier.api.reporting.model.Range.RangeBoundary boundaryType) {
+        switch (boundaryType) {
+            case OPEN:
+                return Range.RangeBoundary.OPEN;
+            case CLOSED:
+            default:
+                return Range.RangeBoundary.CLOSED;
         }
     }
 
@@ -202,7 +254,7 @@ public class AnalysisMsgConverter {
         return false;
     }
 
-    private Integer getHighest(final Set<Integer> numbers) {
+    private Integer getHighest(final List<Integer> numbers) {
         final Optional<Integer> max = numbers.stream().max(Comparator.comparing(Integer::intValue));
         if (max.isPresent()) {
             return max.get();
@@ -211,7 +263,7 @@ public class AnalysisMsgConverter {
         }
     }
 
-    private Integer getLowest(final Set<Integer> numbers) {
+    private Integer getLowest(final List<Integer> numbers) {
         final Optional<Integer> min = numbers.stream().min(Comparator.comparing(Integer::intValue));
         if (min.isPresent()) {
             return min.get();
@@ -226,10 +278,10 @@ public class AnalysisMsgConverter {
 
     private void overlapsMessageAny(final OverlappingIssue issue) {
 
-        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
-            return;
-        }
-        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
+//        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
+//            return;
+//        }
+//        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
 
         result.add(new DMNDTAnalysisMessage(analysis,
                                             DMNMessage.Severity.ERROR,
@@ -241,10 +293,10 @@ public class AnalysisMsgConverter {
 
     private void overlapAsUniqueMessage(final OverlappingIssue issue) {
 
-        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
-            return;
-        }
-        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
+//        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
+//            return;
+//        }
+//        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
 
         result.add(new DMNDTAnalysisMessage(analysis,
                                             DMNMessage.Severity.ERROR,
@@ -256,10 +308,10 @@ public class AnalysisMsgConverter {
 
     private void overlapToStandardDMNMessage(final OverlappingIssue issue) {
 
-        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
-            return;
-        }
-        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
+//        if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
+//            return;
+//        }
+//        existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
 
         result.add(new DMNDTAnalysisMessage(analysis,
                                             DMNMessage.Severity.INFO,

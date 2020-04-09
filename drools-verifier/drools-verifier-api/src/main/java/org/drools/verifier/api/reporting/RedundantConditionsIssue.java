@@ -15,7 +15,7 @@
  */
 package org.drools.verifier.api.reporting;
 
-import java.util.Set;
+import java.util.List;
 
 public class RedundantConditionsIssue
         extends Issue {
@@ -32,7 +32,7 @@ public class RedundantConditionsIssue
                                     final String name,
                                     final String firstItem,
                                     final String secondItem,
-                                    final Set<Integer> rowNumbers) {
+                                    final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);

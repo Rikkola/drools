@@ -16,7 +16,6 @@
 package org.drools.verifier.core.checks.gaps;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -26,7 +25,7 @@ import org.drools.verifier.api.reporting.gaps.MissingRange;
 import org.drools.verifier.api.reporting.gaps.MissingRangeIssue;
 import org.drools.verifier.core.cache.inspectors.RuleInspector;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 public class RangeError {
 
@@ -48,7 +47,7 @@ public class RangeError {
                                      checkType,
                                      partitionKey.getConditions(),
                                      uncoveredRanges,
-                                     new HashSet<>(ruleInspectors.stream().map(r -> (r.getRowIndex() + 1)).collect(toSet()))
+                                     ruleInspectors.stream().map(r -> (r.getRowIndex() + 1)).collect(toList())
         ).setDebugMessage(getMessage());
     }
 

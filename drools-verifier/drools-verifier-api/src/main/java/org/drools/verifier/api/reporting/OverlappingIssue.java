@@ -18,7 +18,6 @@ package org.drools.verifier.api.reporting;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.drools.verifier.api.reporting.model.Interval;
 
@@ -37,7 +36,7 @@ public class OverlappingIssue
                             final List<Interval> intervals,
                             final boolean containsAnyValueField,
                             final Map<Integer, String> rhsValues,
-                            final Set<Integer> rowNumbers) {
+                            final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);

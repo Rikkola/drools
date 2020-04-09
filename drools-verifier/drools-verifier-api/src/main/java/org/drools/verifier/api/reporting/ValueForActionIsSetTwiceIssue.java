@@ -15,7 +15,7 @@
  */
 package org.drools.verifier.api.reporting;
 
-import java.util.Set;
+import java.util.List;
 
 public class ValueForActionIsSetTwiceIssue
         extends Issue {
@@ -30,7 +30,7 @@ public class ValueForActionIsSetTwiceIssue
                                          final CheckType checkType,
                                          final String firstItem,
                                          final String secondItem,
-                                         final Set<Integer> rowNumbers) {
+                                         final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers);

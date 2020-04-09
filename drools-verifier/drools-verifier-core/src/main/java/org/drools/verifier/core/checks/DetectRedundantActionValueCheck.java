@@ -18,7 +18,6 @@ package org.drools.verifier.core.checks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -69,7 +68,7 @@ public class DetectRedundantActionValueCheck
                                                              .toHumanReadableString(),
                                                      this.result.get(1)
                                                              .toHumanReadableString(),
-                                                     new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1))));
+                                                     Arrays.asList(ruleInspector.getRowIndex() + 1)));
 
         return result;
     }

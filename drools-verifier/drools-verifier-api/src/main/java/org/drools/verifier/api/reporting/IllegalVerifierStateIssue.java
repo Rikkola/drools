@@ -23,7 +23,7 @@ public class IllegalVerifierStateIssue
     public IllegalVerifierStateIssue() {
         super(Severity.ERROR,
               CheckType.ILLEGAL_VERIFIER_STATE,
-              Collections.EMPTY_SET
+              Collections.<Integer>emptyList()
         );
     }
 }

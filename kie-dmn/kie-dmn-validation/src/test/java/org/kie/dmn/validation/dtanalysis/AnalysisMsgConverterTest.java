@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -58,7 +59,7 @@ public class AnalysisMsgConverterTest {
         final Set<DMNDTAnalysisMessage> convert = new AnalysisMsgConverter(dt,
                                                                            ddtaTable,
                                                                            new DTAnalysis(dt,
-                                                                                          ddtaTable)).convert(issues);
+                                                                                          ddtaTable)).convert(issues).getIssues();
 
         assertEquals(1, convert.size());
 
@@ -75,7 +76,7 @@ public class AnalysisMsgConverterTest {
                                         new ArrayList<>(), // TODO fill this with something?
                                         true,
                                         new HashMap<>(),
-                                        Collections.emptySet()));
+                                        Collections.emptyList()));
 
         new AnalysisMsgConverter(dt,
                                  ddtaTable,
@@ -87,12 +88,12 @@ public class AnalysisMsgConverterTest {
     public void basic() {
         issues.add(new Issue(Severity.NOTE,
                              CheckType.MISSING_RANGE,
-                             Collections.emptySet()));
+                             Collections.emptyList()));
 
         final Set<DMNDTAnalysisMessage> convert = new AnalysisMsgConverter(dt,
                                                                            ddtaTable,
                                                                            new DTAnalysis(dt,
-                                                                                          ddtaTable)).convert(issues);
+                                                                                          ddtaTable)).convert(issues).getIssues();
 
         assertEquals(1, convert.size());
 
@@ -102,8 +103,8 @@ public class AnalysisMsgConverterTest {
         assertEquals("testId", message.getSourceId());
     }
 
-    private HashSet<Integer> getRowNumbers(final int... rowNumbers) {
-        final HashSet<Integer> result = new HashSet<>();
+    private List<Integer> getRowNumbers(final int... rowNumbers) {
+        final List<Integer> result = new ArrayList<>();
 
         for (int rowNumber : rowNumbers) {
             result.add(rowNumber);

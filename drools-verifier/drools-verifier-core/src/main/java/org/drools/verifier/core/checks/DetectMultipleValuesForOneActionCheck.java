@@ -18,7 +18,6 @@ package org.drools.verifier.core.checks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -71,7 +70,7 @@ public class DetectMultipleValuesForOneActionCheck
                                                        checkType,
                                                        HumanReadable.toHumanReadableString(conflict.getConflictedItem()),
                                                        HumanReadable.toHumanReadableString(conflict.getConflictingItem()),
-                                                       new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1))));
+                                                       Arrays.asList(ruleInspector.getRowIndex() + 1)));
 
         return result;
     }

@@ -32,7 +32,7 @@ public class SingleHitLostIssue
                               final String secondItem) {
         super(severity,
               checkType,
-              Collections.emptySet());
+              Collections.<Integer>emptyList());
 
         this.firstItem = firstItem;
         this.secondItem = secondItem;

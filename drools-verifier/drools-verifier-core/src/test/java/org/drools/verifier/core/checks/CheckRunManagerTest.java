@@ -220,7 +220,7 @@ public class CheckRunManagerTest {
                                          final CheckType checkType) {
             return Arrays.asList(new Issue(severity,
                                            checkType,
-                                           Collections.emptySet()));
+                                           Collections.emptyList()));
         }
     }
 }

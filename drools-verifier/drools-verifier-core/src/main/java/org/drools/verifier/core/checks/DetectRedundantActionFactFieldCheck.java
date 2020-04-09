@@ -74,7 +74,7 @@ public class DetectRedundantActionFactFieldCheck
                                                                 .toHumanReadableString(),
                                                               result.get(1)
                                                                 .toHumanReadableString(),
-                                                              new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1))));
+                                                              Arrays.asList(ruleInspector.getRowIndex() + 1)));
 
         return resultIssues;
     }

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -86,8 +85,8 @@ public class OverlappingRowsCheck
                                                             intervals,
                                                             containsAnyValueField,
                                                             getRHSValues(),
-                                                            new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1,
-                                                                                        other.getRowIndex() + 1))
+                                                            Arrays.asList(ruleInspector.getRowIndex() + 1,
+                                                                          other.getRowIndex() + 1)
         );
         issue.setDebugMessage(new RuleInspectorDumper(ruleInspector).dump() + " ## " + new RuleInspectorDumper(other).dump());
 

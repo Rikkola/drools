@@ -52,6 +52,6 @@ public class DetectEmptyRowCheck
                                      final CheckType checkType) {
         return Arrays.asList(new Issue(severity,
                                        checkType,
-                                       new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1))));
+                                       Arrays.asList(ruleInspector.getRowIndex() + 1)));
     }
 }

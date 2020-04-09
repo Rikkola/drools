@@ -18,7 +18,6 @@ package org.drools.verifier.core.checks;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -61,8 +60,8 @@ public class DetectConflictingRowsCheck
 
         final Issue issue = new Issue(severity,
                                       checkType,
-                                      new HashSet<>(Arrays.asList(ruleInspector.getRowIndex() + 1,
-                                                                  other.getRowIndex() + 1))
+                                      Arrays.asList(ruleInspector.getRowIndex() + 1,
+                                                    other.getRowIndex() + 1)
         );
 
         issue.setDebugMessage(new RuleInspectorDumper(ruleInspector).dump() + " ## " + new RuleInspectorDumper(other).dump());

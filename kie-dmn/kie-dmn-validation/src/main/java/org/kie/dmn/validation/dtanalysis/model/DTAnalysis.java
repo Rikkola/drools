@@ -41,6 +41,7 @@ import org.kie.dmn.model.api.InputClause;
 import org.kie.dmn.model.api.LiteralExpression;
 import org.kie.dmn.model.api.NamedElement;
 import org.kie.dmn.validation.dtanalysis.AnalysisMsgConverter;
+import org.kie.dmn.validation.dtanalysis.ConversionMessage;
 import org.kie.dmn.validation.dtanalysis.DMNDTAnalysisMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -357,10 +358,13 @@ public class DTAnalysis {
 
     public void addIssues(final Set<Issue> issues) {
 
-        Set<DMNDTAnalysisMessage> convert = new AnalysisMsgConverter(sourceDT,
-                                                                     ddtaTable,
-                                                                     this).convert(issues);
-        this.issues = convert;
+        final ConversionMessage conversionMessage = new AnalysisMsgConverter(sourceDT,
+                                                                             ddtaTable,
+                                                                             this).convert(issues);
+        overlaps.clear(); // TODO dirty dump that needs to be removed.
+        overlaps.addAll(conversionMessage.getOverlaps());
+
+        this.issues = conversionMessage.getIssues();
     }
 
     public class ComparingRulesWithMultipleInputEntries extends Exception {

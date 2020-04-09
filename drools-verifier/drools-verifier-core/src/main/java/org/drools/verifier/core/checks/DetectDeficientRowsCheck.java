@@ -16,8 +16,8 @@
 
 package org.drools.verifier.core.checks;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.drools.verifier.api.reporting.CheckType;
@@ -49,7 +49,7 @@ public class DetectDeficientRowsCheck
     }
 
     private boolean isDeficient() {
-        return  !getOtherRows().stream().anyMatch(other -> !isDeficient(other));
+        return !getOtherRows().stream().anyMatch(other -> !isDeficient(other));
     }
 
     private boolean isDeficient(final RuleInspector other) {
@@ -67,7 +67,7 @@ public class DetectDeficientRowsCheck
         return Collections.singletonList(
                 new Issue(severity,
                           checkType,
-                          new HashSet<>(Collections.singleton(ruleInspector.getRowIndex() + 1))
+                          new ArrayList<Integer>(Collections.singleton(ruleInspector.getRowIndex() + 1))
                 )
         );
     }

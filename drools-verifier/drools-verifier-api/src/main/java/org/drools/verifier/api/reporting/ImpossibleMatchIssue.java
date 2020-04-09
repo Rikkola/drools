@@ -15,7 +15,7 @@
  */
 package org.drools.verifier.api.reporting;
 
-import java.util.Set;
+import java.util.List;
 
 public class ImpossibleMatchIssue
         extends Issue {
@@ -34,7 +34,7 @@ public class ImpossibleMatchIssue
                                 final String conditionParent,
                                 final String conflictedItem,
                                 final String conflictingItem,
-                                final Set<Integer> rowNumbers) {
+                                final List<Integer> rowNumbers) {
         super(severity,
               checkType,
               rowNumbers
