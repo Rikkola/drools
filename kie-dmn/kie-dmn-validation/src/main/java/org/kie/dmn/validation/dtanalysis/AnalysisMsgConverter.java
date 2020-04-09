@@ -87,13 +87,17 @@ public class AnalysisMsgConverter {
 
     private void overlapAsMessage(final OverlappingIssue issue) {
 
+        if (issue.getRowNumbers().get(0) > issue.getRowNumbers().get(1)) { // TODO this needs to use priority
+            return;
+        }
+
         if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
             return;
         }
         existingOverlaps.put(getHighest(issue.getRowNumbers()), getLowest(issue.getRowNumbers()));
 
         overlaps.add(new Overlap(issue.getRowNumbers(),
-                                 new Hyperrectangle(2,
+                                 new Hyperrectangle(ddtaTable.inputCols(),
                                                     convert(issue))));
 
         switch (dt.getHitPolicy()) {

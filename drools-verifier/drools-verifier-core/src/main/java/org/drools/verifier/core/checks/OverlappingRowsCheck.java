@@ -28,6 +28,7 @@ import org.drools.verifier.api.reporting.CheckType;
 import org.drools.verifier.api.reporting.Issue;
 import org.drools.verifier.api.reporting.OverlappingIssue;
 import org.drools.verifier.api.reporting.Severity;
+import org.drools.verifier.api.reporting.model.Bound;
 import org.drools.verifier.api.reporting.model.Interval;
 import org.drools.verifier.core.cache.inspectors.RuleInspector;
 import org.drools.verifier.core.cache.inspectors.RuleInspectorDumper;
@@ -39,6 +40,7 @@ import org.drools.verifier.core.index.model.Action;
 import org.drools.verifier.core.index.model.Column;
 import org.drools.verifier.core.index.model.ColumnType;
 import org.drools.verifier.core.index.model.Condition;
+import org.drools.verifier.core.index.model.meta.ConditionParentType;
 import org.drools.verifier.core.util.PortablePreconditions;
 
 public class OverlappingRowsCheck
@@ -116,28 +118,75 @@ public class OverlappingRowsCheck
     }
 
     private List<Interval> getLongerConditionList() {
+        final ArrayList<Interval> result = new ArrayList<Interval>();
 
-        final List<Interval> intervalsOther = getIntervals(other);
-        final List<Interval> intervals = getIntervals(ruleInspector);
+        final Map<ConditionParentType, Interval> intervalsOther = getIntervals(other);
+        final Map<ConditionParentType, Interval> intervals = getIntervals(ruleInspector);
 
-        if (intervals.size() > intervalsOther.size()) {
-            return intervals;
-        } else {
-            return intervalsOther;
+        for (ConditionParentType key : intervalsOther.keySet()) {
+            if (intervals.containsKey(key)) {
+                final Interval other = intervalsOther.get(key);
+                final Interval interval = intervals.get(key);
+                if (areIntervalsOverlapping(other, interval)) {
+                    Interval e = Interval.newFromBounds(
+                            other.getLowerBound(),
+                            interval.getUpperBound()
+                    );
+                    result.add(e);
+                }
+            } else {
+                result.add(intervalsOther.get(key));
+            }
         }
+
+//        for (ConditionParentType key : intervals.keySet()) {
+//            if (!intervalsOther.containsKey(key)) {
+//                result.add(intervalsOther.get(key));
+//            }
+//        }
+
+        return result;
     }
 
-    private List<Interval> getIntervals(final RuleInspector other) {
-        final List<Interval> intervals = new ArrayList<Interval>();
+    private Map<ConditionParentType, Interval> getIntervals(final RuleInspector other) {
+        final Map<ConditionParentType, Interval> intervals = new HashMap<>();
 
-        for (Object o : other.getConditionsInspectors()
+        List<Object> collect = other.getConditionsInspectors()
                 .stream().flatMap(x -> x.allValues().stream())
-                .collect(Collectors.toList())) {
+                .collect(Collectors.toList());
+
+        for (Object o : collect) {
             if (o instanceof ComparableConditionInspector) {
-                intervals.add(((ComparableConditionInspector) o).getInterval());
+                final ComparableConditionInspector conditionInspector = (ComparableConditionInspector) o;
+
+                if (intervals.containsKey(conditionInspector.getField().getConditionParentType())) {
+
+                    final Interval first = intervals.get(conditionInspector.getField().getConditionParentType());
+                    final Interval second = conditionInspector.getInterval();
+                    final Bound firstLowerBound = first.getLowerBound();
+                    final Bound secondUpperBound = second.getUpperBound();
+
+                    if (areIntervalsOverlapping(first, second)) {
+                        final Interval interval = Interval.newFromBounds(firstLowerBound,
+                                                                         secondUpperBound);
+                        intervals.put(conditionInspector.getField().getConditionParentType(),
+                                      interval);
+                    }
+                } else {
+                    Interval interval = conditionInspector.getInterval();
+                    intervals.put(conditionInspector.getField().getConditionParentType(),
+                                  interval);
+                }
             }
         }
 
         return intervals;
+    }
+
+    private boolean areIntervalsOverlapping(final Interval first,
+                                            final Interval second) {
+        final Bound firstLowerBound = first.getLowerBound();
+        final Bound secondUpperBound = second.getUpperBound();
+        return firstLowerBound.compareTo(secondUpperBound) < 0;
     }
 }

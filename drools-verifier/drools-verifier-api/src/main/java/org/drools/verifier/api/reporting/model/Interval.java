@@ -16,6 +16,14 @@
 
 package org.drools.verifier.api.reporting.model;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 // TODO add to Errai marhalled list
 public class Interval {
 
@@ -132,5 +140,83 @@ public class Interval {
 
     public boolean includes(Interval o) {
         return this.lowerBound.compareTo((Bound) o.lowerBound) <= 0 && this.upperBound.compareTo((Bound) o.upperBound) >= 0;
+    }
+
+    public boolean leftAdjOrOverlap(Interval o) {
+        boolean thisLeftLower = this.lowerBound.compareTo((Bound) o.lowerBound) <= 0;
+        boolean oRightHigher = o.upperBound.compareTo((Bound) this.upperBound) >= 0;
+        boolean chained = BoundValueComparator.compareValueDispatchingToInf(o.lowerBound, this.upperBound) < 0;
+        boolean adj = Bound.adOrOver(o.lowerBound, this.upperBound);
+        return thisLeftLower && oRightHigher && (chained || adj);
+    }
+
+    public static Range.RangeBoundary invertBoundary(Range.RangeBoundary b) {
+        if (b == Range.RangeBoundary.OPEN) {
+            return Range.RangeBoundary.CLOSED;
+        } else if (b == Range.RangeBoundary.CLOSED) {
+            return Range.RangeBoundary.OPEN;
+        } else {
+            throw new IllegalStateException("invertBoundary for: " + b);
+        }
+    }
+
+    public static List<Interval> invertOverDomain(Interval interval, Interval domain) {
+        List<Interval> results = new ArrayList<>();
+        if (!domain.lowerBound.equals(interval.lowerBound)) {
+            Interval left = new Interval(domain.lowerBound.getBoundaryType(),
+                                         domain.lowerBound.getValue(),
+                                         interval.lowerBound.getValue(),
+                                         invertBoundary(interval.lowerBound.getBoundaryType()),
+                                         interval.rule,
+                                         interval.col);
+            results.add(left);
+        }
+        if (!domain.upperBound.equals(interval.upperBound)) {
+            Interval right = new Interval(invertBoundary(interval.upperBound.getBoundaryType()),
+                                          interval.upperBound.getValue(),
+                                          domain.upperBound.getValue(),
+                                          domain.upperBound.getBoundaryType(),
+                                          interval.rule,
+                                          interval.col);
+            results.add(right);
+        }
+        return results;
+    }
+
+    public static List<Interval> flatten(List<Interval> intervals) {
+        List<Interval> results = new ArrayList<>();
+        List<Bound> bounds = intervals.stream().flatMap(i -> Stream.of(i.getLowerBound(), i.getUpperBound())).collect(Collectors.toList());
+        Collections.sort(bounds);
+        Deque<Bound> stack = new ArrayDeque<Bound>();
+        Interval candidate = null;
+        for (Bound cur : bounds) {
+            if (stack.isEmpty() && !cur.isLowerBound()) {
+                throw new RuntimeException("Inconsistent sort of bounds.");
+            }
+            if (cur.isLowerBound()) {
+                if (candidate == null) {
+                    stack.push(cur);
+                } else {
+                    if (Bound.adOrOver(candidate.upperBound, cur)) {
+                        stack.push(candidate.lowerBound);
+                        candidate = null;
+                    } else {
+                        results.add(candidate);
+                        stack.push(cur);
+                    }
+                }
+            } else if (cur.isUpperBound()) {
+                Bound pop = stack.pop();
+                if (stack.isEmpty()) {
+                    candidate = Interval.newFromBounds(pop, cur);
+                }
+            } else {
+                throw new RuntimeException("Inconsistent value for bounds.");
+            }
+        }
+        if (candidate != null) {
+            results.add(candidate);
+        }
+        return results;
     }
 }

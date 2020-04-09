@@ -294,6 +294,7 @@ public class ComparableConditionInspector<T extends Comparable<T>>
     }
 
     // TODO Test
+    @Override
     public Interval getInterval() {
         switch (operator) {
             case LESS_OR_EQUAL:

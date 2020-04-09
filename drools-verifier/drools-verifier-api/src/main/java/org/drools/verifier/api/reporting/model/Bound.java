@@ -149,4 +149,13 @@ public class Bound<V extends Comparable<V>> implements Comparable<Bound<V>> {
     public static String boundValueToString(Comparable<?> value) {
         return value instanceof String ? "\"" + value + "\"" : value.toString();
     }
+
+    /**
+     * Returns true if left is overlapping or adjacent to right
+     */
+    public static boolean adOrOver(Bound<?> left, Bound<?> right) {
+        boolean isValueEqual = left.getValue().equals(right.getValue());
+        boolean isBothOpen = left.getBoundaryType() == Range.RangeBoundary.OPEN && right.getBoundaryType() == Range.RangeBoundary.OPEN;
+        return isValueEqual && !isBothOpen;
+    }
 }
