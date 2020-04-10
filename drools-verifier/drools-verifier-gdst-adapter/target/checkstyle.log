@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.10.1">
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\AnalyzerBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\DeleteColumns.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\DrlInitialize.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\FactTypes.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\HeaderMetaData.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\MakeRule.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\ModelMetaData.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\NewColumn.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\RemoveRule.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\api\Update.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ActionBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\AttributeBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\BRLConditionBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\BuilderFactory.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\BuildException.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\CellBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ColumnBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ColumnUtilitiesException.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ConditionBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\FieldConditionBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\FieldResolver.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\IndexBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ModelMetaDataEnhancer.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\PatternResolver.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\RuleBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ToString.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\TypeResolver.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\Utils.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\UtilsTypeResolver.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ValueResolveException.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\ValuesResolver.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\builders\VerifierColumnUtilities.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\CellUpdateManagerBase.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\CheckConfigurationProvider.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\Coordinate.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\DTableUpdateManager.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\Logger.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\NullEqualityOperatorCellUpdateManager.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\RegularCellUpdateManager.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\main\java\org\drools\workbench\services\verifier\plugin\client\util\NullEqualityOperator.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\AnalyzerUpdateTestBase.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\api\HeaderMetaDataTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\builders\ModelMetaDataEnhancerTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\cache\util\DTableUpdateManagerAttributesTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\cache\util\DTableUpdateManagerIsNullTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\cache\util\DTableUpdateManagerRetractTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\cache\util\DTableUpdateManagerTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\cache\Util.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\CheckConfigurationProviderTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DataBuilderProvider.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerAddRowScenarioTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerConflictResolverLimitedDTableTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerConflictResolverTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerDeficiencyTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerMultipleIssuesFromFileTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerRangeCheckTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerRedundancyTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerSingleHitTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerSubsumptionResolverTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerSubsumptionTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerUniqueHitPolicyTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerUpdateTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\DecisionTableAnalyzerWhiteListTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\fromfile\BRLFragmentsAnalyzerFromFileTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\fromfile\DecisionTableAnalyzerFromFileTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\fromfile\EffectiveDatesFromFileTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\NoOperatorTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\RangeCheckFromFileTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\SpeedTest.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\AbstractDecisionTableBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\AnalyzerBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\AnalyzerConfigurationMock.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\AnalyzerProvider.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\DateTimeFormatProviderMock.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\DecisionTableAnalyzerBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\ExtendedGuidedDecisionTableBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\LimitedGuidedDecisionTableBuilder.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\TestUtil.java">
+</file>
+<file name="C:\Users\Rikkola\Work\Codes\drools\drools-verifier\drools-verifier-gdst-adapter\src\test\java\org\drools\workbench\services\verifier\plugin\client\testutil\UUIDKeyProviderMock.java">
+</file>
+</checkstyle>
