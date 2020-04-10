@@ -95,6 +95,57 @@ public class OverlappingRowsCheck
         return Collections.singletonList((Issue) issue);
     }
 
+    private List<Interval> getLongerConditionList() {
+        final ArrayList<Interval> result = new ArrayList<Interval>();
+
+        final Map<ConditionParentType, Interval> intervalsOther = getIntervals(other);
+        final Map<ConditionParentType, Interval> intervals = getIntervals(ruleInspector);
+
+        for (ConditionParentType key : intervalsOther.keySet()) {
+            if (intervals.containsKey(key)) {
+                final Interval other = intervalsOther.get(key);
+                final Interval interval = intervals.get(key);
+                if (areIntervalsOverlapping(other, interval)) {
+                    Interval e = Interval.newFromBounds(
+                            getLowerBound(other.getLowerBound(),
+                                          interval.getLowerBound()),
+                            getHigherBound(other.getUpperBound(),
+                                           interval.getUpperBound())
+                    );
+                    result.add(e);
+                }
+            } else {
+                result.add(intervalsOther.get(key));
+            }
+        }
+
+        for (ConditionParentType key : intervals.keySet()) {
+            if (!intervalsOther.containsKey(key)) {
+                result.add(intervals.get(key));
+            }
+        }
+
+        return result;
+    }
+
+    private Bound getHigherBound(final Bound other,
+                                 final Bound interval) {
+        if (other.compareTo(interval) >= 0) {
+            return other;
+        } else {
+            return interval;
+        }
+    }
+
+    private Bound getLowerBound(final Bound other,
+                                final Bound interval) {
+        if (other.compareTo(interval) >= 0) {
+            return interval;
+        } else {
+            return other;
+        }
+    }
+
     private boolean getContainsAnyValueCell() {
         for (final Column column : index.getColumns().where(Column.columnType().is(ColumnType.LHS)).select().all()) {
             if (!ruleInspector.getRule().getConditions().where(Condition.columnUUID().is(column.getUuidKey())).select().exists()) {
@@ -113,37 +164,6 @@ public class OverlappingRowsCheck
                 result.put(column.getIndex(), action.getValues().stream().map(Object::toString).collect(Collectors.joining(",")));
             }
         }
-
-        return result;
-    }
-
-    private List<Interval> getLongerConditionList() {
-        final ArrayList<Interval> result = new ArrayList<Interval>();
-
-        final Map<ConditionParentType, Interval> intervalsOther = getIntervals(other);
-        final Map<ConditionParentType, Interval> intervals = getIntervals(ruleInspector);
-
-        for (ConditionParentType key : intervalsOther.keySet()) {
-            if (intervals.containsKey(key)) {
-                final Interval other = intervalsOther.get(key);
-                final Interval interval = intervals.get(key);
-                if (areIntervalsOverlapping(other, interval)) {
-                    Interval e = Interval.newFromBounds(
-                            other.getLowerBound(),
-                            interval.getUpperBound()
-                    );
-                    result.add(e);
-                }
-            } else {
-                result.add(intervalsOther.get(key));
-            }
-        }
-
-//        for (ConditionParentType key : intervals.keySet()) {
-//            if (!intervalsOther.containsKey(key)) {
-//                result.add(intervalsOther.get(key));
-//            }
-//        }
 
         return result;
     }

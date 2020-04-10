@@ -87,8 +87,8 @@ public class AnalysisMsgConverter {
 
     private void overlapAsMessage(final OverlappingIssue issue) {
 
-        if (issue.getRowNumbers().get(0) > issue.getRowNumbers().get(1)) { // TODO this needs to use priority
-            return;
+        if (issue.getRowNumbers().size() < 2) {
+            throw new IllegalArgumentException("There should be at least two row numbers");
         }
 
         if (existingOverlaps.containsKey(getHighest(issue.getRowNumbers())) && existingOverlaps.get(getHighest(issue.getRowNumbers())).equals(getLowest(issue.getRowNumbers()))) {
@@ -141,8 +141,6 @@ public class AnalysisMsgConverter {
             result.add(Interval.newFromBounds(convert(interval.getLowerBound()),
                                               convert(interval.getUpperBound())));
         }
-
-        Collections.reverse(result); // Not sure why this needs to be reverted, but it does the trick.
 
         return result;
     }
