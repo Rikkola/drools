@@ -1,4 +1,4 @@
-#Fri Apr 10 18:29:29 EEST 2020
+#Sun Apr 12 15:35:58 EEST 2020
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\builders\\BRLConditionBuilder.java=1579512826634
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\NullEqualityOperatorCellUpdateManager.java=1579512826630
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\CheckConfigurationProvider.java=1579512826629
@@ -51,7 +51,7 @@ C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\test\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\SpeedTest.java=1586531910762
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\test\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\DataBuilderProvider.java=1579512826642
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\test\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\DecisionTableAnalyzerConflictResolverTest.java=1586531910744
-C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\AnalyzerBuilder.java=1586530795821
+C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\AnalyzerBuilder.java=1586686697381
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\test\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\testutil\\LimitedGuidedDecisionTableBuilder.java=1579512826654
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\main\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\api\\FactTypes.java=1586530851169
 C\:\\Users\\Rikkola\\Work\\Codes\\drools\\drools-verifier\\drools-verifier-gdst-adapter\\src\\test\\java\\org\\drools\\workbench\\services\\verifier\\plugin\\client\\testutil\\AnalyzerProvider.java=1585302500260

@@ -80,21 +80,7 @@ public class AnalyzerBuilder {
 
             configuration = new AnalyzerConfiguration(
                     initialize.getUuid(),
-                    new DateTimeFormatProvider() {
-                        @Override
-                        public String format(final Date dateValue) {
-                            return null; // TODO use the Java formatter.
-//                            return DateTimeFormat.getFormat(initialize.getDateFormat())
-//                                    .format(dateValue);
-                        }
-
-                        @Override
-                        public Date parse(String dateValue) {
-                            return null; // TODO use the Java formatter.
-//                            return DateTimeFormat.getFormat(initialize.getDateFormat())
-//                                    .parse(dateValue);
-                        }
-                    },
+                    getDateTimeFormatter(),
                     new UUIDKeyProvider() {
                         @Override
                         protected String newUUID() {
@@ -108,6 +94,24 @@ public class AnalyzerBuilder {
                     checkRunner);
         }
         return configuration;
+    }
+
+    protected DateTimeFormatProvider getDateTimeFormatter() {
+        return new DateTimeFormatProvider() {
+            @Override
+            public String format(final Date dateValue) {
+                return null; // TODO use the Java formatter.
+//                            return DateTimeFormat.getFormat(initialize.getDateFormat())
+//                                    .format(dateValue);
+            }
+
+            @Override
+            public Date parse(String dateValue) {
+                return null; // TODO use the Java formatter.
+//                            return DateTimeFormat.getFormat(initialize.getDateFormat())
+//                                    .parse(dateValue);
+            }
+        };
     }
 
     public AnalyzerBuilder with(final Reporter reporter) {
