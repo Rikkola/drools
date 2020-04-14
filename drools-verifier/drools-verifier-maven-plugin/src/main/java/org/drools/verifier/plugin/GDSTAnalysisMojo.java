@@ -115,7 +115,7 @@ public class GDSTAnalysisMojo
 
             @Override
             public void sendStatus(Status status) {
-
+                // No need to send this ATM
             }
         };
     }
