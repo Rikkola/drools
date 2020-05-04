@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-dmn</artifactId>
+    <version>7.37.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>kie-dmn-feel-gwt</artifactId>
+
+  <name>KIE :: Decision Model Notation :: FEEL DMN</name>
+
+  <properties>
+    <java.module.name>org.kie.dmn.feel</java.module.name>
+    <surefire.forkCount>2</surefire.forkCount>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
+
+  <dependencies>
+<!--    <dependency>-->
+<!--      <groupId>com.google.gwt</groupId>-->
+<!--      <artifactId>gwt-time</artifactId>-->
+<!--      <version>2.8.2-SNAPSHOT</version>-->
+<!--    </dependency>-->
+        <dependency>
+          <groupId>org.jresearch.gwt.time</groupId>
+          <artifactId>org.jresearch.gwt.time</artifactId>
+          <version>1.4.4-SNAPSHOT</version>
+        </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4gwt-runtime</artifactId>
+      <version>4.4.8</version>
+    </dependency>
+    <!-- TODO is this needed? -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4gwt-annotations</artifactId>
+      <version>4.4.8</version>
+    </dependency>
+    <!-- Internal dependencies -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-dmn-feel</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>
