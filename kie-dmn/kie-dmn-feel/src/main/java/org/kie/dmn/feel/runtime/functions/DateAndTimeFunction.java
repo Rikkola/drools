@@ -32,7 +32,9 @@ import java.util.TimeZone;
 
 import org.kie.dmn.api.feel.runtime.events.FEELEvent.Severity;
 import org.kie.dmn.feel.runtime.events.InvalidParametersEvent;
+import org.kie.dmn.model.api.GwtIncompatible;
 
+@GwtIncompatible
 public class DateAndTimeFunction
         extends BaseFEELFunction {
 

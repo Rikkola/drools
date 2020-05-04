@@ -50,12 +50,14 @@ import org.kie.dmn.feel.lang.types.GenFnType;
 import org.kie.dmn.feel.lang.types.GenListType;
 import org.kie.dmn.feel.runtime.functions.BaseFEELFunction;
 import org.kie.dmn.feel.util.EvalHelper;
+import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static com.github.javaparser.StaticJavaParser.parseExpression;
 import static org.kie.dmn.feel.codegen.feel11.Constants.BigDecimalT;
 import static org.kie.dmn.feel.codegen.feel11.Constants.BuiltInTypeT;
 
+@GwtIncompatible
 public class Expressions {
 
     public static final ClassOrInterfaceType NamedParamterT = parseClassOrInterfaceType(NamedParameter.class.getCanonicalName());
