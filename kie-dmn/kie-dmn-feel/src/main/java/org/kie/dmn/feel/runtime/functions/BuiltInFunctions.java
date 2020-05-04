@@ -19,6 +19,7 @@ package org.kie.dmn.feel.runtime.functions;
 import java.util.stream.Stream;
 
 import org.kie.dmn.feel.runtime.FEELFunction;
+import org.kie.dmn.model.api.GwtIncompatible;
 
 public class BuiltInFunctions {
 
@@ -93,6 +94,7 @@ public class BuiltInFunctions {
         return FUNCTIONS;
     }
 
+    @GwtIncompatible
     public static <T extends FEELFunction> T getFunction( Class<T> functionClazz ) {
         return (T) Stream.of( FUNCTIONS )
                 .filter( f -> functionClazz.isAssignableFrom( f.getClass() ) )

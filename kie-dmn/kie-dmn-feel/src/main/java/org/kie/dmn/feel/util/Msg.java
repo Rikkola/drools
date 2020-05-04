@@ -16,6 +16,8 @@
 
 package org.kie.dmn.feel.util;
 
+import org.kie.dmn.model.api.GwtIncompatible;
+
 /**
  * Utility class for I18N messages.
  *
@@ -70,7 +72,8 @@ public final class Msg {
     public static String createMessage( Message4 message, Object p1, Object p2, Object p3, Object p4) {
         return Msg.buildMessage(message, p1, p2, p3, p4);
     }
-    
+
+    @GwtIncompatible // TODO replace this
     private static String buildMessage( Message message, Object... params ) {
         return String.format( message.getMask(), params );
     }

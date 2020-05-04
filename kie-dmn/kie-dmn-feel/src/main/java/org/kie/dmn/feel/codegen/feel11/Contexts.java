@@ -30,9 +30,11 @@ import org.kie.dmn.feel.lang.CompositeType;
 import org.kie.dmn.feel.lang.impl.JavaBackedType;
 import org.kie.dmn.feel.lang.impl.MapBackedType;
 import org.kie.dmn.feel.util.EvalHelper;
+import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseType;
 
+@GwtIncompatible
 public class Contexts {
 
     public static final Type MapT = parseType(Map.class.getCanonicalName());

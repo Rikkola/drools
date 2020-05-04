@@ -27,11 +27,13 @@ import java.util.regex.Pattern;
 
 import org.kie.dmn.api.feel.runtime.events.FEELEvent.Severity;
 import org.kie.dmn.feel.runtime.events.InvalidParametersEvent;
+import org.kie.dmn.model.api.GwtIncompatible;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
 
+@GwtIncompatible
 public class DateFunction
         extends BaseFEELFunction {
 
