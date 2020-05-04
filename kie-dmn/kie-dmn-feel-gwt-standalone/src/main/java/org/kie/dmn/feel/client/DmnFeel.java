@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.dmn.feel;
+package org.kie.dmn.feel.client;
 
-public class TodoEntryPoint {
-//    foal @foal 21:24
-//    @mdproctor Sorry I forgot to mention - you need to run Support.init(); before calling using the library (gwt-time)
+import com.google.gwt.core.client.EntryPoint;
+
+public class DmnFeel
+        implements EntryPoint{
+
+    @Override
+    public void onModuleLoad() {
+// TODO atm this class is not used
+
+    }
 }

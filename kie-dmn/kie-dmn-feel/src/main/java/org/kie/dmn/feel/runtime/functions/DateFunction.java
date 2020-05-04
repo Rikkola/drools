@@ -27,13 +27,11 @@ import java.util.regex.Pattern;
 
 import org.kie.dmn.api.feel.runtime.events.FEELEvent.Severity;
 import org.kie.dmn.feel.runtime.events.InvalidParametersEvent;
-import org.kie.dmn.model.api.GwtIncompatible;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
 
-@GwtIncompatible
 public class DateFunction
         extends BaseFEELFunction {
 
@@ -60,7 +58,7 @@ public class DateFunction
         if (!BEGIN_YEAR.matcher(val).find()) { // please notice the regex strictly requires the beginning, so we can use find.
             return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "from", "year not compliant with XML Schema Part 2 Datatypes"));
         }
-        
+
         try {
             return FEELFnResult.ofResult(LocalDate.from(FEEL_DATE.parse(val)));
         } catch (DateTimeException e) {
@@ -78,7 +76,7 @@ public class DateFunction
         if ( day == null ) {
             return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "day", "cannot be null"));
         }
-        
+
         try {
             return FEELFnResult.ofResult( LocalDate.of( year.intValue(), month.intValue(), day.intValue() ) );
         } catch (DateTimeException e) {
@@ -90,7 +88,7 @@ public class DateFunction
         if ( date == null ) {
             return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "from", "cannot be null"));
         }
-        
+
         try {
             return FEELFnResult.ofResult( LocalDate.from( date ) );
         } catch (DateTimeException e) {

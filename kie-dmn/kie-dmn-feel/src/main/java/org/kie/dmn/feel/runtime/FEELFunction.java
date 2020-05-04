@@ -21,7 +21,7 @@ import java.util.List;
 import org.kie.dmn.feel.lang.EvaluationContext;
 import org.kie.dmn.feel.lang.Symbol;
 import org.kie.dmn.feel.lang.Type;
-import org.kie.dmn.model.api.GwtIncompatible;
+
 
 /**
  * An interface for all FEEL functions, custom or built-in
@@ -67,7 +67,6 @@ public interface FEELFunction {
      * @param params
      * @return
      */
-    @GwtIncompatible
     Object invokeReflectively(EvaluationContext ctx, Object[] params);
 
     public static class Param {

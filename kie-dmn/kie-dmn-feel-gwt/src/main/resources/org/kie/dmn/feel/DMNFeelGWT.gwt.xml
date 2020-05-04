@@ -19,16 +19,20 @@
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.4.0//EN"
     "http://google-web-toolkit.googlecode.com/svn/tags/2.5.0/distro-source/core/src/gwt-module.dtd">
 <module>
+  <entry-point class="org.kie.dmn.feel.entrypoint.FEELEntryPoint"/>
 
-  <inherits name="org.antlr.v4.antlr4-runtime" />
-  <inherits name="org.jresearch.threetenbp.gwt.module" />
-  <inherits name="org.kie.dmn.feel.DMNFeel" />
+  <inherits name="com.google.gwt.logging.Logging"/>
+  <inherits name="org.antlr.v4.antlr4-runtime"/>
+  <inherits name="org.jresearch.threetenbp.gwt.module"/>
+  <inherits name="org.kie.dmn.feel.DMNFeel"/>
 
-  <super-source path=""  includes="FEEL.java"/>
-  <super-source path="util"  includes="TypeUtil.java"/>
-  <super-source path="lang"  includes="ast.AtLiteralNode.java"/>
-  <super-source path="lang"  includes="impl.FEELImpl.java"/>
-  <super-source path="parser"  includes="feel11.ParserHelper.java"/>
-  <super-source path="runtime"  includes="functions.BuiltInFunctions.java"/>
+  <source path="entrypoint"/>
+  <super-source path="" includes="FEEL.java"/>
+  <!--  <super-source path="codegen.feel11"/>-->
+  <super-source path="util"/>
+  <super-source path="lang"/>
+  <super-source path="marshaller"/>
+  <super-source path="parser"/>
+  <super-source path="runtime"/>
 
 </module>

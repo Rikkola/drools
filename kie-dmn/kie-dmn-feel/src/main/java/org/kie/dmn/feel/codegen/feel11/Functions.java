@@ -37,12 +37,10 @@ import org.kie.dmn.feel.lang.impl.EvaluationContextImpl;
 import org.kie.dmn.feel.lang.impl.FEELEventListenersManager;
 import org.kie.dmn.feel.lang.types.BuiltInType;
 import org.kie.dmn.feel.util.Msg;
-import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static com.github.javaparser.StaticJavaParser.parseExpression;
 
-@GwtIncompatible
 public class Functions {
     public static final ClassOrInterfaceType TYPE_CUSTOM_FEEL_FUNCTION =
             parseClassOrInterfaceType(CompiledCustomFEELFunction.class.getSimpleName());

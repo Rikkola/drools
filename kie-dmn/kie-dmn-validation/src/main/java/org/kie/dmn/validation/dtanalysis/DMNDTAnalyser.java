@@ -633,6 +633,7 @@ public class DMNDTAnalyser {
     }
 
     private Comparable<?> valueFromNode(BaseNode node) {
-        return valueFromNode(node, valueFromNodeVisitor);
+        Comparable<?> comparable = valueFromNode(node, valueFromNodeVisitor);
+        return comparable;
     }
 }

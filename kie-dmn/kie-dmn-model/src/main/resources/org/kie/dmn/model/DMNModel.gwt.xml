@@ -21,8 +21,5 @@
 <module>
 
   <source path="api"/>
-<!--  <source path="v1_1"/>-->
-<!--  <source path="v2_2"/>-->
-<!--  <source path="v3_3"/>-->
 
 </module>

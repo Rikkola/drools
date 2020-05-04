@@ -54,8 +54,10 @@ public interface DMNModelInstrumentedBase {
 
     String getURIFEEL();
 
+    @GwtIncompatible
     void setLocation(Location location);
 
+    @GwtIncompatible
     Location getLocation();
 
     /**
