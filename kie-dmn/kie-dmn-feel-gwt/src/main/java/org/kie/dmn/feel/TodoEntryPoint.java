@@ -15,7 +15,16 @@
  */
 package org.kie.dmn.feel;
 
-public class TodoEntryPoint {
+import com.google.gwt.core.client.EntryPoint;
+import org.jresearch.threetenbp.gwt.client.Support;
+
+public class TodoEntryPoint
+        implements EntryPoint {
+
+    @Override
+    public void onModuleLoad() {
+        Support.init();
+    }
 //    foal @foal 21:24
 //    @mdproctor Sorry I forgot to mention - you need to run Support.init(); before calling using the library (gwt-time)
 }

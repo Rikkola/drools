@@ -28,11 +28,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
-import java.util.TimeZone;
 
 import org.kie.dmn.api.feel.runtime.events.FEELEvent.Severity;
 import org.kie.dmn.feel.runtime.events.InvalidParametersEvent;
-import org.kie.dmn.model.api.GwtIncompatible;
 
 public class DateAndTimeFunction
         extends BaseFEELFunction {
@@ -62,7 +60,7 @@ public class DateAndTimeFunction
         if ( val == null ) {
             return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "from", "cannot be null"));
         }
-        if (!DateFunction.BEGIN_YEAR.matcher(val).find()) { // please notice the regex strictly requires the beginning, so we can use find.
+        if (DateFunction.BEGIN_YEAR.exec(val) == null) { // please notice the regex strictly requires the beginning, so we can use find.
             return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "from", "year not compliant with XML Schema Part 2 Datatypes"));
         }
 
@@ -151,35 +149,35 @@ public class DateAndTimeFunction
         }
     }
 
-    public FEELFnResult<TemporalAccessor> invoke(@ParameterName( "year" ) Number year, @ParameterName( "month" ) Number month, @ParameterName( "day" ) Number day,
-                                                 @ParameterName( "hour" ) Number hour, @ParameterName( "minute" ) Number minute, @ParameterName( "second" ) Number second,
-                                                 @ParameterName( "timezone" ) String timezone ) {
-        if (year == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "year", "cannot be null"));
-        }
-        if (month == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "month", "cannot be null"));
-        }
-        if (day == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "day", "cannot be null"));
-        }
-        if (hour == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "hour", "cannot be null"));
-        }
-        if (minute == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "minute", "cannot be null"));
-        }
-        if (second == null) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "second", "cannot be null"));
-        }
-
-        try {
-            return FEELFnResult.ofResult(ZonedDateTime.of(year.intValue(), month.intValue(), day.intValue(),
-                    hour.intValue(), minute.intValue(), second.intValue(), 0, TimeZone.getTimeZone(timezone).toZoneId()));
-        } catch (DateTimeException e) {
-            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "input parameters date-parsing exception", e));
-        }
-    }
+//    public FEELFnResult<TemporalAccessor> invoke(@ParameterName( "year" ) Number year, @ParameterName( "month" ) Number month, @ParameterName( "day" ) Number day,
+//                                                 @ParameterName( "hour" ) Number hour, @ParameterName( "minute" ) Number minute, @ParameterName( "second" ) Number second,
+//                                                 @ParameterName( "timezone" ) String timezone ) {
+//        if (year == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "year", "cannot be null"));
+//        }
+//        if (month == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "month", "cannot be null"));
+//        }
+//        if (day == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "day", "cannot be null"));
+//        }
+//        if (hour == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "hour", "cannot be null"));
+//        }
+//        if (minute == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "minute", "cannot be null"));
+//        }
+//        if (second == null) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "second", "cannot be null"));
+//        }
+//
+//        try {
+//            return FEELFnResult.ofResult(ZonedDateTime.of(year.intValue(), month.intValue(), day.intValue(),
+//                    hour.intValue(), minute.intValue(), second.intValue(), 0, TimeZone.getTimeZone(timezone).toZoneId()));
+//        } catch (DateTimeException e) {
+//            return FEELFnResult.ofError(new InvalidParametersEvent(Severity.ERROR, "input parameters date-parsing exception", e));
+//        }
+//    }
 
 
 }

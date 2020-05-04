@@ -48,6 +48,13 @@
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-feel</artifactId>
     </dependency>
+
+    <!--  The feared GWT dependency in drools repository!!!!!! -->
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>
