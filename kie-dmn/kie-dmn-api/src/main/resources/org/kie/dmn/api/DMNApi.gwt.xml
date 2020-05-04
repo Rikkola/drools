@@ -22,8 +22,8 @@
 
   <source path="core"/>
   <source path="feel"/>
-  <source path="marshalling"/>
+  <source path="marshalling" includes="DMNExtensionRegister.java"/>
 
-  <inherits name="org.kie.dmn.model.DMNModel" />
+  <inherits name="org.kie.dmn.model.DMNModel"/>
 
 </module>

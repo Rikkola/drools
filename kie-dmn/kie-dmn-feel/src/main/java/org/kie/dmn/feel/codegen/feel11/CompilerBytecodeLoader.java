@@ -41,13 +41,11 @@ import org.drools.compiler.commons.jci.readers.MemoryResourceReader;
 import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
 import org.drools.compiler.rule.builder.dialect.java.JavaDialectConfiguration.CompilerType;
 import org.kie.dmn.feel.util.ClassLoaderUtil;
-import org.kie.dmn.model.api.GwtIncompatible;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.github.javaparser.StaticJavaParser.parse;
 
-@GwtIncompatible
 public class CompilerBytecodeLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(CompilerBytecodeLoader.class);

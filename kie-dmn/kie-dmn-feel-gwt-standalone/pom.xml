@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-dmn</artifactId>
+    <version>7.42.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>kie-dmn-feel-gwt-standalone</artifactId>
+
+  <name>KIE :: Decision Model Notation :: FEEL DMN JS</name>
+
+  <properties>
+    <java.module.name>org.kie.dmn.feel</java.module.name>
+    <surefire.forkCount>2</surefire.forkCount>
+    <enforcer.skip>true</enforcer.skip>
+  </properties>
+
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <!--      <scope>provided</scope>-->
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>de.benediktmeurer.gwt-slf4j</groupId>
+      <artifactId>gwt-slf4j</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-dmn-feel-gwt</artifactId>
+      <version>7.42.0-SNAPSHOT</version>
+      <scope>provided</scope>
+      <classifier>sources</classifier>
+    </dependency>
+
+    <!-- GWT and GWT Extensions -->
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-dev</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/org/kie/dmn/feel/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.vertispan.j2cl</groupId>
+        <artifactId>j2cl-maven-plugin</artifactId>
+        <version>0.10-SNAPSHOT</version>
+        <configuration>
+          <skip>false</skip>
+          <webappDirectory>${project.build.directory}/classes/</webappDirectory>
+
+          <deploy>${project.build.directory}/gwt-symbols-deploy</deploy>
+          <extraJvmArgs>-Xmx3G -Xms1024m -Xss1M -XX:CompileThreshold=7000
+            -Derrai.dynamic_validation.enabled=true
+            -Derrai.marshalling.server.classOutput.enabled=false
+          </extraJvmArgs>
+          <module>org.kie.dmn.feel.DmnFeelGWTStandalone</module>
+          <gwtSdkFirstInClasspath>false</gwtSdkFirstInClasspath> <!-- TODO is this needed or not? -->
+          <logLevel>INFO</logLevel>
+          <disableCastChecking>true</disableCastChecking>
+          <compileSourcesArtifacts>
+
+            <compileSourcesArtifact>org.kie:kie-dmn-api</compileSourcesArtifact>
+            <compileSourcesArtifact>org.kie:kie-dmn-feel</compileSourcesArtifact>
+            <compileSourcesArtifact>org.kie:kie-dmn-feel-gwt</compileSourcesArtifact>
+            <compileSourcesArtifact>org.kie:kie-dmn-model</compileSourcesArtifact>
+
+            <!--            <compileSourcesArtifact>org.kie:kie-dmn-feel-gwt-standalone</co mpileSourcesArtifact>-->
+
+          </compileSourcesArtifacts>
+        </configuration>
+        <executions>
+          <execution>
+            <id>gwt-clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>gwt-compile</id>
+            <goals>
+              <!-- Do not use 'resources' goal as it does not play well with filtered resources. -->
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--      <plugin>-->
+      <!--        <groupId>org.codehaus.mojo</groupId>-->
+      <!--        <artifactId>gwt-maven-plugin</artifactId>-->
+      <!--        <configuration>-->
+      <!--          <skip>false</skip>-->
+      <!--          <webappDirectory>${project.build.directory}/classes/</webappDirectory>-->
+
+      <!--          <deploy>${project.build.directory}/gwt-symbols-deploy</deploy>-->
+      <!--          <extraJvmArgs>-Xmx3G -Xms1024m -Xss1M -XX:CompileThreshold=7000-->
+      <!--            -Derrai.dynamic_validation.enabled=true-->
+      <!--            -Derrai.marshalling.server.classOutput.enabled=false-->
+      <!--          </extraJvmArgs>-->
+      <!--          <module>org.kie.dmn.feel.DmnFeelGWTStandalone</module>-->
+      <!--          <gwtSdkFirstInClasspath>false</gwtSdkFirstInClasspath> &lt;!&ndash; TODO is this needed or not? &ndash;&gt;-->
+      <!--          <logLevel>INFO</logLevel>-->
+      <!--          <disableCastChecking>true</disableCastChecking>-->
+      <!--          <compileSourcesArtifacts>-->
+
+      <!--            <compileSourcesArtifact>org.kie:kie-dmn-api</compileSourcesArtifact>-->
+      <!--            <compileSourcesArtifact>org.kie:kie-dmn-feel</compileSourcesArtifact>-->
+      <!--            <compileSourcesArtifact>org.kie:kie-dmn-feel-gwt</compileSourcesArtifact>-->
+      <!--            <compileSourcesArtifact>org.kie:kie-dmn-model</compileSourcesArtifact>-->
+
+      <!--            &lt;!&ndash;            <compileSourcesArtifact>org.kie:kie-dmn-feel-gwt-standalone</compileSourcesArtifact>&ndash;&gt;-->
+
+      <!--          </compileSourcesArtifacts>-->
+      <!--        </configuration>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <id>gwt-clean</id>-->
+      <!--            <phase>clean</phase>-->
+      <!--            <goals>-->
+      <!--              <goal>clean</goal>-->
+      <!--            </goals>-->
+      <!--          </execution>-->
+      <!--          <execution>-->
+      <!--            <id>gwt-compile</id>-->
+      <!--            <goals>-->
+      <!--              &lt;!&ndash; Do not use 'resources' goal as it does not play well with filtered resources. &ndash;&gt;-->
+      <!--              <goal>compile</goal>-->
+      <!--            </goals>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+    </plugins>
+  </build>
+</project>

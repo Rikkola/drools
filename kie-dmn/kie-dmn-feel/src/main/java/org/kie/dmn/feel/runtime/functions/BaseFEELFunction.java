@@ -217,7 +217,8 @@ public abstract class BaseFEELFunction
                 actualParams = params;
             }
             if( isNamedParams ) {
-                actualParams = calculateActualParams( ctx, m, actualParams, available );
+                Object[] newActualParams = calculateActualParams(ctx, m, actualParams, available);
+                actualParams = newActualParams;
                 if( actualParams == null ) {
                     // incompatible method
                     continue;
@@ -331,7 +332,7 @@ public abstract class BaseFEELFunction
             NamedParameter np = (NamedParameter) o;
             if( names.contains( np.getName() ) ) {
                 actualParams[names.indexOf( np.getName() )] = np.getValue();
-            } else if( isVariableParameters ) {
+            } else if( isVariableParameters ) { // TODO ask when this activates since tests are not picking it up
                 // check if it is a variable parameters method
                 if( np.getName().matches( variableParamPrefix + "\\d+" ) ) {
                     int index = Integer.parseInt( np.getName().substring( variableParamPrefix.length() ) ) - 1;
@@ -354,7 +355,7 @@ public abstract class BaseFEELFunction
             }
         }
         if( isVariableParameters ) {
-            actualParams[ actualParams.length - 1 ] = variableParams.toArray();
+            actualParams[ actualParams.length - 1 ] = variableParams.toArray(); // TODO same never hitting this
         }
 
         return actualParams;

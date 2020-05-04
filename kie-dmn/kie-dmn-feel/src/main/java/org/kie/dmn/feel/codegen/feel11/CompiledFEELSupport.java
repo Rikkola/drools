@@ -60,11 +60,9 @@ import org.kie.dmn.feel.runtime.events.InvalidParametersEvent;
 import org.kie.dmn.feel.runtime.events.SyntaxErrorEvent;
 import org.kie.dmn.feel.util.EvalHelper;
 import org.kie.dmn.feel.util.Msg;
-import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 
-@GwtIncompatible
 public class CompiledFEELSupport {
 
     public static ContextBuilder openContext(EvaluationContext ctx) {

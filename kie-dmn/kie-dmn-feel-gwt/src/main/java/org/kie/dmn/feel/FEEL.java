@@ -92,6 +92,8 @@ public interface FEEL {
      */
     Object evaluate(String expression);
 
+    String parseTest(String value);
+
     /**
      * Evaluates the given FEEL expression using the
      * given EvaluationContext, and returns the result

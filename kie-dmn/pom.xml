@@ -21,6 +21,7 @@
     <module>kie-dmn-model</module>
     <module>kie-dmn-feel</module>
     <module>kie-dmn-feel-gwt</module>
+    <module>kie-dmn-feel-gwt-standalone</module>
     <module>kie-dmn-backend</module>
     <module>kie-dmn-core</module>
     <module>kie-dmn-validation-bootstrap</module>

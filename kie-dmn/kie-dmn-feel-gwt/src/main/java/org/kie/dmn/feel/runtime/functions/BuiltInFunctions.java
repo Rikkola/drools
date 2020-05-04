@@ -22,35 +22,36 @@ import org.kie.dmn.feel.runtime.FEELFunction;
 import org.kie.dmn.model.api.GwtIncompatible;
 
 public class BuiltInFunctions {
+// TODO It is unlikely that this is used in GWT
 
     protected static final FEELFunction[] FUNCTIONS = new FEELFunction[]{
-//            new DateFunction(),
-//            new TimeFunction(),
-//            new DateAndTimeFunction(),
-//            new DurationFunction(),
-//            new YearsAndMonthsFunction(),
-//            new StringFunction(),
-//            new NumberFunction(),
-//            new SubstringFunction(),
-//            new SubstringBeforeFunction(),
-//            new SubstringAfterFunction(),
-//            new StringLengthFunction(),
-//            new StringUpperCaseFunction(),
-//            new StringLowerCaseFunction(),
-//            new ContainsFunction(),
-//            new StartsWithFunction(),
-//            new EndsWithFunction(),
-//            new MatchesFunction(),
-//            new ReplaceFunction(),
-//            new ListContainsFunction(),
-//            new CountFunction(),
-//            new MinFunction(),
-//            new MaxFunction(),
-//            new SumFunction(),
-//            new MeanFunction(),
-//            new SublistFunction(),
-//            new AppendFunction(),
-//            new ConcatenateFunction(),
+            new DateFunction(), // TODO TEST
+            new TimeFunction(), // TODO TEST
+            new DateAndTimeFunction(), // TODO TEST
+            new DurationFunction(), // TODO TEST
+            new YearsAndMonthsFunction(), // TODO
+            new StringFunction(), // TODO
+            new NumberFunction(), // TODO TEST
+            new SubstringFunction(),
+            new SubstringBeforeFunction(),
+            new SubstringAfterFunction(),
+            new StringLengthFunction(),
+            new StringUpperCaseFunction(),
+            new StringLowerCaseFunction(),
+            new ContainsFunction(),
+            new StartsWithFunction(),
+            new EndsWithFunction(),
+            new MatchesFunction(),
+            new ReplaceFunction(),
+            new ListContainsFunction(),
+            new CountFunction(), // TODO TEST
+            new MinFunction(), // TODO TEST
+            new MaxFunction(), // TODO TEST
+            new SumFunction(), // TODO TEST
+            new MeanFunction(),
+            new SublistFunction(),
+            new AppendFunction(),
+            new ConcatenateFunction(),
 //            new InsertBeforeFunction(),
 //            new RemoveFunction(),
 //            new ReverseFunction(),
@@ -72,10 +73,10 @@ public class BuiltInFunctions {
             AbsFunction.INSTANCE,
             ModuloFunction.INSTANCE,
             ProductFunction.INSTANCE,
-            SplitFunction.INSTANCE,
-            StddevFunction.INSTANCE,
+//            SplitFunction.INSTANCE,
+//            StddevFunction.INSTANCE,
             ModeFunction.INSTANCE,
-            SqrtFunction.INSTANCE,
+//            SqrtFunction.INSTANCE,
             LogFunction.INSTANCE,
             ExpFunction.INSTANCE,
             EvenFunction.INSTANCE,
@@ -95,9 +96,9 @@ public class BuiltInFunctions {
     }
 
     @GwtIncompatible
-    public static <T extends FEELFunction> T getFunction( Class<T> functionClazz ) {
-        return (T) Stream.of( FUNCTIONS )
-                .filter( f -> functionClazz.isAssignableFrom( f.getClass() ) )
+    public static <T extends FEELFunction> T getFunction(Class<T> functionClazz) {
+        return (T) Stream.of(FUNCTIONS)
+                .filter(f -> functionClazz.isAssignableFrom(f.getClass()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find function by class " + functionClazz.getCanonicalName() + "!"));
     }

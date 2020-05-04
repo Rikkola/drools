@@ -51,7 +51,7 @@ public class SubstringFunction
         if ( Math.abs( start.intValue() ) > stringLength ) {
             return FEELFnResult.ofError( new InvalidParametersEvent( Severity.ERROR, "parameter 'start position' inconsistent with the actual length of the parameter 'string'" ) );
         }
-        
+
         int skip = start.intValue() > 0 ? start.intValue() - 1 : stringLength + start.intValue();
         IntStream stream = string.codePoints().skip(skip);
         if (length != null) {

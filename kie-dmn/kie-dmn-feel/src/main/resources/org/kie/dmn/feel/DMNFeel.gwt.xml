@@ -20,7 +20,7 @@
     "http://google-web-toolkit.googlecode.com/svn/tags/2.5.0/distro-source/core/src/gwt-module.dtd">
 <module>
 
-<!--  <source path="codegen"/>-->
+<!--  <source path="codegen.feel11"/>-->
   <source path="lang"/>
   <source path="marshaller"/>
   <source path="parser"/>
@@ -28,5 +28,5 @@
   <source path="util"/>
   <source path="" includes="FEEL.java"/>
 
-  <inherits name="org.kie.dmn.api.DMNApi" />
+  <inherits name="org.kie.dmn.api.DMNApi"/>
 </module>
