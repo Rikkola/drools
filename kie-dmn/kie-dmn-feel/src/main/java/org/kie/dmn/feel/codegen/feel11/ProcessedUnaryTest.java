@@ -14,7 +14,9 @@ import org.kie.dmn.feel.lang.impl.UnaryTestCompiledExecutableExpression;
 import org.kie.dmn.feel.lang.impl.UnaryTestInterpretedExecutableExpression;
 import org.kie.dmn.feel.parser.feel11.ASTBuilderVisitor;
 import org.kie.dmn.feel.runtime.UnaryTest;
+import org.kie.dmn.model.api.GwtIncompatible;
 
+@GwtIncompatible
 public class ProcessedUnaryTest extends ProcessedFEELUnit {
 
     private static final String TEMPLATE_RESOURCE = "/TemplateCompiledFEELUnaryTests.java";

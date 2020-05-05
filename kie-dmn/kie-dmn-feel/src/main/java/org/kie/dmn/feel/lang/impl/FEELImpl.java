@@ -95,6 +95,11 @@ public class FEELImpl
     }
 
     @Override
+    public String parseTest(String value) {
+        return null;
+    }
+
+    @Override
     public CompilerContext newCompilerContext() {
         return newCompilerContext(Collections.emptySet());
     }

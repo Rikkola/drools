@@ -37,6 +37,8 @@ import org.kie.dmn.model.api.GwtIncompatible;
  */
 public interface FEEL {
 
+    String parseTest(String value);
+
     /**
      * Factory method to create a new FEEL engine instance
      *

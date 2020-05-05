@@ -64,7 +64,6 @@ import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 
-@GwtIncompatible
 public class CompiledFEELSupport {
 
     public static ContextBuilder openContext(EvaluationContext ctx) {
@@ -513,20 +512,6 @@ public class CompiledFEELSupport {
                 new NodeList<>(
                         new NameExpr("feelExprCtx"),
                         Expressions.stringLiteral(msg)));
-    }
-
-    // thread-unsafe, but this is single-threaded so it's ok
-    public static class SyntaxErrorListener implements FEELEventListener {
-        private FEELEvent event = null;
-        @Override
-        public void onEvent(FEELEvent evt) {
-            if (evt instanceof SyntaxErrorEvent
-            || evt instanceof InvalidParametersEvent) {
-                this.event = evt;
-            }
-        }
-        public boolean isError() { return event != null; }
-        public FEELEvent event() { return event; }
     }
 
     public static BigDecimal pow(BigDecimal l, BigDecimal r) {

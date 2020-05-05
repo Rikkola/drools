@@ -25,6 +25,7 @@
   <inherits name="org.kie.dmn.feel.DMNFeel"/>
 
   <super-source path="" includes="FEEL.java"/>
+  <super-source path="codegen.feel11"/>
   <super-source path="util"/>
   <super-source path="lang"/>
   <super-source path="marshaller"/>

@@ -27,7 +27,6 @@ import com.github.javaparser.ast.expr.Expression;
 import org.kie.dmn.feel.lang.Type;
 import org.kie.dmn.model.api.GwtIncompatible;
 
-@GwtIncompatible
 public class DirectCompilerResult {
 
     private final Expression expression;

@@ -19,11 +19,8 @@
 package org.kie.dmn.feel.codegen.feel11;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 import java.util.List;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -39,11 +36,13 @@ import com.github.javaparser.ast.type.Type;
 import org.kie.dmn.feel.lang.ast.RangeNode;
 import org.kie.dmn.feel.runtime.Range;
 import org.kie.dmn.feel.runtime.UnaryTest;
+import org.kie.dmn.model.api.GwtIncompatible;
 
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static com.github.javaparser.StaticJavaParser.parseExpression;
 import static com.github.javaparser.StaticJavaParser.parseType;
 
+@GwtIncompatible
 public class Constants {
 
     public static final Expression DECIMAL_128 = parseExpression("java.math.MathContext.DECIMAL128");

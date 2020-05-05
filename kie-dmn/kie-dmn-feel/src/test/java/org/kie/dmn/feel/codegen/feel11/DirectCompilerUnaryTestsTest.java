@@ -46,7 +46,7 @@ public class DirectCompilerUnaryTestsTest {
     private List<Boolean> parseCompileEvaluate(String feelLiteralExpression, Object l) {
         Object left = EvalHelper.coerceNumber(l);
         FEELEventListenersManager mgr = new FEELEventListenersManager();
-        CompiledFEELSupport.SyntaxErrorListener listener = new CompiledFEELSupport.SyntaxErrorListener();
+         SyntaxErrorListener listener = new  SyntaxErrorListener();
         mgr.addListener(listener);
         EvaluationContext emptyContext = CodegenTestUtil.newEmptyEvaluationContext(mgr);
         CompiledFEELUnaryTests compiledUnaryTests = parse(feelLiteralExpression, mgr, listener);
@@ -104,11 +104,11 @@ public class DirectCompilerUnaryTestsTest {
         assertThat(parseCompileEvaluate("(1..2], [2..3]", 2), is(Arrays.asList(true, true)));
     }
 
-    private CompiledFEELUnaryTests parse(String input, FEELEventListenersManager mgr, CompiledFEELSupport.SyntaxErrorListener listener) {
+    private CompiledFEELUnaryTests parse(String input, FEELEventListenersManager mgr,  SyntaxErrorListener listener) {
         return parse( input, Collections.emptyMap(), mgr, listener );
     }
 
-    private CompiledFEELUnaryTests parse(String input, Map<String, Type> inputTypes, FEELEventListenersManager mgr, CompiledFEELSupport.SyntaxErrorListener listener) {
+    private CompiledFEELUnaryTests parse(String input, Map<String, Type> inputTypes, FEELEventListenersManager mgr,  SyntaxErrorListener listener) {
         FEEL_1_1Parser parser = FEELParser.parse(mgr, input, inputTypes, Collections.emptyMap(), Collections.emptyList(), Collections.emptyList(), null);
 
         ParseTree tree = parser.unaryTestsRoot();
