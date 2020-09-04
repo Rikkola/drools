@@ -15,14 +15,22 @@
  */
 package org.kie.dmn.feel.client;
 
-import com.google.gwt.core.client.EntryPoint;
+//import com.google.gwt.core.client.EntryPoint;
 
-public class DmnFeel
-        implements EntryPoint{
+//import org.kie.dmn.feel.FEEL;
 
-    @Override
-    public void onModuleLoad() {
-// TODO atm this class is not used
+public class App
+//        implements EntryPoint
+{
 
+    public void test() {
+
+//        FEEL.newInstance();
     }
+
+//    @Override
+//    public void onModuleLoad() {
+////// TODO atm this class is not used
+////
+//    }
 }
