@@ -23,7 +23,7 @@
 <!--  <source path="codegen.feel11"/>-->
   <source path="lang"/>
   <source path="marshaller"/>
-  <source path="parser"/>
+<!--  <source path="parser.feel11" includes="" />-->
   <source path="runtime"/>
   <source path="util"/>
   <source path="" includes="FEEL.java"/>

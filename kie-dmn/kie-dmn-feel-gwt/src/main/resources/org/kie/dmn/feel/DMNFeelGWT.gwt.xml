@@ -26,14 +26,15 @@
   <inherits name="org.kie.dmn.feel.DMNFeel"/>
 
   <source path="entrypoint"/>
-  <source path="client"/>
+<!--  <source path="client"/>-->
+  <source path="parser"  />
 
-  <super-source path="" includes="FEEL.java"/>
-  <super-source path="util"/>
-  <super-source path="lang"/>
-  <super-source path="marshaller"/>
-  <super-source path="parser"/>
-  <super-source path="runtime"/>
+<!--  <super-source path="" includes="FEEL.java"/>-->
+<!--  <super-source path="util"/>-->
+<!--  <super-source path="lang"/>-->
+<!--  <super-source path="marshaller"/>-->
+<!--  <super-source path="parser"/>-->
+<!--  <super-source path="runtime"/>-->
 
   <super-source path="super"/>
 
