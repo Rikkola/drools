@@ -62,21 +62,22 @@
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-feel</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-internal</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-memory-compiler</artifactId>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.kie</groupId>-->
+<!--      <artifactId>kie-api</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.kie</groupId>-->
+<!--      <artifactId>kie-internal</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>org.kie</groupId>-->
+<!--      <artifactId>kie-memory-compiler</artifactId>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-core-reflective</artifactId>
+      <!-- test scope -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
@@ -85,14 +86,17 @@
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-compiler</artifactId>
+      <!-- needed by feel, but not used by the JS side -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-ruleunit</artifactId>
+      <!-- needed by pmml -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-canonical-model</artifactId>
+      <!-- needed by pmml -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
@@ -102,10 +106,12 @@
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
+      <!-- needed by feel, but that already works in JS. I suspect if we supported pure Java this was needed -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-mvel-parser</artifactId>
+      <!-- needed by feel, but not used by the JS side -->
     </dependency>
     <dependency>
       <groupId>org.drools</groupId>
