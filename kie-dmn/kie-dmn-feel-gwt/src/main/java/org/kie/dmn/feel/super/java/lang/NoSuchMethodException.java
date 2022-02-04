@@ -17,4 +17,9 @@ package java.lang;
 
 public class NoSuchMethodException extends ReflectiveOperationException {
 
+    public NoSuchMethodException() {
+    }
+
+    public NoSuchMethodException(final String message) {
+    }
 }

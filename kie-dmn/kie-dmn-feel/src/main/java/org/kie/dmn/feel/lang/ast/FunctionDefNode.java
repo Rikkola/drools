@@ -35,6 +35,7 @@ import org.kie.dmn.feel.runtime.FEELFunction.Param;
 import org.kie.dmn.feel.runtime.functions.CustomFEELFunction;
 import org.kie.dmn.feel.runtime.functions.JavaFunction;
 import org.kie.dmn.feel.util.ClassUtil;
+import org.kie.dmn.feel.util.ModifierUtil;
 import org.kie.dmn.feel.util.Msg;
 
 public class FunctionDefNode
@@ -132,14 +133,14 @@ public class FunctionDefNode
 
     private Object locateMethodOrThrow(EvaluationContext ctx, List<Param> params, Class<?> clazz, String methodName, Class[] paramTypes) throws NoSuchMethodException {
         try {
-            Method method = clazz.getMethod( methodName, paramTypes );
-            if (!Modifier.isStatic(method.getModifiers())) {
-                throw new NoSuchMethodException("FEEL external function located method is actually not static: "+method.toString());
+            Method method = ClassUtil.getMethod( clazz, methodName, paramTypes );
+            if (!ModifierUtil.isStatic(method.getModifiers())) {
+                throw new NoSuchMethodException("FEEL external function located method is actually not static: " + method.toString());
             }
             return new JavaFunction(ANONYMOUS, params, clazz, method);
         } catch (NoSuchMethodException e) {
-            List<Method> allCandidateMethods = Arrays.asList(clazz.getMethods()).stream()
-                    .filter(method -> Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()))
+            List<Method> allCandidateMethods = Arrays.asList(ClassUtil.getMethods(clazz)).stream()
+                    .filter(method -> ModifierUtil.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()))
                     .collect(Collectors.toList());
             List<Method> candidateMethodsHavingName = allCandidateMethods.stream().filter(m -> m.getName().startsWith(methodName)).collect(Collectors.toList());
             String candidateMethods = (candidateMethodsHavingName.isEmpty() ? allCandidateMethods : candidateMethodsHavingName).stream()

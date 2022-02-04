@@ -222,6 +222,7 @@
         <version.org.postgresql>42.2.23</version.org.postgresql>
 
         <version.ch.obermuhlner>2.0.1</version.ch.obermuhlner>
+        <version.ch.obermuhlner.js>2.3.0</version.ch.obermuhlner.js>
         <version.org.jboss.jandex>2.4.0.Final</version.org.jboss.jandex>
         <version.org.eclipse.yasson>1.0.9</version.org.eclipse.yasson>
 
@@ -1710,6 +1711,19 @@
                 <groupId>ch.obermuhlner</groupId>
                 <artifactId>big-math</artifactId>
                 <version>${version.ch.obermuhlner}</version>
+            </dependency>
+
+            <!-- used by DMN JS version for BigDecimal arithmetics -->
+            <dependency>
+                <groupId>org.treblereel.gwt</groupId>
+                <artifactId>gwt-bigmath</artifactId>
+                <version>${version.ch.obermuhlner.js}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.gwt</groupId>
+                <artifactId>gwt-bigmath</artifactId>
+                <classifier>sources</classifier>
+                <version>${version.ch.obermuhlner.js}</version>
             </dependency>
 
             <!-- used by DMN for general (runtime-agnostic) inspection of PMML model -->
