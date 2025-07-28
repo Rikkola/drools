@@ -3,16 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>36</version>
-        <relativePath/>
+        <groupId>org.kie</groupId>
+        <artifactId>drools-build-parent</artifactId>
+        <version>999-SNAPSHOT</version>
+        <relativePath>../build-parent</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.kie.yard</groupId>
-    <artifactId>yard-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>org.kie</groupId>
+    <artifactId>kie-yard-parent</artifactId>
+    <version>999-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>YaRD</name>
@@ -82,9 +82,84 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.kie.j2cl.tools.json.mapper</groupId>
+                <artifactId>common</artifactId>
+                <version>${version.json.mapper}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kie.j2cl.tools.yaml.mapper</groupId>
+                <artifactId>common</artifactId>
+                <version>${version.yaml.mapper}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kie.j2cl.tools.yaml.mapper</groupId>
+                <artifactId>processor</artifactId>
+                <version>${version.yaml.mapper}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kie.j2cl.tools.json.mapper</groupId>
+                <artifactId>processor</artifactId>
+                <version>${version.json.mapper}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kie</groupId>
+                <artifactId>kie-yard-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.drools</groupId>
+                <artifactId>drools-ruleunits-dsl</artifactId>
+                <version>${version.org.drools}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.json</artifactId>
+                <version>${version.org.glassfish.jakarta.json}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.obermuhlner</groupId>
+                <artifactId>jshell-scriptengine</artifactId>
+                <version>${version.jshell}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mvel</groupId>
+                <artifactId>mvel2</artifactId>
+                <version>${version.org.mvel}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${version.jackson}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${version.org.junit}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${version.org.assertj}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${version.org.mockito}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${version.ch.qos.logback}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
-        <module>yard-api</module>
-        <module>yard-core</module>
+        <module>kie-yard-api</module>
+        <module>kie-yard-core</module>
     </modules>
 
 </project>
