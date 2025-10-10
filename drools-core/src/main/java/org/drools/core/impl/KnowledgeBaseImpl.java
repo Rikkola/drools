@@ -76,8 +76,10 @@ import org.drools.core.reteoo.SegmentMemory.SegmentPrototype;
 import org.drools.core.reteoo.SegmentPrototypeRegistry;
 import org.drools.core.reteoo.SegmentPrototypeRegistryImpl;
 import org.drools.core.reteoo.TerminalNode;
+import org.drools.core.reteoo.builder.BiLinearDetector;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.reteoo.builder.NodeFactory;
+import org.drools.core.reteoo.builder.SharedPatternChain;
 import org.drools.core.rule.JavaDialectRuntimeData;
 import org.drools.core.rule.accessor.FactHandleFactory;
 import org.drools.wiring.api.classloader.ProjectClassLoader;
@@ -152,6 +154,7 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
     private SessionConfiguration sessionConfiguration;
 
     private List<AsyncReceiveNode> receiveNodes;
+
 
     private boolean mutable = true;
 
@@ -1049,11 +1052,15 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
     public void kBaseInternal_addRules(Collection<? extends Rule> rules, Collection<InternalWorkingMemory> wms ) {
         List<TerminalNode> terminalNodes = new ArrayList<>(rules.size() * 2);
 
+        Map<String, SharedPatternChain> biLinearOpportunities = 
+            Boolean.parseBoolean(System.getProperty("drools.bilinear.enabled", "true")) ?
+                BiLinearDetector.detectBiLinearOpportunities(rules, this.id) : new HashMap<>();
+
         for (Rule r : rules) {
             RuleImpl rule = (RuleImpl) r;
             checkParallelEvaluation( rule );
             this.hasMultipleAgendaGroups |= !rule.isMainAgendaGroup();
-            terminalNodes.addAll(this.reteooBuilder.addRule(rule, wms));
+            terminalNodes.addAll(this.reteooBuilder.addRule(rule, wms, biLinearOpportunities));
         }
 
         if (PhreakBuilder.isEagerSegmentCreation() && !hasSegmentPrototypes()) {
@@ -1317,4 +1324,5 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
         }
         receiveNodes.add(node);
     }
+
 }

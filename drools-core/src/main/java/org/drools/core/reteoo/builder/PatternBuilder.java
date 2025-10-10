@@ -346,6 +346,9 @@ public class PatternBuilder
                                                  (EntryPointNode) context.getObjectSource(),
                                                  objectType,
                                                  context );
+
+        otn.setTailHash(pattern.getTailHash());
+
         if ( objectType.isEvent() && EventProcessingOption.STREAM.equals( context.getRuleBase().getRuleBaseConfiguration().getEventProcessingMode() ) ) {
             ExpirationSpec expirationSpec = getExpirationForType( context, objectType );
 

@@ -19,11 +19,15 @@
 package org.drools.mvel.integrationtests.phreak;
 
 import org.kie.api.definition.type.Position;
+import java.util.List;
+import java.util.ArrayList;
 
 public class A {
 
     @Position(0)
     Integer object;
+    
+    private List<Object> children = new ArrayList<>();
 
     public A(Integer object) {
         super();
@@ -49,6 +53,14 @@ public class A {
 
     public void setObject(Integer object) {
         this.object = object;
+    }
+
+    public List<Object> getChildren() {
+        return children;
+    }
+    
+    public void setChildren(List<Object> children) {
+        this.children = children;
     }
 
     @Override

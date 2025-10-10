@@ -884,9 +884,10 @@ public class MarshallingTest extends CommonTestMethodBase {
 
         // Make sure the rete node map is created correctly
         Map<Integer, BaseNode> nodes = RuleBaseNodes.getNodeMap((InternalKnowledgeBase) kBase);
+        
         assertThat(nodes.size()).isEqualTo(2);
-        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(2)).getObjectType()).getClassType().getSimpleName()).isEqualTo("InitialFactImpl");
-        assertThat(((RuleTerminalNode) nodes.get(4)).getRule().getName()).isEqualTo("Rule 1");
+        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(12)).getObjectType()).getClassType().getSimpleName()).isEqualTo("InitialFactImpl");
+        assertThat(((RuleTerminalNode) nodes.get(14)).getRule().getName()).isEqualTo("Rule 1");
 
         KieSession session = kBase.newKieSession();
 
@@ -929,8 +930,8 @@ public class MarshallingTest extends CommonTestMethodBase {
 
         // Make sure the rete node map is created correctly
         assertThat(nodes.size()).isEqualTo(2);
-        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(2)).getObjectType()).getClassType().getSimpleName()).isEqualTo("InitialFactImpl");
-        assertThat(((RuleTerminalNode) nodes.get(4)).getRule().getName()).isEqualTo("Rule 1");
+        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(12)).getObjectType()).getClassType().getSimpleName()).isEqualTo("InitialFactImpl");
+        assertThat(((RuleTerminalNode) nodes.get(14)).getRule().getName()).isEqualTo("Rule 1");
 
         KieSession session = kBase.newKieSession();
 
@@ -974,9 +975,10 @@ public class MarshallingTest extends CommonTestMethodBase {
 
         // Make sure the rete node map is created correctly
         Map<Integer, BaseNode> nodes = RuleBaseNodes.getNodeMap((InternalKnowledgeBase) kBase);
+        
         assertThat(nodes.size()).isEqualTo(3);
-        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(3)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Person");
-        assertThat(((RuleTerminalNode) nodes.get(5)).getRule().getName()).isEqualTo("Rule 1");
+        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(13)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Person");
+        assertThat(((RuleTerminalNode) nodes.get(15)).getRule().getName()).isEqualTo("Rule 1");
 
         KieSession session = kBase.newKieSession();
 
@@ -1015,11 +1017,11 @@ public class MarshallingTest extends CommonTestMethodBase {
         Map<Integer, BaseNode> nodes = RuleBaseNodes.getNodeMap( (InternalKnowledgeBase) kBase);
 
         assertThat(nodes.size()).isEqualTo(6);
-        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(3)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Cheese");
-        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(5)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Person");
-        assertThat(nodes.get(6).getClass() == JoinRightAdapterNode.class).as("Should end with JoinNode").isTrue();
-        assertThat(nodes.get(7).getClass() == JoinNode.class).as("Should end with JoinNode").isTrue();
-        assertThat(((RuleTerminalNode) nodes.get(8)).getRule().getName()).isEqualTo("Rule 1");
+        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(13)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Cheese");
+        assertThat(((ClassObjectType) ((ObjectTypeNode) nodes.get(15)).getObjectType()).getClassType().getSimpleName()).isEqualTo("Person");
+        assertThat(nodes.get(16).getClass() == JoinRightAdapterNode.class).as("Should end with JoinNode").isTrue();
+        assertThat(nodes.get(17).getClass() == JoinNode.class).as("Should end with JoinNode").isTrue();
+        assertThat(((RuleTerminalNode) nodes.get(18)).getRule().getName()).isEqualTo("Rule 1");
 
         KieSession session = kBase.newKieSession();
 

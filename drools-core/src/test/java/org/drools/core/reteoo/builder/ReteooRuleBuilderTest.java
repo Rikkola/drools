@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.drools.base.base.ClassObjectType;
@@ -92,7 +93,7 @@ public class ReteooRuleBuilderTest {
 
         rule.setConsequence( consequence );
 
-        final List terminals = this.builder.addRule( this.rulebase, Collections.emptyList(), rule );
+        final List terminals = this.builder.addRule( this.rulebase, Collections.emptyList(), rule, new HashMap<>() );
 
         assertThat(terminals.size()).as("Rule must have a single terminal node").isEqualTo(1);
 

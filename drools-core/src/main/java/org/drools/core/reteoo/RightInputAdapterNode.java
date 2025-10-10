@@ -22,13 +22,7 @@ import org.drools.base.base.ObjectType;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.Pattern;
-import org.drools.core.common.BaseNode;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.common.PropagationContext;
-import org.drools.core.common.ReteEvaluator;
-import org.drools.core.common.TupleSets;
-import org.drools.core.common.UpdateContext;
+import org.drools.core.common.*;
 import org.drools.core.reteoo.AccumulateNode.AccumulateMemory;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.util.bitmask.AllSetBitMask;
@@ -45,29 +39,29 @@ import static org.drools.base.reteoo.PropertySpecificUtil.isPropertyReactive;
 import static org.drools.core.phreak.PhreakNodeOperations.doUpdatesReorderChildLeftTuple;
 import static org.drools.core.reteoo.BetaNode.getBetaMemory;
 
-public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNode
+public abstract class RightInputAdapterNode<T extends BetaNode> extends BaseNode
         implements ObjectSinkNode,
-                   RightTupleSink {
+        RightTupleSink {
 
-    protected static final Logger    log               = LoggerFactory.getLogger(RightInputAdapterNode.class);
-    protected static final boolean   isLogTraceEnabled = log.isTraceEnabled();
+    protected static final Logger log = LoggerFactory.getLogger(RightInputAdapterNode.class);
+    protected static final boolean isLogTraceEnabled = log.isTraceEnabled();
 
-    protected T                      betaNode;
+    protected T betaNode;
 
-    private ObjectSinkNode           previousObjectSinkNode;
-    protected BitMask                declaredMask = EmptyBitMask.get();
-    protected BitMask                inferredMask = EmptyBitMask.get();
-    private ObjectSinkNode           nextObjectSinkNode;
-    private BitMask                  negativeMask = EmptyBitMask.get();
-    private ObjectTypeNodeId         inputOtnId   = ObjectTypeNodeId.DEFAULT_ID;
+    private ObjectSinkNode previousObjectSinkNode;
+    protected BitMask declaredMask = EmptyBitMask.get();
+    protected BitMask inferredMask = EmptyBitMask.get();
+    private ObjectSinkNode nextObjectSinkNode;
+    private BitMask negativeMask = EmptyBitMask.get();
+    private ObjectTypeNodeId inputOtnId = ObjectTypeNodeId.DEFAULT_ID;
 
-    private ObjectSource             source;
+    private ObjectSource source;
 
-    private Collection<String>       listenedProperties;
+    private Collection<String> listenedProperties;
 
-    protected boolean                inputIsTupleToObjectNode;
+    protected boolean inputIsTupleToObjectNode;
 
-    private boolean                  inputIsPassive;
+    private boolean inputIsPassive;
 
     private transient ObjectTypeNode objectTypeNode;
 
@@ -79,13 +73,14 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
 
         this.hashcode = calculateHashCode();
 
-        if (context.isStreamMode() ) {
+        if (context.isStreamMode()) {
             ObjectTypeNode otn = getObjectTypeNode();
             if (otn != null) {
-                setStreamMode(otn.getObjectType().isEvent() );
+                setStreamMode(otn.getObjectType().isEvent());
             }
         }
     }
+
     public ObjectSource getParent() {
         return source;
     }
@@ -99,28 +94,28 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
     }
 
     @Override
-    public void assertObject( InternalFactHandle factHandle, PropagationContext pctx, ReteEvaluator reteEvaluator ) {
+    public void assertObject(InternalFactHandle factHandle, PropagationContext pctx, ReteEvaluator reteEvaluator) {
         final BetaMemory memory = getBetaMemoryFromRightInput(betaNode, reteEvaluator);
 
         RightTuple rightTuple = createRightTuple(factHandle, this, pctx);
 
         boolean stagedInsertWasEmpty = memory.getStagedRightTuples().addInsert(rightTuple);
-        if ( isLogTraceEnabled ) {
-            log.trace("BetaNode stagedInsertWasEmpty={}", stagedInsertWasEmpty );
+        if (isLogTraceEnabled) {
+            log.trace("BetaNode stagedInsertWasEmpty={}", stagedInsertWasEmpty);
         }
 
         boolean shouldFlush = isStreamMode();
-        if ( memory.getAndIncCounter() == 0 ) {
-            if ( stagedInsertWasEmpty ) {
+        if (memory.getAndIncCounter() == 0) {
+            if (stagedInsertWasEmpty) {
                 memory.setNodeDirtyWithoutNotify();
             }
-            shouldFlush = memory.linkNode( betaNode, reteEvaluator, !inputIsPassive) | shouldFlush;
-        } else if ( stagedInsertWasEmpty ) {
-            shouldFlush = memory.setNodeDirty( betaNode, reteEvaluator, !inputIsPassive) | shouldFlush;
+            shouldFlush = memory.linkNode(betaNode, reteEvaluator, !inputIsPassive) | shouldFlush;
+        } else if (stagedInsertWasEmpty) {
+            shouldFlush = memory.setNodeDirty(betaNode, reteEvaluator, !inputIsPassive) | shouldFlush;
         }
 
         if (shouldFlush) {
-            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory( betaNode, reteEvaluator ), isStreamMode());
+            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory(betaNode, reteEvaluator), isStreamMode());
         }
     }
 
@@ -128,33 +123,33 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
         TupleImpl rightTuple = modifyPreviousTuples.peekRightTuple(partitionId);
 
         // if the peek is for a different OTN we assume that it is after the current one and then this is an assert
-        while ( rightTuple != null && rightTuple.getInputOtnId().before(getInputOtnId()) ) {
+        while (rightTuple != null && rightTuple.getInputOtnId().before(getInputOtnId())) {
             modifyPreviousTuples.removeRightTuple(partitionId);
 
             // we skipped this node, due to alpha hashing, so retract now
-            rightTuple.setPropagationContext( context );
-            BetaMemory bm = getBetaMemory(((RightInputAdapterNode)rightTuple.getSink()).getBetaNode(), reteEvaluator);
+            rightTuple.setPropagationContext(context);
+            BetaMemory bm = getBetaMemory(((RightInputAdapterNode) rightTuple.getSink()).getBetaNode(), reteEvaluator);
             ((RightInputAdapterNode) rightTuple.getSink()).doDeleteRightTuple(rightTuple, reteEvaluator, bm);
             rightTuple = modifyPreviousTuples.peekRightTuple(partitionId);
         }
 
-        if ( rightTuple != null && rightTuple.getInputOtnId().equals(getInputOtnId()) ) {
+        if (rightTuple != null && rightTuple.getInputOtnId().equals(getInputOtnId())) {
             modifyPreviousTuples.removeRightTuple(partitionId);
             rightTuple.reAdd();
-            if ( context.getModificationMask().intersects(inferredMask) ) {
+            if (context.getModificationMask().intersects(inferredMask)) {
                 // RightTuple previously existed, so continue as modify
-                rightTuple.setPropagationContext( context );  // only update, if the mask intersects
+                rightTuple.setPropagationContext(context);  // only update, if the mask intersects
 
                 BetaMemory bm = getBetaMemory(betaNode, reteEvaluator);
-                rightTuple.setPropagationContext( context );
+                rightTuple.setPropagationContext(context);
                 doUpdateRightTuple(rightTuple, reteEvaluator, bm);
             } else if (rightTuple.getMemory() != null) {
                 reorderRightTuple(reteEvaluator, rightTuple);
             }
         } else {
-            if ( context.getModificationMask().intersects(inferredMask) ) {
+            if (context.getModificationMask().intersects(inferredMask)) {
                 // RightTuple does not exist for this node, so create and continue as assert
-                assertObject( factHandle, context, reteEvaluator );
+                assertObject(factHandle, context, reteEvaluator);
             }
         }
     }
@@ -172,18 +167,18 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
         boolean stagedDeleteWasEmpty = stagedRightTuples.addDelete(rightTuple);
 
         boolean shouldFlush = isStreamMode();
-        if ( memory.getAndDecCounter() == 1 ) {
-            if ( stagedDeleteWasEmpty ) {
+        if (memory.getAndDecCounter() == 1) {
+            if (stagedDeleteWasEmpty) {
                 memory.setNodeDirtyWithoutNotify();
             }
             shouldFlush = memory.unlinkNode() | shouldFlush;
-        } else if ( stagedDeleteWasEmpty ) {
+        } else if (stagedDeleteWasEmpty) {
             // nothing staged before, notify rule, so it can evaluate network
-            shouldFlush = memory.setNodeDirty( betaNode, reteEvaluator ) | shouldFlush;
+            shouldFlush = memory.setNodeDirty(betaNode, reteEvaluator) | shouldFlush;
         }
 
         if (shouldFlush) {
-            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory( betaNode, reteEvaluator ), isStreamMode());
+            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory(betaNode, reteEvaluator), isStreamMode());
         }
     }
 
@@ -192,30 +187,36 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
                                    final BetaMemory memory) {
         TupleSets stagedRightTuples = memory.getStagedRightTuples();
 
-        boolean stagedUpdateWasEmpty = stagedRightTuples.addUpdate( rightTuple );
+        boolean stagedUpdateWasEmpty = stagedRightTuples.addUpdate(rightTuple);
 
         boolean shouldFlush = isStreamMode();
-        if ( stagedUpdateWasEmpty  ) {
-            shouldFlush = memory.setNodeDirty( betaNode, reteEvaluator ) | shouldFlush;
+        if (stagedUpdateWasEmpty) {
+            shouldFlush = memory.setNodeDirty(betaNode, reteEvaluator) | shouldFlush;
         }
 
         if (shouldFlush) {
-            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory( betaNode, reteEvaluator ), isStreamMode());
+            reteEvaluator.getRuleNetworkEvaluator().flushLeftTupleIfNecessary(memory.getOrCreateSegmentMemory(betaNode, reteEvaluator), isStreamMode());
         }
     }
 
     public static BetaMemory getBetaMemoryFromRightInput(BetaNode betaNode, ReteEvaluator reteEvaluator) {
-        return NodeTypeEnums.AccumulateNode == betaNode.getType() ?
-               ((AccumulateMemory)reteEvaluator.getNodeMemory(betaNode)).getBetaMemory() :
-               (BetaMemory) reteEvaluator.getNodeMemory( betaNode );
+
+        if (NodeTypeEnums.AccumulateNode == betaNode.getType()){
+            return ((AccumulateMemory) reteEvaluator.getNodeMemory(betaNode)).getBetaMemory();
+        }
+        if (NodeTypeEnums.BiLinearJoinNode == betaNode.getType()) {
+            // BiLinearMemory extends BetaMemory, so this cast should be safe
+            return (BiLinearMemory) reteEvaluator.getNodeMemory(betaNode);
+        }
+        return (BetaMemory) reteEvaluator.getNodeMemory(betaNode);
     }
 
 
     public RightTuple createRightTuple(InternalFactHandle handle,
                                        RightTupleSink sink,
                                        PropagationContext context) {
-        RightTuple rightTuple = new RightTuple(handle, sink );
-        rightTuple.setPropagationContext( context );
+        RightTuple rightTuple = new RightTuple(handle, sink);
+        rightTuple.setPropagationContext(context);
         return rightTuple;
     }
 
@@ -234,8 +235,8 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
 
             if (isPropertyReactive(context.getRuleBase(), objectType)) {
                 listenedProperties = pattern.getListenedProperties();
-                List<String> accessibleProperties = pattern.getAccessibleProperties( context.getRuleBase() );
-                declaredMask      = pattern.getPositiveWatchMask(accessibleProperties);
+                List<String> accessibleProperties = pattern.getAccessibleProperties(context.getRuleBase());
+                declaredMask = pattern.getPositiveWatchMask(accessibleProperties);
                 declaredMask = declaredMask.setAll(betaNode.getRawConstraints().getListenedPropertyMask(pattern, objectType, accessibleProperties));
                 negativeMask = pattern.getNegativeWatchMask(accessibleProperties);
             } else {
@@ -245,13 +246,13 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
         } else {
             declaredMask = AllSetBitMask.get();
             // There would have been no right input pattern, so swap current to first, so leftInput can still work
-            context.setLastBuiltPattern( context.getLastBuiltPatterns()[0] );
+            context.setLastBuiltPattern(context.getLastBuiltPatterns()[0]);
         }
     }
 
     protected void initInferredMask() {
         BaseNode unwrappedRight = getParent();
-        if ( unwrappedRight.getType() == NodeTypeEnums.AlphaNode ) {
+        if (unwrappedRight.getType() == NodeTypeEnums.AlphaNode) {
             AlphaNode alphaNode = (AlphaNode) unwrappedRight;
             inferredMask = alphaNode.updateMask(declaredMask);
         } else {
@@ -266,11 +267,11 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
     }
 
     @Override
-    public void byPassModifyToBetaNode (final InternalFactHandle factHandle,
-                                        final ModifyPreviousTuples modifyPreviousTuples,
-                                        final PropagationContext context,
-                                        final ReteEvaluator reteEvaluator) {
-        modifyObject( factHandle, modifyPreviousTuples, context, reteEvaluator );
+    public void byPassModifyToBetaNode(final InternalFactHandle factHandle,
+                                       final ModifyPreviousTuples modifyPreviousTuples,
+                                       final PropagationContext context,
+                                       final ReteEvaluator reteEvaluator) {
+        modifyObject(factHandle, modifyPreviousTuples, context, reteEvaluator);
     }
 
 
@@ -280,7 +281,7 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
 
 
     public void updateSink(ObjectSink sink, PropagationContext context, InternalWorkingMemory workingMemory) {
-        source.updateSink(this, context,  workingMemory );
+        source.updateSink(this, context, workingMemory);
     }
 
     @Override
@@ -347,8 +348,8 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
     public ObjectTypeNode getObjectTypeNode() {
         if (objectTypeNode == null) {
             ObjectSource source = this.source;
-            while ( source != null ) {
-                if ( NodeTypeEnums.ObjectTypeNode == source.getType()) {
+            while (source != null) {
+                if (NodeTypeEnums.ObjectTypeNode == source.getType()) {
                     objectTypeNode = (ObjectTypeNode) source;
                     break;
                 }
@@ -366,7 +367,7 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
 
     @Override
     public boolean doRemove(RuleRemovalContext context, ReteooBuilder builder) {
-        if ( !isInUse() ) {
+        if (!isInUse()) {
             source.removeObjectSink(this);
             return true;
         }
@@ -393,28 +394,28 @@ public abstract class RightInputAdapterNode<T extends  BetaNode> extends BaseNod
         }
 
         if ( //!NodeTypeEnums.isBetaNode((NetworkNode)object) ||
-            this.hashCode() != object.hashCode()) {
+                this.hashCode() != object.hashCode()) {
             return false;
         }
 
         RightInputAdapterNode other = (RightInputAdapterNode) object;
         return this.getClass() == other.getClass() &&
-               this.inputIsPassive == other.inputIsPassive &&
-               Objects.equals(this.listenedProperties, other.listenedProperties) &&
-               this.source.getId() == other.source.getId();
+                this.inputIsPassive == other.inputIsPassive &&
+                Objects.equals(this.listenedProperties, other.listenedProperties) &&
+                this.source.getId() == other.source.getId();
     }
 
     @Override
     public String toString() {
         return "RightInputAdapterNode(" + id + ")[ source="
-               + source + ", associations=" + associations + ", partitionId=" + partitionId + "]";
+                + source + ", associations=" + associations + ", partitionId=" + partitionId + "]";
     }
 
     public void networkUpdated(UpdateContext updateContext) {
         this.source.networkUpdated(updateContext);
     }
 
-    public final void setPartitionIdWithSinks( RuleBasePartitionId partitionId) {
+    public final void setPartitionIdWithSinks(RuleBasePartitionId partitionId) {
         this.partitionId = partitionId;
     }
 

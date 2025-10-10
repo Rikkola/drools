@@ -21,15 +21,17 @@ package org.drools.core.reteoo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.rule.WindowDeclaration;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.impl.InternalRuleBase;
+import org.drools.core.reteoo.builder.SharedPatternChain;
 
 public interface RuleBuilder {
 
-    List<TerminalNode> addRule(InternalRuleBase kBase, Collection<InternalWorkingMemory> workingMemories, RuleImpl rule);
+    List<TerminalNode> addRule(InternalRuleBase kBase, Collection<InternalWorkingMemory> workingMemories, RuleImpl rule, Map<String, SharedPatternChain> biLinearOpportunities );
 
     void addEntryPoint(InternalRuleBase kBase, Collection<InternalWorkingMemory> workingMemories, String id);
 

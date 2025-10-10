@@ -42,6 +42,7 @@ import org.drools.core.reteoo.AsyncSendNode;
 import org.drools.core.reteoo.AsyncSendNode.AsyncSendMemory;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.BetaNode;
+import org.drools.core.reteoo.BiLinearJoinNode;
 import org.drools.core.reteoo.ConditionalBranchNode;
 import org.drools.core.reteoo.ConditionalBranchNode.ConditionalBranchMemory;
 import org.drools.core.reteoo.EvalConditionNode;
@@ -78,6 +79,7 @@ public class RuleNetworkEvaluatorImpl implements RuleNetworkEvaluator {
 
     
     private final PhreakJoinNode         pJoinNode;
+    private final PhreakBiLinearJoinNode pBiLinearJoinNode;
     private final PhreakEvalNode         pEvalNode;
     private final PhreakFromNode         pFromNode;
     private final PhreakReactiveFromNode pReactiveFromNode;
@@ -103,6 +105,7 @@ public class RuleNetworkEvaluatorImpl implements RuleNetworkEvaluator {
         this.nodeMemories = nodeMemories;
         this.segmentMemorySupport = segmentMemorySupport;
         pJoinNode   = PhreakNetworkNodeFactory.Factory.get().createPhreakJoinNode(reteEvaluator);
+        pBiLinearJoinNode = PhreakNetworkNodeFactory.Factory.get().createPhreakBiLinearJoinNode(reteEvaluator);
         pEvalNode   = PhreakNetworkNodeFactory.Factory.get().createPhreakEvalNode(reteEvaluator);
         pFromNode   = PhreakNetworkNodeFactory.Factory.get().createPhreakFromNode(reteEvaluator);
         pReactiveFromNode = PhreakNetworkNodeFactory.Factory.get().createPhreakReactiveFromNode(reteEvaluator);
@@ -525,6 +528,11 @@ public class RuleNetworkEvaluatorImpl implements RuleNetworkEvaluator {
         switch (sc.getCurrentNode().getType()) {
             case NodeTypeEnums.JoinNode: {
                 pJoinNode.doNode((JoinNode) sc.getCurrentNode(), sink, bm,
+                        sc.getSourceTuples(), sc.getStagedLeftTuples(), trgTuples);
+                break;
+            }
+            case NodeTypeEnums.BiLinearJoinNode: {
+                pBiLinearJoinNode.doNode((BiLinearJoinNode) sc.getCurrentNode(), sink, bm,
                         sc.getSourceTuples(), sc.getStagedLeftTuples(), trgTuples);
                 break;
             }

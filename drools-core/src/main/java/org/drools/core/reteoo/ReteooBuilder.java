@@ -46,6 +46,7 @@ import org.drools.core.common.MemoryFactory;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.phreak.PhreakBuilder;
 import org.drools.core.reteoo.builder.ReteooRuleBuilder;
+import org.drools.core.reteoo.builder.SharedPatternChain;
 import org.kie.api.definition.rule.Rule;
 
 /**
@@ -69,8 +70,8 @@ public class ReteooBuilder
 
     private transient RuleBuilder       ruleBuilder;
 
-    private IdGenerator nodeIdsGenerator = new IdGenerator(1);
-    private IdGenerator memoryIdsGenerator = new IdGenerator(1);
+    private IdGenerator nodeIdsGenerator = new IdGenerator();
+    private IdGenerator memoryIdsGenerator = new IdGenerator();
 
     // ------------------------------------------------------------
     // Constructors
@@ -100,11 +101,12 @@ public class ReteooBuilder
     /**
      * Add a <code>Rule</code> to the network.
      *
-     * @param rule     The rule to add.
+     * @param rule                  The rule to add.
+     * @param biLinearOpportunities
      * @throws InvalidPatternException
      */
-    public synchronized List<TerminalNode> addRule(final RuleImpl rule, Collection<InternalWorkingMemory> workingMemories) {
-        final List<TerminalNode> terminals = this.ruleBuilder.addRule( this.kBase, workingMemories, rule );
+    public synchronized List<TerminalNode> addRule(final RuleImpl rule, Collection<InternalWorkingMemory> workingMemories, Map<String, SharedPatternChain> biLinearOpportunities) {
+        final List<TerminalNode> terminals = this.ruleBuilder.addRule( this.kBase, workingMemories, rule, biLinearOpportunities );
 
         TerminalNode[] nodes = terminals.toArray( new TerminalNode[terminals.size()] );
         this.rules.put( rule.getFullyQualifiedName(), nodes );
@@ -381,12 +383,13 @@ public class ReteooBuilder
     public static class IdGenerator implements Externalizable {
 
         private static final long serialVersionUID = 510l;
+        private static final int DEFAULT_FIRST_ID = 11;
 
         private Queue<Integer>    recycledIds;
         private int               nextId;
 
         public IdGenerator() {
-            this(1);
+            this(DEFAULT_FIRST_ID);
         }
 
         public IdGenerator(final int firstId) {

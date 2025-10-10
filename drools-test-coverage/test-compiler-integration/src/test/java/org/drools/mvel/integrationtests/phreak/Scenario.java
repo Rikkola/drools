@@ -23,9 +23,11 @@ import org.drools.core.common.TupleSets;
 import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.phreak.PhreakExistsNode;
 import org.drools.core.phreak.PhreakJoinNode;
+import org.drools.core.phreak.PhreakBiLinearJoinNode;
 import org.drools.core.phreak.PhreakNotNode;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.BetaNode;
+import org.drools.core.reteoo.BiLinearJoinNode;
 import org.drools.core.reteoo.ExistsNode;
 import org.drools.core.reteoo.JoinNode;
 import org.drools.core.reteoo.LeftTupleSink;
@@ -181,10 +183,10 @@ public class Scenario {
             
         } else if ( phreakNode == PhreakNotNode.class ) {
             new PhreakNotNode(wm).doNode( (NotNode) betaNode, sinkNode,
-                                        bm, leftTuples, previousResultTuples, actualResultLeftTuples );            
+                                        bm, leftTuples, previousResultTuples, actualResultLeftTuples );
         } else if ( phreakNode == PhreakExistsNode.class ) {
             new PhreakExistsNode(wm).doNode( (ExistsNode) betaNode, sinkNode,
-                                           bm, leftTuples, previousResultTuples, actualResultLeftTuples );            
+                                           bm, leftTuples, previousResultTuples, actualResultLeftTuples );
         }
         
         if ( expectedResultBuilder != null ) {

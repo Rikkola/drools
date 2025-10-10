@@ -44,7 +44,7 @@ public interface RuleNetworkEvaluator {
                   Memory tm,
                   TupleSets trgLeftTuples);
     
-    void forceFlushPath(PathMemory outPmem); 
+    void forceFlushPath(PathMemory outPmem);
 
     void forceFlushLeftTuple(PathMemory pmem,
                              SegmentMemory sm,
@@ -53,12 +53,12 @@ public interface RuleNetworkEvaluator {
     void forceFlushWhenSubnetwork(PathMemory pmem);
     
     boolean flushLeftTupleIfNecessary(SegmentMemory sm, boolean streamMode);
-    
+
     boolean flushLeftTupleIfNecessary(SegmentMemory sm,
-                                             TupleImpl leftTuple,
-                                             boolean streamMode,
-                                             short stagedType);
-    
+                                      TupleImpl leftTuple,
+                                      boolean streamMode,
+                                      short stagedType);
+
     List<PathMemory> findPathsToFlushFromSubnetwork(PathMemory pmem);
     
 

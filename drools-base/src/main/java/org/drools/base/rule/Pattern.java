@@ -76,6 +76,7 @@ public class Pattern implements RuleConditionElement, AcceptsClassObjectType, Ex
 
     private BitMask positiveWatchMask;
     private BitMask negativeWatchMask;
+    private String tailHash;
 
     public Pattern() {
         this(0, null);
@@ -563,5 +564,13 @@ public class Pattern implements RuleConditionElement, AcceptsClassObjectType, Ex
 
     private static boolean isIterable(Class<?> clazz) {
         return Iterable.class.isAssignableFrom( clazz ) || clazz.isArray();
+    }
+
+    public void setTailHash(String tailHash) {
+        this.tailHash = tailHash;
+    }
+
+    public String getTailHash() {
+        return tailHash;
     }
 }

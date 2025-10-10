@@ -85,6 +85,7 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
 
     /* reset counter when dirty */
     protected transient IdGenerator idGenerator;
+    private String tailHash;
 
     public int getOtnIdCounter() {
         return idGenerator.otnIdCounter;
@@ -126,6 +127,14 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
             partitionedSink.addObjectSink(objectSink, alphaNodeHashingThreshold, alphaNodeRangeIndexThreshold);
         }
         this.sink = partitionedSink;
+    }
+
+    public void setTailHash(String tailHash) {
+        this.tailHash = tailHash;
+    }
+
+    public String getTailHash() {
+        return tailHash;
     }
 
     private static class IdGenerator {

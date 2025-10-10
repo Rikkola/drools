@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.core.impl.KnowledgeBaseImpl;
 import org.drools.core.impl.RuleBaseFactory;
@@ -58,7 +59,7 @@ public class ReteooBuilderPerformanceTest {
         long    start   = System.currentTimeMillis();
         for (ReteooBuilder reteBuilder : reteBuilders) {
             for (Rule rule : pkg.getRules())
-                reteBuilder.addRule((RuleImpl)rule, Collections.emptyList());
+                reteBuilder.addRule((RuleImpl)rule, Collections.emptyList(), new HashedMap());
         }
         System.out.println("Added "+RULE_COUNT+" rules to each ReteBuilder's in "+
                            format(System.currentTimeMillis()-start));

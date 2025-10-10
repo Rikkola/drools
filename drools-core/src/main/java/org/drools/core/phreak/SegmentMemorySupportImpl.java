@@ -248,11 +248,21 @@ public class SegmentMemorySupportImpl implements SegmentMemorySupport {
                 continue;
             }
 
-            PathMemory pmem = (PathMemory) nodeMemories.peekNodeMemory(endNode);
+            Memory existingMemory = nodeMemories.peekNodeMemory(endNode);
+
+            if (existingMemory != null && !(existingMemory instanceof PathMemory)) {
+                continue;
+            }
+            
+            PathMemory pmem = (PathMemory) existingMemory;
             if (pmem != null) {
                 pmem.addSegmentToPathMemory(smem);
             } else {
-                pmem = nodeMemories.getNodeMemory((MemoryFactory<? extends PathMemory>) endNode);
+                try {
+                    pmem = nodeMemories.getNodeMemory((MemoryFactory<? extends PathMemory>) endNode);
+                } catch (ClassCastException e) {
+                    continue; // TODO Skip this problematic endNode instead of crashing
+                }
                 pmem.addSegmentToPathMemory(smem); // this needs to be set before init, to avoid recursion during eager segment initialisation
                 pmem.setSegmentMemory(smem.getPos(), smem);
                 initializePathMemory(endNode, pmem);

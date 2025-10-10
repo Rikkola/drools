@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.drools.base.RuleBuildContext;
 import org.drools.base.common.NetworkNode;
@@ -40,11 +42,7 @@ import org.drools.base.rule.constraint.XpathConstraint;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.impl.InternalRuleBase;
-import org.drools.core.reteoo.LeftTupleSource;
-import org.drools.core.reteoo.ObjectSource;
-import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.core.reteoo.PathEndNode;
-import org.drools.core.reteoo.TerminalNode;
+import org.drools.core.reteoo.*;
 import org.drools.core.time.TemporalDependencyMatrix;
 
 import static org.drools.base.rule.TypeDeclaration.NEVER_EXPIRES;
@@ -110,6 +108,16 @@ public class BuildContext implements RuleBuildContext {
     private boolean                          terminated;
 
     private String                           consequenceName;
+    
+    // BiLinear pattern chain opportunities for optimization
+    private Map<String, SharedPatternChain> biLinearOpportunities;
+    
+    // Phase 6: Shared network registry for true network sharing
+    private SharedNetworkRegistry sharedNetworkRegistry;
+    
+    // Package-level shared nodes for the current rule package
+    private Map<String, org.drools.core.reteoo.BiLinearJoinNode> packageSharedNodes;
+    
 
     private final Collection<InternalWorkingMemory> workingMemories;
 
@@ -120,6 +128,7 @@ public class BuildContext implements RuleBuildContext {
         this.currentEntryPoint = EntryPointId.DEFAULT;
         this.attachPQN = true;
         this.emptyForAllBetaConstraints = false;
+        
     }
 
     public List<TerminalNode> getTerminals() {
@@ -207,7 +216,73 @@ public class BuildContext implements RuleBuildContext {
     }
 
     public int getNextMemoryId() {
-        return ruleBase.getReteooBuilder().getMemoryIdsGenerator().getNextId();
+        org.drools.core.reteoo.ReteooBuilder.IdGenerator generator = ruleBase.getReteooBuilder().getMemoryIdsGenerator();
+        int memoryId = generator.getNextId();
+        
+        // CRITICAL FIX: Ensure regular memory IDs never conflict with BiLinear reserved range (1-10)
+        // If the generator returns an ID in the reserved range, skip to the safe range (11+)
+        if (memoryId <= 10) {
+            // Advance generator to safe range (11+)
+            while (generator.getLastId() < 11) {
+                generator.getNextId();
+            }
+            // Get the first safe ID
+            memoryId = generator.getNextId();
+        }
+        
+        return memoryId;
+    }
+
+    // Global reservation counter for BiLinear nodes (the only shared nodes that can have memory ID collisions)
+    private static int biLinearMemoryIdCounter = 1;  // IDs 1-10 for BiLinear (expandable)
+    
+    // Rule-specific BiLinear memory tracking to prevent cross-rule contamination
+    private static java.util.Map<String, Integer> ruleSpecificBiLinearMemoryIds = new java.util.HashMap<>();
+    
+    /**
+     * Gets next reserved memory ID for BiLinearJoinNode with rule-specific isolation
+     * CRITICAL FIX: Each rule gets its own memory context to prevent contamination
+     */
+    public int getNextBiLinearMemoryId() {
+        String ruleName = getCurrentRuleName();
+        
+        if (ruleName != null && !ruleName.isEmpty()) {
+            // Rule-specific memory ID - prevents cross-rule contamination
+            return ruleSpecificBiLinearMemoryIds.computeIfAbsent(ruleName, 
+                k -> getNextGlobalBiLinearMemoryId());
+        } else {
+            // Fallback to global counter for rules without names
+            return getNextGlobalBiLinearMemoryId();
+        }
+    }
+    
+    /**
+     * Global BiLinear memory ID allocation (legacy behavior)
+     */
+    private int getNextGlobalBiLinearMemoryId() {
+        if (biLinearMemoryIdCounter > 10) {
+            biLinearMemoryIdCounter = 1;
+        }
+        return biLinearMemoryIdCounter++;
+    }
+    
+    /**
+     * Gets current rule name for memory isolation
+     */
+    private String getCurrentRuleName() {
+        if (rule != null) {
+            return rule.getName();
+        }
+        // Try to get from build stack
+        if (buildstack != null && !buildstack.isEmpty()) {
+            for (org.drools.base.rule.RuleConditionElement element : buildstack) {
+                if (element instanceof org.drools.base.rule.GroupElement) {
+                    // This is a simplified approach - in practice we'd need rule context
+                    break;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -448,6 +523,166 @@ public class BuildContext implements RuleBuildContext {
 
     public void setSubRuleIndex(int subRuleIndex) {
         this.subRuleIndex = subRuleIndex;
+    }
+    
+    /**
+     * @return the biLinearOpportunities
+     */
+    public Map<String, SharedPatternChain> getBiLinearOpportunities() {
+        return biLinearOpportunities;
+    }
+    
+    /**
+     * @param biLinearOpportunities the biLinearOpportunities to set
+     */
+    public void setBiLinearOpportunities(Map<String, SharedPatternChain> biLinearOpportunities) {
+        this.biLinearOpportunities = biLinearOpportunities;
+    }
+    
+    // Hash lookup methods for BiLinear optimization
+    
+    /**
+     * Gets the tailHash for the current ObjectSource.
+     * Now simplified to use direct tailHash lookup since Pattern and ObjectTypeNode 
+     * have consistent tailHash values.
+     * 
+     * @return tailHash for current ObjectSource, or null if not found
+     */
+    public String getPatternHashForCurrentSources() {
+        if (biLinearOpportunities == null || biLinearOpportunities.isEmpty()) {
+            return null;
+        }
+        
+        // Direct tailHash lookup from ObjectTypeNode - much simpler and more reliable
+        ObjectSource objectSource = getObjectSource();
+        if (objectSource == null) {
+            return null;
+        }
+        
+        ObjectTypeNode objectTypeNode = objectSource.getObjectTypeNode();
+        if (objectTypeNode == null) {
+            return null;
+        }
+        
+        String tailHash = objectTypeNode.getTailHash();
+        
+        // Verify this tailHash exists in our BiLinear opportunities
+        if (tailHash != null && biLinearOpportunities.containsKey(tailHash)) {
+            return tailHash;
+        }
+        
+        // If no direct match, check for partial match (for scoped hashes)
+        if (tailHash != null) {
+            for (String key : biLinearOpportunities.keySet()) {
+                if (key.contains(tailHash)) {
+                    return key;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Gets a pre-computed hash for a specific ObjectSource and TupleSource combination.
+     * 
+     * @param leftType The left source object type name
+     * @param rightType The right source object type name
+     * @return Pre-computed hash for the source pair, or null if not found
+     */
+    public String getPatternHashForSources(String leftType, String rightType) {
+        if (biLinearOpportunities == null || biLinearOpportunities.isEmpty() || 
+            leftType == null || rightType == null) {
+            return null;
+        }
+        
+        // Search through BiLinear opportunities for matching source pair
+        for (SharedPatternChain chain : biLinearOpportunities.values()) {
+            String pairHash = chain.getSourcePairHash(leftType, rightType);
+            if (pairHash != null) {
+                return pairHash;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Finds a SharedPatternChain that contains the specified source pair.
+     * This allows accessing the full pattern chain context and its pre-computed hashes.
+     * 
+     * @param leftType The left source object type name
+     * @param rightType The right source object type name
+     * @return The SharedPatternChain containing the source pair, or null if not found
+     */
+    public SharedPatternChain findPatternChainForSources(String leftType, String rightType) {
+        if (biLinearOpportunities == null || biLinearOpportunities.isEmpty() || 
+            leftType == null || rightType == null) {
+            return null;
+        }
+        
+        // Search through BiLinear opportunities for a chain containing the source pair
+        for (SharedPatternChain chain : biLinearOpportunities.values()) {
+            if (chain.containsSourcePair(leftType, rightType)) {
+                return chain;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Extracts simple object type name from a source node for hash lookup.
+     * This uses the same logic as BiLinearNodeFactory to ensure consistency.
+     * 
+     * @param source The source node (ObjectSource or LeftTupleSource)
+     * @return The simple object type name, or null if extraction fails
+     */
+    private String extractObjectTypeName(Object source) {
+        if (source == null) {
+            return null;
+        }
+        
+        // This would use the same extraction logic as BiLinearNodeFactory.extractSimpleObjectTypeName()
+        // For now, return the class simple name as a basic implementation
+        String className = source.getClass().getSimpleName();
+        
+        // Remove common suffixes to get clean type names
+        if (className.endsWith("Node")) {
+            className = className.substring(0, className.length() - 4);
+        }
+        if (className.endsWith("Source")) {
+            className = className.substring(0, className.length() - 6);
+        }
+        
+        return className;
+    }
+    
+    /**
+     * Gets the shared network registry for Phase 6 network sharing.
+     */
+    public SharedNetworkRegistry getSharedNetworkRegistry() {
+        return sharedNetworkRegistry;
+    }
+    
+    /**
+     * Sets the shared network registry for Phase 6 network sharing.
+     */
+    public void setSharedNetworkRegistry(SharedNetworkRegistry sharedNetworkRegistry) {
+        this.sharedNetworkRegistry = sharedNetworkRegistry;
+    }
+    
+    /**
+     * Gets the package-level shared nodes for the current rule package.
+     */
+    public Map<String, org.drools.core.reteoo.BiLinearJoinNode> getPackageSharedNodes() {
+        return packageSharedNodes;
+    }
+    
+    /**
+     * Sets the package-level shared nodes for the current rule package.
+     */
+    public void setPackageSharedNodes(Map<String, org.drools.core.reteoo.BiLinearJoinNode> packageSharedNodes) {
+        this.packageSharedNodes = packageSharedNodes;
     }
 
 }

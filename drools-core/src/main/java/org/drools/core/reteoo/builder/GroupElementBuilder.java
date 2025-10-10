@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.drools.core.reteoo.*;
+import org.drools.core.reteoo.builder.BiLinearDetector;
+
 import org.drools.base.InitialFact;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.GroupElement;
@@ -33,13 +36,6 @@ import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.TupleStartEqualsConstraint;
-import org.drools.core.reteoo.CoreComponentFactory;
-import org.drools.core.reteoo.ExistsNode;
-import org.drools.core.reteoo.JoinNode;
-import org.drools.core.reteoo.LeftTupleSource;
-import org.drools.core.reteoo.NotNode;
-import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.core.reteoo.TupleToObjectNode;
 import org.drools.base.rule.constraint.BetaConstraint;
 import org.kie.api.definition.rule.Propagation;
 
@@ -158,25 +154,129 @@ public class GroupElementBuilder
         }
 
         public static void buildJoinNode(BuildContext context, BuildUtils utils) {
+
             // if there was a previous tuple source, then a join node is needed
-            if (context.getObjectSource() != null && context.getTupleSource() != null) {
+            ObjectSource objectSource = context.getObjectSource();
+            if (objectSource != null && context.getTupleSource() != null) {
+
+                JoinNode joinNode = null;
+
+                // BiLinear checking BEFORE creating beta constraints to avoid any interference
+                boolean biLinearEnabled = Boolean.parseBoolean(System.getProperty("drools.bilinear.enabled", "true"));
+
                 // so, create the tuple source and clean up the constraints and object source
                 final BetaConstraints betaConstraints = utils.createBetaNodeConstraint( context,
                                                                                         context.getBetaconstraints(),
                                                                                         false );
 
-                JoinNode joinNode = CoreComponentFactory.get()
-                                           .getNodeFactoryService().buildJoinNode( context.getNextNodeId(),
-                                                                                   context.getTupleSource(),
-                                                                                   context.getObjectSource(),
-                                                                                   betaConstraints,
-                                                                                   context);
+                if (biLinearEnabled) {
 
+                    // Use direct tailHash lookup - much simpler now that ObjectTypeNode has consistent tailHash
+                    SharedPatternChain matchingChain = findMatchingPatternChainByTailHash(context);
+
+                    if (matchingChain != null) {
+                        boolean suitable = BiLinearDetector.isSuitableForBiLinearOptimization(matchingChain);
+
+                        if (suitable) {
+                            // Always create BiLinear node immediately - no deferral needed
+                            // The BiLinearNodeFactory will handle sharing via the semantic signature cache
+                            joinNode = CoreComponentFactory.get()
+                                                        .getNodeFactoryService().buildBiLinearJoinNode( betaConstraints,
+                                                                                                        context);
+                        }
+                    }
+                }
+                
+                if (joinNode == null) {
+                    // Create standard join node (either BiLinear disabled or no opportunities)
+                    joinNode = CoreComponentFactory.get()
+                                               .getNodeFactoryService().buildJoinNode( context.getNextNodeId(),
+                                                                                       context.getTupleSource(),
+                                                                                       context.getObjectSource(),
+                                                                                       betaConstraints,
+                                                                                       context);
+                }
+
+                // CRITICAL FIX: Both BiLinear and standard join nodes must be properly attached to the network
+                // This ensures LeftInputAdapterNodes have proper sink connections
                 context.setTupleSource( utils.attachNode( context, joinNode));
                 context.setBetaconstraints( null );
                 context.setObjectSource( null );
             }
         }
+        
+        /**
+         * Simplified SharedPatternChain lookup using consistent tailHash values.
+         * No longer needs emergency fixes or complex fallback logic.
+         */
+        private static SharedPatternChain findPatternChainByHash(BuildContext context, String hash) {
+            if (context.getBiLinearOpportunities() == null || context.getBiLinearOpportunities().isEmpty() || hash == null) {
+                return null;
+            }
+            
+            // Direct hash lookup - now reliable with consistent tailHash values
+            SharedPatternChain directMatch = context.getBiLinearOpportunities().get(hash);
+            if (directMatch != null) {
+                return directMatch;
+            }
+            
+            // Check for partial match (for scoped hashes like "kieBaseId::tailHash")
+            for (Map.Entry<String, SharedPatternChain> entry : context.getBiLinearOpportunities().entrySet()) {
+                if (entry.getKey().contains(hash)) {
+                    return entry.getValue();
+                }
+            }
+            
+            return null;
+        }
+        
+        /**
+         * Simplified pattern chain matching using direct tailHash lookup.
+         * Now that Pattern and ObjectTypeNode have consistent tailHash values,
+         * we can directly match based on the tailHash instead of complex pattern analysis.
+         */
+        private static SharedPatternChain findMatchingPatternChainByTailHash(BuildContext context) {
+            if (context.getBiLinearOpportunities() == null || context.getBiLinearOpportunities().isEmpty()) {
+                return null;
+            }
+            
+            // Get tailHash directly from ObjectTypeNode - this is now reliable
+            ObjectSource objectSource = context.getObjectSource();
+            if (objectSource == null) {
+                return null;
+            }
+            
+            ObjectTypeNode objectTypeNode = objectSource.getObjectTypeNode();
+            if (objectTypeNode == null) {
+                return null;
+            }
+            
+            String tailHash = objectTypeNode.getTailHash();
+
+            if (tailHash == null) {
+                return null;
+            }
+            
+            // Direct lookup in BiLinear opportunities using the tailHash
+            SharedPatternChain directMatch = context.getBiLinearOpportunities().get(tailHash);
+            if (directMatch != null) {
+                return directMatch;
+            }
+            
+            // If no direct match, check if any opportunity contains this tailHash pattern
+            for (Map.Entry<String, SharedPatternChain> entry : context.getBiLinearOpportunities().entrySet()) {
+                String key = entry.getKey();
+                SharedPatternChain chain = entry.getValue();
+                
+                // Check if the tailHash is contained in the opportunity key
+                if (key.contains(tailHash)) {
+                    return chain;
+                }
+            }
+            
+            return null;
+        }
+        
 
         public boolean requiresLeftActivation(final BuildUtils utils,
                                               final RuleConditionElement rce) {
@@ -194,6 +294,7 @@ public class GroupElementBuilder
             return builder.requiresLeftActivation( utils,
                                                    child );
         }
+        
     }
 
     public static class OrBuilder

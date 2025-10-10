@@ -279,10 +279,6 @@ public class SegmentMemory extends LinkedList<SegmentMemory>
     }
 
     public void addPathMemory(PathMemory pathMemory) {
-        if (pathMemories.contains(pathMemory)) {
-            System.out.println("!!!");
-        }
-
         pathMemories.add(pathMemory);
         if (getAllLinkedMaskTest() > 0 && isSegmentLinked()) {
             pathMemory.linkSegmentWithoutRuleNotify(segmentPosMaskBit);

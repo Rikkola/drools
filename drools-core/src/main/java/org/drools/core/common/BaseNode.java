@@ -99,7 +99,26 @@ public abstract class BaseNode
 
     protected void initMemoryId( BuildContext context ) {
         if (context != null && this instanceof MemoryFactory) {
-            memoryId = context.getNextMemoryId();
+            String nodeType = this.getClass().getSimpleName();
+
+            // Check if memory ID is already set
+            if (this.memoryId >= 0) {
+                return; // TODO do we hit this?
+            }
+            
+            if (nodeType.equals("BiLinearJoinNode")) {
+                // BILINEAR MEMORY ID RESERVATION STRATEGY:
+                // Only BiLinear nodes need reserved IDs because they're the only nodes shared between rules
+                // RuleTerminalNodes don't need reservation since each rule has its own terminal node
+                // IDs 1-10: Reserved for BiLinearJoinNode instances (shared across rules)
+                // IDs 11+:  Sequential allocation for all other nodes (including RuleTerminalNode)
+                
+                memoryId = context.getNextBiLinearMemoryId(); // Will return 1, 2, 3, 4, 5, etc.
+            } else {
+                // All other nodes (including RuleTerminalNode) use sequential memory IDs
+                // RuleTerminalNodes don't need reservation since they're never shared between rules
+                memoryId = context.getNextMemoryId();
+            }
         }
     }
 

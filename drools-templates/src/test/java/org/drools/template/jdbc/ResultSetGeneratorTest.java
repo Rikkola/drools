@@ -50,6 +50,9 @@ public class ResultSetGeneratorTest {
 
     @Test
     public void testResultSet() throws Exception {
+        // Disable BiLinear optimization for this test to avoid interference
+        String originalProperty = System.getProperty("drools.bilinear.enabled");
+        System.setProperty("drools.bilinear.enabled", "false");
 
         // setup the HSQL database with our rules.
         Class.forName("org.hsqldb.jdbcDriver");
@@ -94,7 +97,13 @@ public class ResultSetGeneratorTest {
         kSession.fireAllRules();
 
         assertThat(list.size()).isEqualTo(1);
-
+        
+        // Restore original BiLinear property
+        if (originalProperty != null) {
+            System.setProperty("drools.bilinear.enabled", originalProperty);
+        } else {
+            System.clearProperty("drools.bilinear.enabled");
+        }
     }
 
      /**

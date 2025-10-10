@@ -50,6 +50,7 @@ public class MockObjectSource extends ObjectSource {
         this.facts = new ArrayList();
     }
 
+
     public void attach() {
         this.attached++;
     }
