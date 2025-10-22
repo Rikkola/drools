@@ -146,6 +146,7 @@
     <module>drools-io</module>
     <module>drools-core</module>
     <module>drools-base</module>
+    <module>drools2</module>
     <module>drools-commands</module>
     <module>drools-kiesession</module>
     <module>drools-ecj</module>

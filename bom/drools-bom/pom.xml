@@ -249,6 +249,25 @@
 
       <dependency>
         <groupId>org.drools</groupId>
+        <artifactId>drools2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.drools2</groupId>
+        <artifactId>drools2</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.drools</groupId>
+        <artifactId>drools2</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.drools</groupId>
         <artifactId>drools-drl-ast</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -696,7 +715,7 @@
         <groupId>org.drools</groupId>
         <artifactId>drools-quarkus-ruleunits</artifactId>
         <version>${project.version}</version>
-        <classifier>sources</classifier>      
+        <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>org.drools</groupId>
@@ -1183,7 +1202,7 @@
         <artifactId>kie-drl-kiesession-local-runtime</artifactId>
         <version>${project.version}</version>
       </dependency>
-      
+
       <!-- drlonyaml -->
       <dependency>
         <groupId>org.drools</groupId>
