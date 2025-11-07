@@ -30,4 +30,8 @@ public interface Predicate1<A> extends Predicate, Serializable {
     default Predicate1<A> negate() {
         return a -> !test( a );
     }
+
+    default Predicate1<A> TRUE() {
+        return a -> true;
+    }
 }

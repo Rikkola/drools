@@ -1,28 +1,21 @@
 package org.drools.core;
 
-import org.drools.core.OOPathTest.Book;
-import org.drools.core.OOPathTest.Library;
-import org.drools.core.OOPathTest.Page;
-import org.drools.core.OOPathTest.Room;
-import org.drools.core.OOPathTest.Shelf;
 import org.drools.core.PathNode.ListPathNode;
 import org.drools.core.PathNode.RootPathNode;
 import org.drools.core.function.Function1;
 import org.drools.core.function.Predicate1;
-
 import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
 import org.drools.core.function.Tuple.Tuple4;
 import org.drools.core.function.Tuple.Tuple5;
 
-import java.util.List;
-
-public class OOPathBuilder {
+public class RuleOOPathBuilder {
 
     public <A> OOPathBuilderA1<A> path() {
         return path(o->true);
     }
+
     public <A> OOPathBuilderA1<A> path(Predicate1<A> flt1) {
         return new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, flt1));
     }
@@ -34,9 +27,10 @@ public class OOPathBuilder {
             this.b1 = b1;
         }
 
-        public <B> OOPathBuilderA2<A, B> path(Function1<A,?> fn1,
+        public <B> OOPathBuilderA2<A, B> path(AccessType accessType,
+                                              Function1<A,?> fn1,
                                               Predicate1<B> flt1) {
-            return new OOPathBuilderA2<>(new OOPathBuilder2<>(AccessType.LIST, fn1, flt1, b1));
+            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn1, flt1, b1));
         }
 
         static <A, B>  PathNode<?, A, Tuple1<A>> build(OOPathBuilder2<A, B> b2) {
@@ -51,9 +45,9 @@ public class OOPathBuilder {
             this.b2 = b2;
         }
 
-        public <C> OOPathBuilderA3<A, B, C> path(Function2<B,?> fn1,
+        public <C> OOPathBuilderA3<A, B, C> path(Function1<B,?> fn1,
                                                  Predicate1<C> fl1) {
-            return new OOPathBuilderA3<>(new OOPathBuilder3<>(AccessType.LIST, fn1, fl1, b2));
+            return new OOPathBuilderA3<>(new OOPathBuilder3<>(AccessType.DYNAMIC, fn1, fl1, b2));
         }
 
         public OOPath<A, B, Tuple2<A, B>> build() {
@@ -73,9 +67,10 @@ public class OOPathBuilder {
             this.b3 = b3;
         }
 
-        public <D> OOPathBuilderA4<A, B, C, D> path(Function1<C,?> fn1,
-                                                    Predicate1<D> flt1) {
-            return new OOPathBuilderA4<>(new OOPathBuilder4<>(AccessType.LIST, fn1, flt1, b3));
+        public <D> OOPathBuilderA4<A, B, C, D> path(AccessType accessType,
+                                                Function1<C,?> fn1,
+                                                Predicate1<D> flt1) {
+            return new OOPathBuilderA4<>(new OOPathBuilder4<>(accessType, fn1, flt1, b3));
         }
 
         public OOPath<A, C, Tuple3<A, B, C>> build() {
@@ -95,9 +90,10 @@ public class OOPathBuilder {
             this.b4 = p;
         }
 
-        public <E> OOPathBuilderA5<A, B, C, D, E> path(Function1<D,?> fn1,
+        public <E> OOPathBuilderA5<A, B, C, D, E> path(AccessType accessType,
+                                                       Function1<D,?> fn1,
                                                        Predicate1<E> flt1) {
-            return new OOPathBuilderA5<>(new OOPathBuilder5<>(AccessType.LIST, fn1, flt1, b4));
+            return new OOPathBuilderA5<>(new OOPathBuilder5<>(accessType, fn1, flt1, b4));
         }
 
         public OOPath<A, D, Tuple4<A, B, C, D>> build() {

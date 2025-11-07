@@ -1,9 +1,14 @@
 package org.drools.core;
 
 import org.drools.api.data.DataStore;
+import org.drools.core.OOPathTest.Book;
+import org.drools.core.OOPathTest.Page;
+import org.drools.core.OOPathTest.Room;
+import org.drools.core.OOPathTest.Shelf;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 public class RuleBuilderTest {
@@ -17,9 +22,23 @@ public class RuleBuilderTest {
 
         DataStore<Person> persons = ds.as(Person.class);
 
+        DataStore<Library> libraries = ds.as(Library.class);
+
         record P3(String p3_1, String p3_2, String p3_3) {
             public static final P3 V = new P3(null,null,null);
         };
+
+        builder.rule("rule1")
+               .fn( (ctx) -> System.out.println("hello"));
+
+        builder.rule("rule1")
+               .from(libraries).filter((ctx, b) -> b.name() != null)
+               //.path()
+               .fn( (ctx, b) -> System.out.println(b.name()));
+
+        builder.rule("rule1").<P3>params()
+               .join(builder.from(persons).filter((ctx, b) -> b.age() > 20))
+               .fn( (ctx, b, c) -> System.out.println("hello"));
 
         builder.rule("rule1").<P3>params()
                .fn( (ctx, p) -> System.out.println(p.p3_1));
@@ -28,7 +47,8 @@ public class RuleBuilderTest {
                .join(builder.from(persons).filter((ctx, b) -> b.age() > 20))
                .filter((ctx, a, b) -> a.p3_1().length() > b.age)
                .join(builder.from(persons).filter(((ctx, c) -> c.age() > 20)))
-               .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0);
+               .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0)
+               .fn( (ctx, a, b, c) -> System.out.println(a.p3_1));;
 
         builder.rule("rule1").param("name", String.class).param("age", int.class)
                .join(builder.from(persons).filter((ctx, b) -> b.age() > 20))
@@ -56,8 +76,10 @@ public class RuleBuilderTest {
                .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0);
     }
 
-    public void test2() {
-        RuleBuilder builder = new RuleBuilder();
+    public void testPath() {
+        record DS(DataStore<?> ds1) {};
+
+        RuleBuilder<DS> builder = new RuleBuilder<>();
 
         DataStore<Object> ds = new DefaultDataStore<>();
 
@@ -66,6 +88,15 @@ public class RuleBuilderTest {
         record P3(String p3_1, String p3_2, String p3_3) {
             public static final P3 V = new P3(null,null,null);
         };
+
+//        builder.rule("rule1").<Library>params()
+//               .fn( (ctx, p) -> System.out.println(p.p3_1));
+
+        builder.rule("rule1").<Library>params()
+               .<Room>path((c,l) -> l.rooms(), (a, r) -> r.name() != null)
+               .<Shelf>path((b) -> b.rooms(), (s) -> s.books() != null );
+
+
     }
 
     public record Person(String name, int age) {
@@ -120,4 +151,33 @@ public class RuleBuilderTest {
         }
     }
 
+    record Library(String name, List<OOPathTest.Room> rooms) {
+        public String toString() {
+            return "Library[name=" + name +"]";
+        }
+    }
+
+    record Room(String name, List<OOPathTest.Shelf> shelves) {
+        public String toString() {
+            return "Room[name=" + name +"]";
+        }
+    }
+
+    record Shelf(String name, List<OOPathTest.Book> books) {
+        public String toString() {
+            return "Shelf[name=" + name +"]";
+        }
+    }
+
+    record Book(String title, List<OOPathTest.Page> pages) {
+        public String toString() {
+            return "Book[name=" + title +"]";
+        }
+    }
+
+    record Page(int number, String content) {
+        public String toString() {
+            return "Page[number=" + number +"]";
+        }
+    }
 }

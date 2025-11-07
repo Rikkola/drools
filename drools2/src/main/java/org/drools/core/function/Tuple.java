@@ -1,13 +1,87 @@
 package org.drools.core.function;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 public abstract class Tuple {
+    protected int size;
+
+    // Does not need to be concurrent, as the value is always the same for the key, it'll eventually be consistent.
+    private static Map<String, Constructor<?>> constructors = new ConcurrentHashMap<>();
 
     public abstract <T> T get(int index);
 
     public abstract <T> void set(int index, T t);
 
+    private <T> Constructor<T> getConstructor(Class<T> cls) {
+        Constructor<?> con =  constructors.computeIfAbsent(cls.getName(), (k) -> {
+            Constructor<?>[]  cons = cls.getDeclaredConstructors();
+            for ( Constructor<?> i : cons) {
+                if (i.getParameterCount() == size) {
+                    return i;
+                }
+            }
+            throw new IllegalStateException("Unable to resolve constructor for class" + cls.getCanonicalName());
+        });
+
+        return (Constructor<T>) con;
+    }
+
+    public <T> T as(T... v) {
+        Class  cls  = v.getClass().getComponentType();
+        Constructor<T> con = getConstructor(cls);
+        try {
+            switch (size) {
+                case 1: {
+                    Tuple1<?>   t   = (Tuple1<?>) this;
+                    return con.newInstance(t.a);
+                }
+                case 2: {
+                    Tuple2<?, ?>   t   = (Tuple2<?, ?>) this;
+                    return con.newInstance(t.a, t.b);
+                }
+                case 3: {
+                    Tuple3<?, ?, ?> t   = (Tuple3<?, ?, ?>) this;
+                    return con.newInstance(t.a, t.b, t.c);
+                }
+                case 4: {
+                    Tuple4<?, ?, ?, ?> t   = (Tuple4<?, ?, ?, ?>) this;
+                    return con.newInstance(t.a, t.b, t.c, t.d);
+                }
+                case 5: {
+                    Tuple5<?, ?, ?, ?, ?> t   = (Tuple5<?, ?, ?, ?, ?>) this;
+                    return con.newInstance(t.a, t.b, t.c, t.d, t.e);
+                }
+            }
+        } catch (InvocationTargetException|InstantiationException|IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        throw new IllegalStateException("Unable to instantiate target class");
+    }
+
+    public int size() {
+        return size;
+    }
+
     public static class Tuple1<A> extends Tuple {
-        private A a;
+        protected A a;
+
+        public Tuple1() {
+            super();
+        }
+
+        public Tuple1(A a) {
+            this.a = a;
+            this.size = 1;
+
+
+        }
 
         public A getA() {
             return a;
@@ -43,7 +117,17 @@ public abstract class Tuple {
 
 
     public static class Tuple2<A, B> extends Tuple1<A> {
-        private B b;
+        protected B b;
+
+        public Tuple2() {
+            super();
+        }
+
+        public Tuple2(A a, B b) {
+            super(a);
+            this.b = b;
+            this.size = 2;
+        }
 
         public B getB() {
             return b;
@@ -57,10 +141,10 @@ public abstract class Tuple {
         public <T> T get(int index) {
             switch (index) {
                 case 0: {
-                    return (T) getA();
+                    return (T) a;
                 }
                 case 1: {
-                    return (T) getB();
+                    return (T) b;
                 }
                 default :
                     throw new IndexOutOfBoundsException(index);
@@ -71,7 +155,7 @@ public abstract class Tuple {
         public <T> void set(int index, T t) {
             switch (index) {
                 case 0: {
-                    setA((A) t);
+                    a = (A) t;
                     break;
                 }
                 case 1: {
@@ -85,7 +169,17 @@ public abstract class Tuple {
     }
 
     public static class Tuple3<A, B, C> extends Tuple2<A, B> {
-        private C c;
+        protected C c;
+
+        public Tuple3() {
+            super();
+        }
+
+        public Tuple3(A a, B b, C c) {
+            super(a, b);
+            this.c = c;
+            this.size = 3;
+        }
 
         public C getC() {
             return c;
@@ -99,10 +193,10 @@ public abstract class Tuple {
         public <T> T get(int index) {
             switch (index) {
                 case 0: {
-                    return (T) getA();
+                    return (T) a;
                 }
                 case 1: {
-                    return (T) getB();
+                    return (T) b;
                 }
                 case 2: {
                     return (T) c;
@@ -116,11 +210,11 @@ public abstract class Tuple {
         public <T> void set(int index, T t) {
             switch (index) {
                 case 0: {
-                    setA((A) t);
+                    a = (A) t;
                     break;
                 }
                 case 1: {
-                    setB((B) t);
+                    b = (B) t;
                     break;
                 }
                 case 2: {
@@ -134,7 +228,16 @@ public abstract class Tuple {
     }
 
     public static class Tuple4<A, B, C, D> extends Tuple3<A, B, C> {
-        private D d;
+        protected D d;
+
+        public Tuple4() {
+            super();
+        }
+        public Tuple4(A a, B b, C c, D d) {
+            super(a, b, c);
+            this.d = d;
+            this.size = 4;
+        }
 
         public D getD() {
             return d;
@@ -148,13 +251,13 @@ public abstract class Tuple {
         public <T> T get(int index) {
             switch (index) {
                 case 0: {
-                    return (T) getA();
+                    return (T) a;
                 }
                 case 1: {
-                    return (T) getB();
+                    return (T) b;
                 }
                 case 2: {
-                    return (T) getC();
+                    return (T) c;
                 }
                 case 3: {
                     return (T) d;
@@ -168,15 +271,15 @@ public abstract class Tuple {
         public <T> void set(int index, T t) {
             switch (index) {
                 case 0: {
-                    setA((A) t);
+                    a = (A) t;
                     break;
                 }
                 case 1: {
-                    setB((B) t);
+                    b = (B) t;
                     break;
                 }
                 case 2: {
-                    setC((C) t);
+                    c = (C) t;
                     break;
                 }
                 case 3: {
@@ -190,7 +293,17 @@ public abstract class Tuple {
     }
 
     public static class Tuple5<A, B, C, D, E> extends Tuple4<A, B, C, D>{
-        private E e;
+        protected E e;
+
+        public Tuple5() {
+            super();
+        }
+
+        public Tuple5(A a, B b, C c, D d, E e) {
+            super(a, b, c, d);
+            this.e = e;
+            this.size = 5;
+        }
 
         public E getE() {
             return e;
@@ -204,19 +317,19 @@ public abstract class Tuple {
         public <T> T get(int index) {
             switch (index) {
                 case 0: {
-                    return (T) getA();
+                    return (T) a;
                 }
                 case 1: {
-                    return (T) getB();
+                    return (T) b;
                 }
                 case 2: {
-                    return (T) getC();
+                    return (T) c;
                 }
                 case 3: {
-                    return (T) getD();
+                    return (T) d;
                 }
                 case 4: {
-                    return (T) getE();
+                    return (T) e;
                 }
                 default :
                     throw new IndexOutOfBoundsException(index);
@@ -227,19 +340,19 @@ public abstract class Tuple {
         public <T> void set(int index, T t) {
             switch (index) {
                 case 0: {
-                    setA((A) t);
+                    a = (A) t;
                     break;
                 }
                 case 1: {
-                    setB((B) t);
+                    b= (B) t;
                     break;
                 }
                 case 2: {
-                    setC((C) t);
+                    c = (C) t;
                     break;
                 }
                 case 3: {
-                    setD((D) t);
+                    d = (D) t;
                     break;
                 }
                 case 4: {

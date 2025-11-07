@@ -4,6 +4,8 @@ import org.drools.api.data.DataStore;
 import org.drools.core.RuleBuilderTest.Person;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 public class RuleBaseTest {
 
     @Test

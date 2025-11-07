@@ -1,5 +1,5 @@
 package org.drools.core;
 
 enum AccessType {
-    COLLECTION, LIST, ARRAY, OBJECT;
+    ITERABLE, LIST, ARRAY, OBJECT, DYNAMIC;
 }
