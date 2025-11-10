@@ -2,8 +2,8 @@ package org.drools.core;
 
 import org.drools.core.PathNode.ListPathNode;
 import org.drools.core.PathNode.RootPathNode;
-import org.drools.core.function.Function1;
-import org.drools.core.function.Predicate1;
+import org.drools.core.function.Function2;
+import org.drools.core.function.Predicate2;
 import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
@@ -13,10 +13,10 @@ import org.drools.core.function.Tuple.Tuple5;
 public class MVEL_OOPathBuilder {
 
     public <A> OOPathBuilderA1<A> path() {
-        return path(o->true);
+        return path( (ctx, o) ->true);
     }
-    public <A> OOPathBuilderA1<A> path(Predicate1<A> flt1) {
-        return new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, flt1));
+    public <A> OOPathBuilderA1<A> path(Predicate2<PathContext<?>, A> flt2) {
+        return new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, flt2));
     }
 
     public static class OOPathBuilderA1<A> {
@@ -27,13 +27,13 @@ public class MVEL_OOPathBuilder {
         }
 
         public <B> OOPathBuilderA2<A, B> path(AccessType accessType,
-                                              Function1<A,?> fn1,
-                                              Predicate1<B> flt1) {
-            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn1, flt1, b1));
+                                              Function2<PathContext<?>,A,?> fn2,
+                                              Predicate2<PathContext<?>,B> flt2) {
+            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn2, flt2, b1));
         }
 
         static <A, B>  PathNode<?, A, Tuple1<A>> build(OOPathBuilder2<A, B> b2) {
-            return new RootPathNode<>( b2.parent().flt1());
+            return new RootPathNode<>( b2.parent().flt2());
         }
     }
 
@@ -45,9 +45,9 @@ public class MVEL_OOPathBuilder {
         }
 
         public <C> OOPathBuilderA3<A, B, C> path(AccessType accessType,
-                                                 Function1<B,?> fn1,
-                                                 Predicate1<C> fl1) {
-            return new OOPathBuilderA3<>(new OOPathBuilder3<>(accessType, fn1, fl1, b2));
+                                                 Function2<PathContext<?>,B,?> fn2,
+                                                 Predicate2<PathContext<?>,C> fl1) {
+            return new OOPathBuilderA3<>(new OOPathBuilder3<>(accessType, fn2, fl1, b2));
         }
 
         public OOPath<A, B, Tuple2<A, B>> build() {
@@ -56,7 +56,7 @@ public class MVEL_OOPathBuilder {
 
         static <A, B>  PathNode<A, B, Tuple2<A, B>> build(OOPathBuilder2<A, B> b2) {
             return new ListPathNode<>(AccessType.LIST, 1,
-                                      b2.fn1(), b2.flt1(), OOPathBuilderA1.build(b2));
+                                      b2.fn2(), b2.flt2(), OOPathBuilderA1.build(b2));
         }
     }
 
@@ -68,9 +68,9 @@ public class MVEL_OOPathBuilder {
         }
 
         public <D> OOPathBuilderA4<A, B, C, D> path(AccessType accessType,
-                                                Function1<C,?> fn1,
-                                                Predicate1<D> flt1) {
-            return new OOPathBuilderA4<>(new OOPathBuilder4<>(accessType, fn1, flt1, b3));
+                                                Function2<PathContext<?>,C,?> fn2,
+                                                Predicate2<PathContext<?>,D> flt2) {
+            return new OOPathBuilderA4<>(new OOPathBuilder4<>(accessType, fn2, flt2, b3));
         }
 
         public OOPath<A, C, Tuple3<A, B, C>> build() {
@@ -79,7 +79,7 @@ public class MVEL_OOPathBuilder {
 
         static <A, B, C>  PathNode<B, C, Tuple3<A, B, C>> build(OOPathBuilder3<A, B, C> b3) {
             return new ListPathNode<>(AccessType.LIST, 2,
-                                      b3.fn1(), b3.flt1(), OOPathBuilderA2.build(b3.parent()));
+                                      b3.fn2(), b3.flt2(), OOPathBuilderA2.build(b3.parent()));
         }
     }
 
@@ -91,9 +91,9 @@ public class MVEL_OOPathBuilder {
         }
 
         public <E> OOPathBuilderA5<A, B, C, D, E> path(AccessType accessType,
-                                                       Function1<D,?> fn1,
-                                                       Predicate1<E> flt1) {
-            return new OOPathBuilderA5<>(new OOPathBuilder5<>(accessType, fn1, flt1, b4));
+                                                       Function2<PathContext<?>,D,?> fn2,
+                                                       Predicate2<PathContext<?>,E> flt2) {
+            return new OOPathBuilderA5<>(new OOPathBuilder5<>(accessType, fn2, flt2, b4));
         }
 
         public OOPath<A, D, Tuple4<A, B, C, D>> build() {
@@ -102,7 +102,7 @@ public class MVEL_OOPathBuilder {
 
         static <A, B, C, D>  PathNode<C, D, Tuple4<A, B, C, D>> build(OOPathBuilder4<A, B, C, D> b4) {
             return new ListPathNode<>(AccessType.LIST, 3,
-                                      b4.fn1(), b4.flt1(), OOPathBuilderA3.build(b4.parent()));
+                                      b4.fn2(), b4.flt2(), OOPathBuilderA3.build(b4.parent()));
         }
     }
 
@@ -119,17 +119,17 @@ public class MVEL_OOPathBuilder {
 
         static <A, B, C, D, E>  PathNode<D, E, Tuple5<A, B, C, D, E>> build(OOPathBuilder5<A, B, C, D, E> b5) {
             return new ListPathNode<>(AccessType.LIST, 4,
-                                      b5.fn1(), b5.flt1(), OOPathBuilderA4.build(b5.parent()));
+                                      b5.fn2(), b5.flt2(), OOPathBuilderA4.build(b5.parent()));
         }
     }
 
-    record OOPathBuilder1<A>(AccessType accessType, Function1<A, ?> fn1, Predicate1<A> flt1) { }
+    record OOPathBuilder1<A>(AccessType accessType, Function2<PathContext<?>, A, ?> fn2, Predicate2<PathContext<?>, A> flt2) { }
 
-    record OOPathBuilder2<A, B>(AccessType accessType, Function1<A, ?> fn1, Predicate1<B> flt1, OOPathBuilder1<A> parent) { }
+    record OOPathBuilder2<A, B>(AccessType accessType, Function2<PathContext<?>, A, ?> fn2, Predicate2<PathContext<?>, B> flt2, OOPathBuilder1<A> parent) { }
 
-    record OOPathBuilder3<A, B, C>(AccessType accessType, Function1<B, ?> fn1, Predicate1<C> flt1, OOPathBuilder2<A, B> parent) { }
+    record OOPathBuilder3<A, B, C>(AccessType accessType, Function2<PathContext<?>, B, ?> fn2, Predicate2<PathContext<?>, C> flt2, OOPathBuilder2<A, B> parent) { }
 
-    record OOPathBuilder4<A, B, C, D>(AccessType accessType, Function1<C, ?> fn1, Predicate1<D> flt1, OOPathBuilder3<A, B, C> parent) { }
+    record OOPathBuilder4<A, B, C, D>(AccessType accessType, Function2<PathContext<?>, C, ?> fn2, Predicate2<PathContext<?>,D> flt2, OOPathBuilder3<A, B, C> parent) { }
 
-    record OOPathBuilder5<A, B, C, D, E>(AccessType accessType, Function1<D, ?> fn1, Predicate1<E> flt1, OOPathBuilder4<A, B, C, D> parent) { }
+    record OOPathBuilder5<A, B, C, D, E>(AccessType accessType, Function2<PathContext<?>, D, ?> fn2, Predicate2<PathContext<?>, E> flt2, OOPathBuilder4<A, B, C, D> parent) { }
 }

@@ -7,6 +7,7 @@ import org.drools.core.RuleOOPathBuilder.OOPathBuilder2;
 import org.drools.core.RuleOOPathBuilder.OOPathBuilder3;
 import org.drools.core.RuleOOPathBuilder.OOPathBuilderA1;
 import org.drools.core.RuleOOPathBuilder.OOPathBuilderA2;
+import org.drools.core.RuleOOPathBuilder.OOPathBuilderA3;
 import org.drools.core.function.Consumer1;
 import org.drools.core.function.Consumer2;
 import org.drools.core.function.Consumer3;
@@ -104,7 +105,7 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class ParametersBuilder2<DS, B> extends RuleBuilder  {
+    public static class ParametersBuilder2<DS, B> extends BaseRuleBuilder  {
         private List<Parameter> parameters;
 
         public ParametersBuilder2(List<Parameter> list) {
@@ -124,9 +125,8 @@ public class RuleBuilder<DS> {
             return new Join2<>();
         }
 
-        public <A, B> OOPathBuilderA2<A, B> path(AccessType accessType,
-                                              Function1<A,?> fn1,
-                                              Predicate1<B> flt1) {
+        public <A, B> OOPathBuilderA2<ParametersBuilder2<DS, B>, A, B> path(Function1<A,?> fn1,
+                                                 Predicate1<B> flt1) {
 //            OOPathBuilder1<> a = new OOPathBuilder1<>(AccessType.OBJECT, null, o -> true);
 //            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn1, flt1, b1));
             return null;
@@ -158,9 +158,16 @@ public class RuleBuilder<DS> {
 
         }
 
-        public <C> OOPathBuilderA2<PathContext, B> path(Function2<PathContext, B, ?> fn2,
-                                                        Predicate2<PathContext, C> flt2) {
-            OOPathBuilderA1 root =  new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, r -> true));
+        public <B, R> OOPathBuilderA2<From1Builder<DS, B>, PathContext, B> path(Function2<PathContext, B, R> fn2) {
+            OOPathBuilderA1 root =  new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, (ctx, r) -> true));
+
+            return null;
+        }
+
+        //public <C> Join2<DS, B, C>
+        public <C, LEAF> OOPathBuilderA3<Join2<DS, B, PathContext<B, LEAF>>,PathContext<B, LEAF>, B, C> path(Function2<PathContext<B, LEAF>, B, ?> fn2,
+                                                                                                             Predicate2<PathContext<B, LEAF>, C> flt2) {
+            OOPathBuilderA1 root =  new OOPathBuilderA1<>(new OOPathBuilder1<>(AccessType.OBJECT, null, (ctx, r) -> true));
 
             //RootPathNode<PathContext, Tuple1<PathContext>> root = new RootPathNode<>(r -> true);
 

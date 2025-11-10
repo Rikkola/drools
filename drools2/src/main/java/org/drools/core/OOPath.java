@@ -34,10 +34,10 @@ public class OOPath<R, L, T extends Tuple> {
     public static class OOPathIterator<L, T extends Tuple> implements Iterator<L> {
         private PathNode<?, L, T> leaf;
 
-        private PathContext pathContext;
+        private PathContext<L> pathContext;
 
         public OOPathIterator(PathNode<?, L, T> leaf,
-                              PathContext pathContext) {
+                              PathContext<L> pathContext) {
             this.leaf = leaf;
             this.pathContext = pathContext;
         }

@@ -83,19 +83,12 @@ public class RuleBuilderTest {
 
         DataStore<Object> ds = new DefaultDataStore<>();
 
-        DataStore<Person> persons = ds.as(Person.class);
-
-        record P3(String p3_1, String p3_2, String p3_3) {
-            public static final P3 V = new P3(null,null,null);
-        };
-
-//        builder.rule("rule1").<Library>params()
-//               .fn( (ctx, p) -> System.out.println(p.p3_1));
-
         builder.rule("rule1").<Library>params()
-               .<Room>path((c,l) -> l.rooms(), (a, r) -> r.name() != null)
-               .<Shelf>path((b) -> b.rooms(), (s) -> s.books() != null );
-
+               .<Room, Page>path((ctx,l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .<Shelf>path((ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null )
+               .<Book>path((ctx, s) -> s.books(), (ctx, b) -> b.title() != null)
+               .<Page>path((ctx, b) -> b.pages(), (ctx, p) -> p.content() != null).endPath()
+        .filter( (ctx, b, c) -> c.root().name() != c.leaf().content());
 
     }
 

@@ -376,4 +376,97 @@ public abstract class Tuple {
         }
     }
 
+
+    public static class Tuple6<A, B, C, D, E, F> extends Tuple5<A, B, C, D, E>{
+        protected F f;
+
+        public Tuple6() {
+            super();
+        }
+
+        public Tuple6(A a, B b, C c, D d, E e, F f) {
+            super(a, b, c, d, e);
+            this.f = f;
+            this.size = 6;
+        }
+
+        public F getF() {
+            return f;
+        }
+
+        public void setF(F f) {
+            this.f = f;
+        }
+
+        @Override
+        public <T> T get(int index) {
+            switch (index) {
+                case 0: {
+                    return (T) a;
+                }
+                case 1: {
+                    return (T) b;
+                }
+                case 2: {
+                    return (T) c;
+                }
+                case 3: {
+                    return (T) d;
+                }
+                case 4: {
+                    return (T) e;
+                }
+                case 5: {
+                    return (T) f;
+                }
+                default :
+                    throw new IndexOutOfBoundsException(index);
+            }
+        }
+
+        @Override
+        public <T> void set(int index, T t) {
+            switch (index) {
+                case 0: {
+                    a = (A) t;
+                    break;
+                }
+                case 1: {
+                    b= (B) t;
+                    break;
+                }
+                case 2: {
+                    c = (C) t;
+                    break;
+                }
+                case 3: {
+                    d = (D) t;
+                    break;
+                }
+                case 4: {
+                    e = (E) t;
+                    break;
+                }
+                case 5: {
+                    f = (F) t;
+                    break;
+                }
+                default :
+                    throw new IndexOutOfBoundsException(index);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "Tuple6{" +
+                   getA() +
+                   ", " + getB() +
+                   ", " + getC() +
+                   ", " + getD() +
+                   ", " + getE() +
+                   ", " + getF() +
+                   '}';
+        }
+    }
+
 }

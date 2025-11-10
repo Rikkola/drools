@@ -48,15 +48,15 @@ public class OOPathTest {
     public void test() {
         Library l1 = createLibrary("l1");
 
-        RootPathNode<Library, Tuple1<Library>> library = new RootPathNode<>( l -> true);
+        RootPathNode<Library, Tuple1<Library>> library = new RootPathNode<>( (ctx, l) -> true);
 
-        ListPathNode<Library, Room, Tuple2<Library, Room>> room = new ListPathNode<>(AccessType.LIST, 1, l -> l.rooms(), r -> r.name() != null, library);
+        ListPathNode<Library, Room, Tuple2<Library, Room>> room = new ListPathNode<>(AccessType.LIST, 1, (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null, library);
 
-        ListPathNode<Room, Shelf, Tuple3<Library, Room, Shelf>> shelf = new ListPathNode<>(AccessType.LIST, 2, r -> r.shelves(), s -> s.name() != null, room);
+        ListPathNode<Room, Shelf, Tuple3<Library, Room, Shelf>> shelf = new ListPathNode<>(AccessType.LIST, 2, (ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null, room);
 
-        ListPathNode<Shelf, Book, Tuple4<Library, Room, Shelf, Book>> book = new ListPathNode<>(AccessType.LIST, 3, s -> s.books(), b -> b.title() != null, shelf);
+        ListPathNode<Shelf, Book, Tuple4<Library, Room, Shelf, Book>> book = new ListPathNode<>(AccessType.LIST, 3, (ctx, s) -> s.books(), (ctx, b) -> b.title() != null, shelf);
 
-        ListPathNode<Book, Page, Tuple5<Library, Room, Shelf, Book, Page>> page = new ListPathNode<>(AccessType.LIST, 4, b -> b.pages(), p -> p.number() >= 0, book);
+        ListPathNode<Book, Page, Tuple5<Library, Room, Shelf, Book, Page>> page = new ListPathNode<>(AccessType.LIST, 4, (ctx, b) -> b.pages(), (ctx, p) -> p.number() >= 0, book);
 
         OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path = new OOPath<>(page);
 
@@ -77,10 +77,10 @@ public class OOPathTest {
 
         OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path =
         builder.<Library>path()
-               .<Room>path(l -> l.rooms(), r -> r.name() != null)
-               .<Shelf>path(r -> r.shelves(), s -> s.name() != null)
-               .<Book>path(s -> s.books(), b -> b.title() != null)
-               .<Page>path(b -> b.pages(), p -> p.number() >= 0).build();
+               .<Room>path((ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .<Shelf>path((ctx,r) -> r.shelves(), (ctx, s) -> s.name() != null)
+               .<Book>path((ctx,s) -> s.books(), (ctx, b) -> b.title() != null)
+               .<Page>path((ctx,b) -> b.pages(), (ctx, p) -> p.number() >= 0).build();
 
         Iterator<Page> it = path.iterator(l1);
 
