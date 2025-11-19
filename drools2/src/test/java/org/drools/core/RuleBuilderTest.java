@@ -1,10 +1,6 @@
 package org.drools.core;
 
 import org.drools.api.data.DataStore;
-import org.drools.core.OOPathTest.Book;
-import org.drools.core.OOPathTest.Page;
-import org.drools.core.OOPathTest.Room;
-import org.drools.core.OOPathTest.Shelf;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -84,11 +80,46 @@ public class RuleBuilderTest {
         DataStore<Object> ds = new DefaultDataStore<>();
 
         builder.rule("rule1").<Library>params()
-               .<Room, Page>path((ctx,l) -> l.rooms(), (ctx, r) -> r.name() != null)
-               .<Shelf>path((ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null )
-               .<Book>path((ctx, s) -> s.books(), (ctx, b) -> b.title() != null)
-               .<Page>path((ctx, b) -> b.pages(), (ctx, p) -> p.content() != null).endPath()
-        .filter( (ctx, b, c) -> c.root().name() != c.leaf().content());
+               .<Room, Shelf, Book, Page>path5((ctx,l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .path((ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null )
+               .path((ctx, s) -> s.books(), (ctx, b) -> b.title() != null)
+               .path((ctx, b) -> b.pages(), (ctx, p) -> p.content() != null)
+        .filter( (ctx, b, c) -> c.getA().name() != c.getE().content());
+
+    }
+
+    public void testPath2() {
+        record DS(DataStore<?> ds1) {};
+
+        RuleBuilder<DS> builder = new RuleBuilder<>();
+
+        DataStore<Object> ds = new DefaultDataStore<>();
+
+        DataStore<Library> libraries = ds.as(Library.class);
+
+        DataStore<Person> persons = ds.as(Person.class);
+
+        record Path (Library library, Room room, Shelf shelf, Book book, Page page) {}
+
+        builder.rule("rule1").<Library>params()
+               .<Room, Shelf>path3()
+               .path( (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .path( (ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null)
+               .filter((ctx, a, t) -> a.name() != t.getC().name());
+
+        builder.rule("rule1").<Library>params()
+               .<Room>path2()
+               .path( (ctx, a) -> a.rooms(), (ctx, b) -> b.name() != null)
+               .filter((ctx, a, t) -> a.name() != t.getB().name());
+
+        builder.rule("rule1").from(persons)
+               .join(builder.from(libraries))
+               .<Room, Shelf, Book, Page>path5((ctx,l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .path((ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null )
+               .path((ctx, s) -> s.books(), (ctx, b) -> b.title() != null)
+               .path((ctx, b) -> b.pages(), (ctx, p) -> p.content() != null)
+               .filter( (ctx, p, c, d) -> p.age() <= d.getD().pages().size())
+               .filter( (ctx, p, c, d) -> p.age() <= d.<Path>as().book().pages().size());
 
     }
 

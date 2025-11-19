@@ -69,6 +69,24 @@ public abstract class Tuple {
         return size;
     }
 
+    public static class Tuple0 extends Tuple {
+        public static Tuple0 INSTANCE = new Tuple0();
+
+        public Tuple0() {
+            this.size = 0;
+        }
+
+        @Override
+        public <T> T get(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> void set(int index, T t) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     public static class Tuple1<A> extends Tuple {
         protected A a;
 

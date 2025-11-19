@@ -6,7 +6,7 @@ import org.drools.core.function.Tuple.Tuple3;
 import org.drools.core.function.Tuple.Tuple4;
 import org.drools.core.function.Tuple.Tuple5;
 
-public class PathContext<R, L> {
+public class PathContext<L, T extends Tuple> {
 
     private NodeContext[] contexts;
 
@@ -58,16 +58,7 @@ public class PathContext<R, L> {
         }
     }
 
-    public <T extends Tuple> T getTuple() {
+    public T getTuple() {
         return (T) contexts[contexts.length-1].getTuple();
-    }
-
-    public R root() {
-        return (R) contexts[0].getTuple().get(0);
-    }
-
-    public L leaf() {
-        Tuple t = contexts[contexts.length-1].getTuple();
-        return (L) t.get(t.size()-1);
     }
 }
