@@ -1,14 +1,15 @@
 package org.drools.core;
 
+import org.drools.core.function.Predicate2;
 import org.drools.core.function.Tuple;
 
 import java.util.Iterator;
 
 public class OOPath<R, L, T extends Tuple> {
-    PathNode<?, L, ?, T> leaf;
+    PathNode<?, L, T> leaf;
     private int size;
 
-    public OOPath(PathNode<?, L, ?, T> leaf) {
+    public OOPath(PathNode<?, L, T> leaf) {
         this.leaf = leaf;
         PathNode node = leaf.getParent();
         int i = 1;
@@ -20,12 +21,12 @@ public class OOPath<R, L, T extends Tuple> {
         size = i;
     }
 
-    public PathContext<L, ?> getPathContext(Iterator<L> it) {
+    public PathContext<?> getPathContext(Iterator<L> it) {
         return ((OOPathIterator)it).pathContext;
     }
 
     public Iterator<L> iterator(R root) {
-        PathContext<L, T> pathContext = new PathContext<>(size);
+        PathContext<T> pathContext = new PathContext<>(size);
         pathContext.getContext(0).setCurrent(root);
 
         return new OOPathIterator<>(leaf,
@@ -33,13 +34,21 @@ public class OOPath<R, L, T extends Tuple> {
 
     }
 
+    public void forEach(R root, Predicate2<L, PathContext<T>> fn) {
+        OOPathIterator<L, T> it = (OOPathIterator<L, T>) iterator(root);
+        boolean loop = true;
+        while (loop && it.hasNext()) {
+            loop = it.next(fn);
+        }
+    }
+
     public static class OOPathIterator<L, T extends Tuple> implements Iterator<L> {
-        private PathNode<?, L, ?, T> leaf;
+        private PathNode<?, L, T> leaf;
 
-        private PathContext<L, T> pathContext;
+        private PathContext<T> pathContext;
 
-        public OOPathIterator(PathNode<?, L, ?, T> leaf,
-                              PathContext<L, T> pathContext) {
+        public OOPathIterator(PathNode<?, L,T> leaf,
+                              PathContext<T> pathContext) {
             this.leaf = leaf;
             this.pathContext = pathContext;
         }
@@ -52,6 +61,11 @@ public class OOPath<R, L, T extends Tuple> {
         @Override
         public L next() {
             return leaf.next(pathContext);
+        }
+
+
+        public boolean next(Predicate2<L, PathContext<T>> fn) {
+            return fn.test(leaf.next(pathContext), pathContext);
         }
     }
 }

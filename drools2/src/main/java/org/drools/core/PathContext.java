@@ -6,11 +6,9 @@ import org.drools.core.function.Tuple.Tuple3;
 import org.drools.core.function.Tuple.Tuple4;
 import org.drools.core.function.Tuple.Tuple5;
 
-public class PathContext<L, T extends Tuple> {
+public class PathContext<T extends Tuple> {
 
     private NodeContext[] contexts;
-
-    private L current;
 
     public int size() {
         return contexts.length;

@@ -1,8 +1,11 @@
 package org.drools.core;
 
+import org.drools.core.PathNode.ListPathNode;
+import org.drools.core.PathNode.RootPathNode;
 import org.drools.core.function.Function2;
 import org.drools.core.function.Predicate2;
 import org.drools.core.function.Tuple;
+import org.drools.core.function.Tuple.Tuple0;
 import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
@@ -12,97 +15,138 @@ import org.drools.core.function.Tuple.Tuple6;
 
 public class RuleOOPathBuilder2 {
 
-    public static class BasePath<A, B, T extends Tuple> {
-        protected Function2<PathContext<A, T>,A,?> fn2;
-        protected Predicate2<PathContext<B, T>,B> flt2;
+    public static class BasePath<END,  A, B, T extends Tuple> {
+        protected Function2<PathContext<T>,A,?> fn2;
+        protected Predicate2<PathContext<T>,B> flt2;
+        protected END end;
 
-        public Function2<PathContext<A, T>, A, ?> function() {
+        public BasePath(END end) {
+            this.end = end;
+        }
+
+        public Function2<PathContext<T>, A, ?> function() {
             return fn2;
         }
 
-        public Predicate2<PathContext<B, T>, B> filter() {
+        public Predicate2<PathContext<T>, B> filter() {
             return flt2;
         }
     }
 
-    public static class Path2<END, T extends Tuple, A, B> extends BasePath<A, B, T> {
-        public END path(Function2<PathContext<?, T>, A,?> fn2,
-                        Predicate2<PathContext<B, T>,B> flt2) {
-            return null;
+    public static class Path2<END, T extends Tuple, A, B> extends BasePath<END, A, B, T> {
+
+        public Path2(END end) {
+            super(end);
+        }
+
+        public END path(Function2<PathContext<T>, A,?> fn2,
+                        Predicate2<PathContext<T>,B> flt2) {
+            return end;
         }
     }
 
-    public static class Path3<END, T extends Tuple, A, B, C> extends BasePath<A, B, T> {
+    public static class Path3<END, T extends Tuple, A, B, C> extends BasePath<END, A, B, T> {
         private  Path2<END, T, B, C> path2;
 
-        public Path2<END, T, B, C> path(Function2<PathContext<?, T>,A,?> fn2,
-                                        Predicate2<PathContext<B, T>,B> flt2) {
-            path2 = new Path2<>();
+        public Path3(END end) {
+            super(end);
+        }
+
+        public Path2<END, T, B, C> path(Function2<PathContext<T>,A,?> fn2,
+                                        Predicate2<PathContext<T>,B> flt2) {
+            path2 = new Path2<>(end);
 
             return path2;
         }
     }
 
-    public static class Path4<END, T extends Tuple, A, B, C, D> extends BasePath<A, B, T> {
+    public static class Path4<END, T extends Tuple, A, B, C, D> extends BasePath<END, A, B, T> {
         private Path3<END, T, B, C, D> path3;
 
-        public Path3<END, T, B, C, D> path(Function2<PathContext<?, T>,A,?> fn2,
-                                           Predicate2<PathContext<B, T>,B> flt2) {
-            path3 = new Path3<>();
+        PathNode<A, B, Tuple4<A, B, C, D>> path;
 
+        public Path4(PathNode<A, B, Tuple4<A, B, C, D>> path, END end) {
+            super(end);
+
+            this.path = path;
+        }
+
+        public Path3<END, T, B, C, D> path(Function2<PathContext<T>,A,?> fn2,
+                                           Predicate2<PathContext<T>,B> flt2) {
+
+            path3 = new Path3<>(end);
             return path3;
         }
 
 
     }
 
-    public static class Path5<END, T extends Tuple, A, B, C, D, E> extends BasePath<A, B, T> {
+    public static class Path5<END, T extends Tuple, A, B, C, D, E> extends BasePath<END, A, B, T> {
         private Path4<END, T, B, C, D, E> path4;
 
-        public Path4<END, T, B, C, D, E> path(Function2<PathContext<A, ?>,A,?> fn2,
-                                              Predicate2<PathContext<B, T>,B> flt2) {
+        PathNode<A, B, T> path5;
+
+
+        public Path5(PathNode<A,B,T> path, END end) {
+            super(end);
+            path5 = path;
+        }
+
+        public Path4<END, T, B, C, D, E> path(Function2<PathContext<T>,A,?> fn2,
+                                              Predicate2<PathContext<T>,B> flt2) {
             this.fn2 = fn2;
             this.flt2 = flt2;
 
-            path4 = new Path4<>();
+            PathNode<A, B, T> path = new Path4<>((PathNode<A, B, Tuple4<A, B, C, D>>) path5, end);
+
+            path4 = new Path4<>((PathNode<A, B, Tuple4<A, B, C, D>>)path, end);
+
             return path4;
         }
-    }
 
-    public static class Path6<END, T extends Tuple, A, B, C, D, E, F> extends BasePath<A, B, T> {
-        private Path5<END, T, B, C, D, E, F> path5;
-
-        public Path5<END, T, B, C, D, E, F> path(Function2<PathContext<?, T>,A,?> fn2,
-                                                 Predicate2<PathContext<B, T>,B> flt2) {
-            this.fn2 = fn2;
-            this.flt2 = flt2;
-
-            path5 = new Path5<>();
+        public PathNode<A, B, Tuple5<A, B, C, D, E>> getPath() {
             return path5;
         }
     }
 
-    record OOPathBuilder1<A>(AccessType accessType, Function2<PathContext<A, Tuple1<A>>,A, ?> fn2, Predicate2<PathContext<?, Tuple1<A>>,A> flt2) { }
+    public static class Path6<END, T extends Tuple, A, B, C, D, E, F> extends BasePath<END, A, B, T> {
+        private Path5<END, T, B, C, D, E, F> path5;
 
-    record OOPathBuilder2<A, B>(AccessType accessType, Function2<PathContext<B, Tuple2<A, B>>,A, ?> fn2, Predicate2<PathContext<B, Tuple2<A, B>>,A> flt2, OOPathBuilder1<A> parent) { }
+        public Path6(END end) {
+            super(end);
+        }
 
-    record OOPathBuilder3<A, B, C>(AccessType accessType, Function2<PathContext<C, Tuple3<A, B, C>>, B, ?> fn2, Predicate2<PathContext<C, Tuple3<A, B, C>>, B> flt2, OOPathBuilder2<A, B> parent) { }
 
-    record OOPathBuilder4<A, B, C, D>(AccessType accessType, Function2<PathContext<D, Tuple4<A, B, C, D>>, C, ?> fn2, Predicate2<PathContext<D, Tuple4<A, B, C, D>>,C> flt2, OOPathBuilder3<A, B, C> parent) { }
+        public Path5<END, T, B, C, D, E, F> path(Function2<PathContext<T>,A,?> fn2,
+                                                 Predicate2<PathContext<T>,B> flt2) {
+            this.fn2 = fn2;
+            this.flt2 = flt2;
 
-    record OOPathBuilder5<A, B, C, D, E>(AccessType accessType, Function2<PathContext<E, Tuple5<A, B, C, D, E>>, D, ?> fn2, Predicate2<PathContext<E, Tuple5<A, B, C, D, E>>,D> flt2, OOPathBuilder4<A, B, C, D> parent) { }
+            path5 = new Path5<>(end);
+            return path5;
+        }
+    }
 
-    record OOPathBuilder6<A, B, C, D, E, F>(AccessType accessType, Function2<PathContext<F, Tuple6<A, B, C, D, E, F>>, E, ?> fn2, Predicate2<PathContext<F, Tuple6<A, B, C, D, E, F>>,E> flt2, OOPathBuilder5<A, B, C, D, E> parent) { }
-
-//    record OOPathBuilder1<A>(AccessType accessType, Predicate2<PathContext<A, Tuple1<A>>, A> flt2) { }
+//    RootPathNode<Library> library = new RootPathNode<>((ctx, l) -> true);
 //
-//    record OOPathBuilder2<A, B>(AccessType accessType, Function2<PathContext<A, Tuple1<A>>, A, ?> fn2, Predicate2<PathContext<B, Tuple2<A, B>>, B> flt2, OOPathBuilder1<A> parent) { }
+//    ListPathNode<Library, Room, Tuple2<Library, Room>> room = new ListPathNode<>(AccessType.LIST, 1, (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null, library);
 //
-//    record OOPathBuilder3<A, B, C>(AccessType accessType, Function2<PathContext<B, Tuple2<A, B>>, B, ?> fn2, Predicate2<PathContext<C, Tuple3<A, B, C>>, C> flt2, OOPathBuilder2<A, B> parent) { }
+//    ListPathNode<Room, Shelf, Tuple3<Library, Room, Shelf>> shelf = new ListPathNode<>(AccessType.LIST, 2, (ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null, room);
 //
-//    record OOPathBuilder4<A, B, C, D>(AccessType accessType, Function2<PathContext<C, Tuple3<A, B, C>>, C, ?> fn2, Predicate2<PathContext<D, Tuple4<A, B, C, D>>,D> flt2, OOPathBuilder3<A, B, C> parent) { }
+//    ListPathNode<Shelf, Book, Tuple4<Library, Room, Shelf, Book>> book = new ListPathNode<>(AccessType.LIST, 3, (ctx, s) -> s.books(), (ctx, b) -> b.title() != null, shelf);
 //
-//    record OOPathBuilder5<A, B, C, D, E>(AccessType accessType, Function2<PathContext<D, Tuple4<A, B, C, D>>, D, ?> fn2, Predicate2<PathContext<E, Tuple5<A, B, C, D, E>>, E> flt2, OOPathBuilder4<A, B, C, D> parent) { }
+//    ListPathNode<Book, Page, Tuple5<Library, Room, Shelf, Book, Page>> page = new ListPathNode<>(AccessType.LIST, 4, (ctx, b) -> b.pages(), (ctx, p) -> p.number() >= 0, book);
+
+
+//    record OOPathBuilder1<A>(AccessType accessType, Function2<PathContext<Tuple0>,A, ?> fn2, Predicate2<PathContext<Tuple0>,A> flt2) { }
 //
-//    record OOPathBuilder6<A, B, C, D, E, F>(AccessType accessType, Function2<PathContext<E, Tuple5<A, B, C, D, E>>, E, ?> fn2, Predicate2<PathContext<F, Tuple6<A, B, C, D, E, F>>, F> flt2, OOPathBuilder5<A, B, C, D, E> parent) { }
+//    record OOPathBuilder2<A, B>(AccessType accessType, Function2<PathContext<Tuple1<A>>,A, ?> fn2, Predicate2<PathContext<Tuple2<A, B>>,A> flt2, OOPathBuilder1<A> parent) { }
+//
+//    record OOPathBuilder3<A, B, C>(AccessType accessType, Function2<PathContext<Tuple3<A, B, C>>, B, ?> fn2, Predicate2<PathContext<Tuple3<A, B, C>>, B> flt2, OOPathBuilder2<A, B> parent) { }
+//
+//    record OOPathBuilder4<A, B, C, D>(AccessType accessType, Function2<PathContext<Tuple4<A, B, C, D>>, C, ?> fn2, Predicate2<PathContext<Tuple4<A, B, C, D>>,C> flt2, OOPathBuilder3<A, B, C> parent) { }
+//
+//    record OOPathBuilder5<A, B, C, D, E>(AccessType accessType, Function2<PathContext<Tuple5<A, B, C, D, E>>, D, ?> fn2, Predicate2<PathContext<Tuple5<A, B, C, D, E>>,D> flt2, OOPathBuilder4<A, B, C, D> parent) { }
+//
+//    record OOPathBuilder6<A, B, C, D, E, F>(AccessType accessType, Function2<PathContext<Tuple6<A, B, C, D, E, F>>, E, ?> fn2, Predicate2<PathContext<Tuple6<A, B, C, D, E, F>>,E> flt2, OOPathBuilder5<A, B, C, D, E> parent) { }
 }

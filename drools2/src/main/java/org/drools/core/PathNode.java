@@ -3,27 +3,28 @@ package org.drools.core;
 import org.drools.core.function.Function2;
 import org.drools.core.function.Predicate2;
 import org.drools.core.function.Tuple;
+import org.drools.core.function.Tuple.Tuple0;
 
 import java.util.List;
 
-public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
+public interface PathNode<I, O, T extends Tuple> {
 
-    boolean hasNext(PathContext<O, TO> pathContext);
+    boolean hasNext(PathContext<T> pathContext);
 
     O next(PathContext pathContext);
 
-    public PathNode<? ,? , ?, TI> getParent();
+    public PathNode<?, I, ?> getParent();
 
-    public static class RootPathNode<O, TO extends Tuple> implements PathNode<O, O, TO, TO> {
-        Predicate2<PathContext<O, TO>, O> flt2;
+    public static class RootPathNode<O> implements PathNode<Void, O, Tuple0> {
+        Predicate2<PathContext<Tuple0>, O> flt2;
 
-        public RootPathNode(Predicate2<PathContext<O, TO>, O> flt2) {
+        public RootPathNode(Predicate2<PathContext<Tuple0>, O> flt2) {
             this.flt2 = flt2;
         }
 
         @Override
         public O next(PathContext pathContext) {
-            NodeContext<?,O> ctx = pathContext.getContext(0);
+            NodeContext<O> ctx = pathContext.getContext(0);
 
             if (!ctx.isInitialised()) {
                 ctx.setInitialised();
@@ -39,29 +40,29 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
 
         @Override
         public boolean hasNext(PathContext pathContext) {
-            NodeContext<?,O> ctx = pathContext.getContext(0);
+            NodeContext<O> ctx = pathContext.getContext(0);
 
             return !ctx.isInitialised();
         }
 
         @Override
-        public PathNode<O, O, TO, TO> getParent() {
+        public PathNode<Void, Void, Tuple0> getParent() {
             return null;
         }
     }
 
 
     // library.rooms -> room.shelves -> shelf.books -> book.pages -> page
-    public static class ListPathNode<I, O, TI extends Tuple, TO extends Tuple> implements PathNode<I, O, TI, TO> {
+    public static class ListPathNode<I, O, T extends Tuple> implements PathNode<I, O, T> {
         private AccessType             type;
         private int                    index;
-        private Function2<PathContext<I, TI>, I, ?>    fn2;
-        private Predicate2<PathContext<O, TO>, O>      flt2;
-        private PathNode<?, I, ?, TI> parent;
+        private Function2<PathContext<T>, I, ?>    fn2;
+        private Predicate2<PathContext<T>, O>      flt2;
+        private PathNode<?, I, ?> parent;
 
         public ListPathNode(AccessType type, int index,
-                            Function2<PathContext<I, TI>, I, ?> fn1, Predicate2<PathContext<O, TO>, O> flt2,
-                            PathNode<?, I, ?, TI> parent) {
+                            Function2<PathContext<T>, I, ?> fn1, Predicate2<PathContext<T>, O> flt2,
+                            PathNode<?, I, ?> parent) {
             this.type   = type;
             this.index = index;
             this.flt2  = flt2;
@@ -70,11 +71,11 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
         }
 
         public O primeNext(PathContext pathContext) {
-            NodeContext<I,O> ctx = pathContext.getContext(index);
+            NodeContext<O> ctx = pathContext.getContext(index);
 
             if (!ctx.isInitialised()) {
                 if (parent != null) {
-                    I i = parent.next((PathContext<I, TI>) pathContext);
+                    I i = parent.next((PathContext<T>) pathContext);
                     if (i != null) {
                         ctx.setList((List<O>) fn2.apply(pathContext, i));
                     }
@@ -88,7 +89,7 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
                     ctx.setCurrent(ctx.getList().get(ctx.getCursor()));
                     ctx.getTuple().set(index, ctx.getCurrent());
                 } else {
-                    I i = parent.next((PathContext<O, TO>) pathContext);
+                    I i = parent.next((PathContext<T>) pathContext);
                     if ( i != null) {
                         ctx.setList((List<O>) fn2.apply(pathContext, i));
                     } else {
@@ -99,7 +100,7 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
                     ctx.setCurrent(null);
                     ctx.getTuple().set(index, null);
                 }
-            } while ((ctx.getCurrent() == null || !flt2.test((PathContext<O, TO>)pathContext, ctx.getCurrent())) &&
+            } while ((ctx.getCurrent() == null || !flt2.test((PathContext<T>)pathContext, ctx.getCurrent())) &&
                      ctx.getList() != null);
 
             if (ctx.getCurrent() == null) {
@@ -110,7 +111,7 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
         }
 
         public boolean hasNext(PathContext pathContext) {
-            NodeContext<I,O> ctx = pathContext.getContext(index);
+            NodeContext<O> ctx = pathContext.getContext(index);
 
             if ( ctx.getCurrent() != null) {
                 // this ensures prime is never called twice
@@ -129,7 +130,7 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
         }
 
         public O next(PathContext pathContext) {
-            NodeContext<I,O> ctx = pathContext.getContext(index);
+            NodeContext<O> ctx = pathContext.getContext(index);
             if (ctx.getState() == NodeContext.END) {
                 return null;
             }
@@ -144,7 +145,7 @@ public interface PathNode<I, O, TI extends Tuple, TO extends Tuple> {
         }
 
         @Override
-        public PathNode<?, I, ?, TI> getParent() {
+        public PathNode<?, I, ?> getParent() {
             return parent;
         }
     }

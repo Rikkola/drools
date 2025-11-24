@@ -1,7 +1,12 @@
 package org.drools.core;
 
+import org.drools.core.OOPathBuilder.BuilderEnd;
 import org.drools.core.PathNode.ListPathNode;
 import org.drools.core.PathNode.RootPathNode;
+import org.drools.core.RuleBuilderTest.Book;
+import org.drools.core.RuleBuilderTest.Page;
+import org.drools.core.RuleBuilderTest.Room;
+import org.drools.core.RuleBuilderTest.Shelf;
 import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
@@ -48,7 +53,7 @@ public class OOPathTest {
     public void test() {
         Library l1 = createLibrary("l1");
 
-        RootPathNode<Library, Tuple1<Library>> library = new RootPathNode<>( (ctx, l) -> true);
+        RootPathNode<Library> library = new RootPathNode<>( (ctx, l) -> true);
 
         ListPathNode<Library, Room, Tuple2<Library, Room>> room = new ListPathNode<>(AccessType.LIST, 1, (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null, library);
 
@@ -73,14 +78,23 @@ public class OOPathTest {
     public void test1() {
         Library l1 = createLibrary("l1");
 
-        OOPathBuilder builder = new OOPathBuilder();
+        BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>> end = new BuilderEnd<>();
+
+        OOPathBuilder<BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>>> builder = new OOPathBuilder<>(end);
 
         OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path =
-        builder.<Library>path()
-               .<Room>path((ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
-               .<Shelf>path((ctx,r) -> r.shelves(), (ctx, s) -> s.name() != null)
-               .<Book>path((ctx,s) -> s.books(), (ctx, b) -> b.title() != null)
-               .<Page>path((ctx,b) -> b.pages(), (ctx, p) -> p.number() >= 0).build();
+        builder.<Library, Room, Shelf, Book, Page>path5((ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
+               .path((ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null )
+               .path((ctx, s) -> s.books(), (ctx, b) -> b.title() != null)
+               .path((ctx, b) -> b.pages(), (ctx, p) -> p.content() != null)
+               .build();
+
+//        OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path =
+//        builder.<Library>path()
+//               .<Room>path((ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
+//               .<Shelf>path((ctx,r) -> r.shelves(), (ctx, s) -> s.name() != null)
+//               .<Book>path((ctx,s) -> s.books(), (ctx, b) -> b.title() != null)
+//               .<Page>path((ctx,b) -> b.pages(), (ctx, p) -> p.number() >= 0).build();
 
         Iterator<Page> it = path.iterator(l1);
 

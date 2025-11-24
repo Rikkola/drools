@@ -133,12 +133,12 @@ public class RuleBuilder<DS> {
             return new Join2First<>();
         }
 
-        public <A, B> OOPathBuilderA2<ParametersSecond<DS, B>, A, B> path(Function1<A,?> fn1,
-                                                                          Predicate1<B> flt1) {
-//            OOPathBuilder1<> a = new OOPathBuilder1<>(AccessType.OBJECT, null, o -> true);
-//            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn1, flt1, b1));
-            return null;
-        }
+//        public <A, B> OOPathBuilderA2<ParametersSecond<DS, B>, A, B> path(Function1<A,?> fn1,
+//                                                                          Predicate1<B> flt1) {
+////            OOPathBuilder1<> a = new OOPathBuilder1<>(AccessType.OBJECT, null, o -> true);
+////            return new OOPathBuilderA2<>(new OOPathBuilder2<>(accessType, fn1, flt1, b1));
+//            return null;
+//        }
     }
 
     public static class From1First<DS, B> extends BaseRuleBuilder {
@@ -171,25 +171,25 @@ public class RuleBuilder<DS> {
         }
 
         <PB, PC, PD, PE, PF> Path6<Join2First<DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
-            return new Path6<>();
+            return new Path6<>(null);
         }
 
-        <PB, PC, PD, PE> Path4<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<Void, Tuple0>,B,?> fn2,
-                                                                                                                             Predicate2<PathContext<PB, Tuple2<B, PB>>,PB> flt2) {
-            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, B, PB, PC,PD, PE> path5 = new Path5<>();
+        <PB, PC, PD, PE> Path4<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<Tuple5<B, PB, PC, PD, PE>>, B,?> fn2,
+                                                                                                                             Predicate2<PathContext<Tuple5<B, PB, PC, PD, PE>>,PB> flt2) {
+            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, B, PB, PC,PD, PE> path5 = new Path5<>(null);
             return path5.path(fn2, flt2);
         }
 
-        <PB, PC, PD> Path4<Join2First<DS, B, Tuple4<B, PB, PC, PD>>, Tuple4<B, PB, PC, PD>, B, PB, PC,PD> path4() {
-            return new Path4<>();
+        <PB, PC, PD> Path4<Join2First<DS, B, Tuple3<B, PB, PC>>, Tuple3<B, PB, PC>, B, PB, PC,PD> path4() {
+            return new Path4<>(null);
         }
 
-        <PB, PC> Path3<Join2First<DS, B, Tuple3<B, PB, PC>>,Tuple3<B, PB, PC>, B, PB, PC>  path3() {
-            return new Path3<>();
+        <PB, PC> Path3<Join2First<DS, B, Tuple3<B, PB, PC>>,Tuple2<B, PB>, B, PB, PC>  path3() {
+            return new Path3<>(null);
         }
 
-        <PB> Path2<Join2First<DS, B, Tuple2<B, PB>>,Tuple2<B, PB>, B, PB> path2() {
-            return new Path2<>();
+        <PB> Path2<Join2First<DS, B, Tuple2<B, PB>>,Tuple1<B>, B, PB> path2() {
+            return new Path2<>(null);
         }
     }
 
@@ -227,25 +227,25 @@ public class RuleBuilder<DS> {
         }
 
         <PB, PC, PD, PE, PF> Path6<Join3<DS, B, C, Tuple6<C, PB, PC, PD, PE, PF>>, Tuple6<C, PB, PC, PD, PE, PF>, C, PB, PC,PD, PE, PF> path6() {
-            return new Path6<>();
+            return new Path6<>(null);
         }
 
         <PB, PC, PD, PE> Path4<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<Tuple5<C, PB, PC, PD, PE>>,C,?> fn2,
                                                                                                                            Predicate2<PathContext<Tuple5<C, PB, PC, PD, PE>>,PB> flt2) {
-            Path5<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, C, PB, PC,PD, PE> path5 = new Path5<>();
+            Path5<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, C, PB, PC,PD, PE> path5 = new Path5<>(null);
             return path5.path(fn2, flt2);
         }
 
         <PB, PC, PD> Path4<Join3<DS, B, C, Tuple4<C, PB, PC, PD>>, Tuple4<C, PB, PC, PD>, C, PB, PC,PD> path4() {
-            return new Path4<>();
+            return new Path4<>(null);
         }
 
         <PB, PC> Path3<Join3<DS, B, C, Tuple3<C, PB, PC>>,Tuple3<C, PB, PC>, C, PB, PC>  path3() {
-            return new Path3<>();
+            return new Path3<>(null);
         }
 
         <PB> Path2<Join3<DS, B, C, Tuple2<B, PB>>,Tuple2<C, PB>, C, PB> path2() {
-            return new Path2<>();
+            return new Path2<>(null);
         }
     }
 
@@ -285,25 +285,25 @@ public class RuleBuilder<DS> {
         }
 
         <PB, PC, PD, PE, PF> Path6<Join3<DS, B, C, Tuple6<C, PB, PC, PD, PE, PF>>, Tuple6<C, PB, PC, PD, PE, PF>, C, PB, PC,PD, PE, PF> path6() {
-            return new Path6<>();
+            return new Path6<>(null);
         }
 
         <PB, PC, PD, PE> Path4<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<Tuple5<C, PB, PC, PD, PE>>,C,?> fn2,
                                                                                                                            Predicate2<PathContext<Tuple5<C, PB, PC, PD, PE>>,PB> flt2) {
-            Path5<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, C, PB, PC,PD, PE> path5 = new Path5<>();
+            Path5<Join3<DS, B, C, Tuple5<C, PB, PC, PD, PE>>, Tuple5<C, PB, PC, PD, PE>, C, PB, PC,PD, PE> path5 = new Path5<>(null);
             return path5.path(fn2, flt2);
         }
 
         <PB, PC, PD> Path4<Join3<DS, B, C, Tuple4<C, PB, PC, PD>>, Tuple4<C, PB, PC, PD>, C, PB, PC,PD> path4() {
-            return new Path4<>();
+            return new Path4<>(null);
         }
 
         <PB, PC> Path3<Join3<DS, B, C, Tuple3<C, PB, PC>>,Tuple3<C, PB, PC>, C, PB, PC>  path3() {
-            return new Path3<>();
+            return new Path3<>(null);
         }
 
         <PB> Path2<Join3<DS, B, C, Tuple2<B, PB>>,Tuple2<C, PB>, C, PB> path2() {
-            return new Path2<>();
+            return new Path2<>(null);
         }
     }
 
@@ -321,25 +321,25 @@ public class RuleBuilder<DS> {
         }
 
         <PB, PC, PD, PE, PF> Path6<Join2First<DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
-            return new Path6<>();
+            return new Path6<>(null);
         }
 
-        <PB, PC, PD, PE> Path4<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<PD, Tuple4<B, PB, PC, PD>>,B,?> fn2,
-                                                                                                                            Predicate2<PathContext<PE, Tuple5<B, PB, PC, PD, PE>>,PB> flt2) {
-            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, B, PB, PC,PD, PE> path5 = new Path5<>();
+        <PB, PC, PD, PE> Path4<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple4<B, PB, PC, PD>, PB, PC,PD, PE> path5(Function2<PathContext<Tuple4<B, PB, PC, PD>>,B,?> fn2,
+                                                                                                                             Predicate2<PathContext<Tuple4<B, PB, PC, PD>>,PB> flt2) {
+            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple4<B, PB, PC, PD>, B, PB, PC,PD, PE> path5 = new Path5<>(null);
             return path5.path(fn2, flt2);
         }
 
         <PB, PC, PD> Path4<Join2First<DS, B, Tuple4<B, PB, PC, PD>>, Tuple4<B, PB, PC, PD>, B, PB, PC,PD> path4() {
-            return new Path4<>();
+            return new Path4<>(null);
         }
 
         <PB, PC> Path3<Join2First<DS, B, Tuple3<B, PB, PC>>,Tuple3<B, PB, PC>, B, PB, PC>  path3() {
-            return new Path3<>();
+            return new Path3<>(null);
         }
 
         <PB> Path2<Join2First<DS, B, Tuple2<B, PB>>,Tuple2<B, PB>, B, PB> path2() {
-            return new Path2<>();
+            return new Path2<>(null);
         }
     }
 
@@ -349,25 +349,25 @@ public class RuleBuilder<DS> {
         }
 
         <PB, PC, PD, PE, PF> Path6<Join2First<DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
-            return new Path6<>();
+            return new Path6<>(null);
         }
 
         <PB, PC, PD, PE> Path4<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, PB, PC,PD, PE> path5(Function2<PathContext<Tuple5<B, PB, PC, PD, PE>>,B,?> fn2,
                                                                                                                             Predicate2<PathContext<Tuple5<B, PB, PC, PD, PE>>,PB> flt2) {
-            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, B, PB, PC,PD, PE> path5 = new Path5<>();
+            Path5<Join2First<DS, B, Tuple5<B, PB, PC, PD, PE>>, Tuple5<B, PB, PC, PD, PE>, B, PB, PC,PD, PE> path5 = new Path5<>(null);
             return path5.path(fn2, flt2);
         }
 
         <PB, PC, PD> Path4<Join2First<DS, B, Tuple4<B, PB, PC, PD>>, Tuple4<B, PB, PC, PD>, B, PB, PC,PD> path4() {
-            return new Path4<>();
+            return new Path4<>(null);
         }
 
         <PB, PC> Path3<Join2First<DS, B, Tuple3<B, PB, PC>>,Tuple3<B, PB, PC>, B, PB, PC>  path3() {
-            return new Path3<>();
+            return new Path3<>(null);
         }
 
         <PB> Path2<Join2First<DS, B, Tuple2<B, PB>>,Tuple2<B, PB>, B, PB> path2() {
-            return new Path2<>();
+            return new Path2<>(null);
         }
     }
 

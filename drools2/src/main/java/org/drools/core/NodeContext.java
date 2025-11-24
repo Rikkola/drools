@@ -5,7 +5,7 @@ import org.drools.core.function.Tuple;
 
 import java.util.List;
 
-public class NodeContext<I, O> {
+public class NodeContext<O> {
     public static final int BEGIN = 0;
     public static final int RUN = 1;
     public static final int END = 2;
