@@ -9,7 +9,6 @@ import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
 import org.drools.core.function.Tuple.Tuple4;
-import org.drools.core.function.Tuple.Tuple5;
 
 public class MVEL_OOPathBuilder {
 
@@ -57,8 +56,8 @@ public class MVEL_OOPathBuilder {
         }
 
         static <A, B>  PathNode<A, B, Tuple1<A>> build(OOPathBuilder2<A, B> b2) {
-            return new ListPathNode<>(AccessType.LIST, 1,
-                                      b2.fn2(), b2.flt2(), OOPathBuilderA1.build(b2.parent()));//b2.flt2(), OOPathBuilderA1.build(b2));
+            return new ListPathNode<>(AccessType.LIST,
+                                      b2.fn2(), b2.flt2(), OOPathBuilderA1.build(b2.parent()));
         }
     }
 
@@ -80,7 +79,7 @@ public class MVEL_OOPathBuilder {
         }
 
         static <A, B, C>  PathNode<B, C, Tuple2<A, B>> build(OOPathBuilder3<A, B, C> b3) {
-            return new ListPathNode<>(AccessType.LIST, 2,
+            return new ListPathNode<>(AccessType.LIST,
                                       b3.fn2(), b3.flt2(), OOPathBuilderA2.build(b3.parent()));
         }
     }
@@ -103,7 +102,7 @@ public class MVEL_OOPathBuilder {
         }
 
         static <A, B, C, D>  PathNode<C, D, Tuple3<A, B, C>> build(OOPathBuilder4<A, B, C, D> b4) {
-            return new ListPathNode<>(AccessType.LIST, 3,
+            return new ListPathNode<>(AccessType.LIST,
                                       b4.fn2(), b4.flt2(), OOPathBuilderA3.build(b4.parent()));
         }
     }
@@ -120,7 +119,7 @@ public class MVEL_OOPathBuilder {
         }
 
         static <A, B, C, D, E>  PathNode<D, E, Tuple4<A, B, C, D>> build(OOPathBuilder5<A, B, C, D, E> b5) {
-            return new ListPathNode<>(AccessType.LIST, 4,
+            return new ListPathNode<>(AccessType.LIST,
                                       b5.fn2 (), b5.flt2(), OOPathBuilderA4.build(b5.parent()));
         }
     }

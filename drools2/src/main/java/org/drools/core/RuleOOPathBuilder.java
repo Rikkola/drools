@@ -1,27 +1,22 @@
 package org.drools.core;
 
 import org.drools.core.PathNode.ListPathNode;
-import org.drools.core.PathNode.RootPathNode;
 import org.drools.core.function.Function2;
 import org.drools.core.function.Predicate2;
 import org.drools.core.function.Tuple;
-import org.drools.core.function.Tuple.Tuple0;
-import org.drools.core.function.Tuple.Tuple1;
-import org.drools.core.function.Tuple.Tuple2;
-import org.drools.core.function.Tuple.Tuple3;
-import org.drools.core.function.Tuple.Tuple4;
-import org.drools.core.function.Tuple.Tuple5;
-import org.drools.core.function.Tuple.Tuple6;
 
-public class RuleOOPathBuilder2 {
+public class RuleOOPathBuilder {
 
     public static class BasePath<END,  A, B, T extends Tuple> {
         protected Function2<PathContext<T>,A,?> fn2;
         protected Predicate2<PathContext<T>,B> flt2;
         protected END end;
+        protected OOPathFinisher<?, ?, T> finisher;
 
-        public BasePath(END end) {
+        public BasePath(END end,
+                        OOPathFinisher<?, ?, T> finisher) {
             this.end = end;
+            this.finisher = finisher;
         }
 
         public Function2<PathContext<T>, A, ?> function() {
@@ -33,63 +28,100 @@ public class RuleOOPathBuilder2 {
         }
     }
 
-    public static class Path2<END, T extends Tuple, A, B> extends BasePath<END, A, B, T> {
+    public static class OOPathFinisher<R, L, T extends Tuple> {
+        private PathNode<?, ?, T> leaf;
 
-        public Path2(END end) {
-            super(end);
+        public PathNode<?, ?, T> getLeaf() {
+            return leaf;
+        }
+
+        public void setLeaf(PathNode<?, ?, T> leaf) {
+            this.leaf = leaf;
+        }
+
+        public OOPath<R, L, T> finish() {
+            return (OOPath<R, L, T>)  new OOPath<>(leaf);
+        }
+    }
+
+    public static class Path2<END, T extends Tuple, A, B> extends BasePath<END, A, B, T> {
+        PathNode<A, B, T> path2;
+
+        PathNode<?, A, T> parentPath;
+
+        public Path2(END end, OOPathFinisher<?, ?, T> finisher, PathNode<?, A, T> parentPath) {
+            super(end, finisher);
+
+            this.parentPath = parentPath;
         }
 
         public END path(Function2<PathContext<T>, A,?> fn2,
                         Predicate2<PathContext<T>,B> flt2) {
+
+            path2 =  new ListPathNode<>(AccessType.LIST, fn2, flt2, parentPath);
+
+            finisher.setLeaf(path2);
+
             return end;
         }
     }
 
     public static class Path3<END, T extends Tuple, A, B, C> extends BasePath<END, A, B, T> {
-        private  Path2<END, T, B, C> path2;
+        PathNode<A, B, T> path3;
 
-        public Path3(END end) {
-            super(end);
+        PathNode<?, A, T> parentPath;
+
+        public Path3(END end, OOPathFinisher<?, ?, T> finisher, PathNode<?, A, T> parentPath) {
+            super(end, finisher);
+
+            this.parentPath = parentPath;
         }
 
         public Path2<END, T, B, C> path(Function2<PathContext<T>,A,?> fn2,
                                         Predicate2<PathContext<T>,B> flt2) {
-            path2 = new Path2<>(end);
+            this.fn2 = fn2;
+            this.flt2 = flt2;
 
-            return path2;
+            path3 =  new ListPathNode<>(AccessType.LIST, fn2, flt2, parentPath);
+
+            return new Path2<>(end, finisher, path3);
         }
     }
 
     public static class Path4<END, T extends Tuple, A, B, C, D> extends BasePath<END, A, B, T> {
-        private Path3<END, T, B, C, D> path3;
+        PathNode<A, B, T> path4;
 
-        PathNode<A, B, Tuple4<A, B, C, D>> path;
+        PathNode<?, A, T> parentPath;
 
-        public Path4(PathNode<A, B, Tuple4<A, B, C, D>> path, END end) {
-            super(end);
+        public Path4(END end, OOPathFinisher<?, ?, T> finisher, PathNode<?, A, T> parentPath) {
+            super(end, finisher);
 
-            this.path = path;
+            this.parentPath = parentPath;
         }
 
         public Path3<END, T, B, C, D> path(Function2<PathContext<T>,A,?> fn2,
                                            Predicate2<PathContext<T>,B> flt2) {
 
-            path3 = new Path3<>(end);
-            return path3;
+            this.fn2 = fn2;
+            this.flt2 = flt2;
+
+            path4 =  new ListPathNode<>(AccessType.LIST, fn2, flt2, parentPath);
+
+            return new Path3<>(end, finisher, path4);
         }
 
 
     }
 
     public static class Path5<END, T extends Tuple, A, B, C, D, E> extends BasePath<END, A, B, T> {
-        private Path4<END, T, B, C, D, E> path4;
-
         PathNode<A, B, T> path5;
 
+        PathNode<?, A, T> parentPath;
 
-        public Path5(PathNode<A,B,T> path, END end) {
-            super(end);
-            path5 = path;
+        public Path5(END end, OOPathFinisher<?, ?, T> finisher, PathNode<?, A, T> parentPath) {
+            super(end,
+                  finisher);
+            this.parentPath = parentPath;
         }
 
         public Path4<END, T, B, C, D, E> path(Function2<PathContext<T>,A,?> fn2,
@@ -97,23 +129,24 @@ public class RuleOOPathBuilder2 {
             this.fn2 = fn2;
             this.flt2 = flt2;
 
-            PathNode<A, B, T> path = new Path4<>((PathNode<A, B, Tuple4<A, B, C, D>>) path5, end);
+            path5 =  new ListPathNode<>(AccessType.LIST, fn2, flt2, parentPath);
 
-            path4 = new Path4<>((PathNode<A, B, Tuple4<A, B, C, D>>)path, end);
-
-            return path4;
+            return new Path4<>(end, finisher, path5);
         }
 
-        public PathNode<A, B, Tuple5<A, B, C, D, E>> getPath() {
+        public PathNode<A, B, T> getPath() {
             return path5;
         }
     }
 
     public static class Path6<END, T extends Tuple, A, B, C, D, E, F> extends BasePath<END, A, B, T> {
-        private Path5<END, T, B, C, D, E, F> path5;
+        PathNode<A, B, T> path6;
 
-        public Path6(END end) {
-            super(end);
+        PathNode<?, A, T> parentPath;
+
+        public Path6(END end, OOPathFinisher<?, ?, T> finisher, PathNode<?, A, T> parentPath) {
+            super(end, finisher);
+            this.parentPath = parentPath;
         }
 
 
@@ -122,8 +155,7 @@ public class RuleOOPathBuilder2 {
             this.fn2 = fn2;
             this.flt2 = flt2;
 
-            path5 = new Path5<>(end);
-            return path5;
+            return new Path5<>(end, finisher, path6);
         }
     }
 

@@ -28,7 +28,7 @@ public interface DataStore<T> extends DataSource<T> {
      * Add an object to this DataStore.
      * @return The {@link DataHandle} to be further modified
      */
-    DataHandle add(T object);
+    DataHandle<T> add(T object);
 
     /**
      * Updates the fact for which the given {@link DataHandle} was assigned with the new
@@ -55,5 +55,5 @@ public interface DataStore<T> extends DataSource<T> {
     DataHandle lookup(T object);
 
 
-    <T> DataStore<T> as(Class cls);
+    <U> DataStore<U> as(Class cls);
 }

@@ -16,7 +16,7 @@ public class RuleBaseTest {
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        ruleBase.modify("org.domain")
+        ruleBase.modify().with("org.domain")
                 .add(builder.rule("r1").ifn(() -> {}))
                 .add(builder.rule("r2").ifn(() -> {}));
     }
@@ -37,7 +37,7 @@ public class RuleBaseTest {
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        ruleBase.modify("org.domain")
+        ruleBase.modify().with("org.domain")
                 .add(builder.rule("rule1").<P3>params()
                 .join(builder.from(persons).filter((ctx, b) -> b.age() > 20))
                 .filter((ctx, a, b) -> a.p3_1().length() > b.age()))

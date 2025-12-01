@@ -15,7 +15,9 @@ public interface PathNode<I, O, T extends Tuple> {
 
     public PathNode<?, I, ?> getParent();
 
-    public static class RootPathNode<O> implements PathNode<Void, O, Tuple0> {
+    int index();
+
+    public static class RootPathNode<O, T extends Tuple> implements PathNode<Void, O, T> {
         Predicate2<PathContext<Tuple0>, O> flt2;
 
         public RootPathNode(Predicate2<PathContext<Tuple0>, O> flt2) {
@@ -46,8 +48,13 @@ public interface PathNode<I, O, T extends Tuple> {
         }
 
         @Override
-        public PathNode<Void, Void, Tuple0> getParent() {
+        public PathNode<Void, Void, ?> getParent() {
             return null;
+        }
+
+        @Override
+        public int index() {
+            return 0;
         }
     }
 
@@ -60,11 +67,11 @@ public interface PathNode<I, O, T extends Tuple> {
         private Predicate2<PathContext<T>, O>      flt2;
         private PathNode<?, I, ?> parent;
 
-        public ListPathNode(AccessType type, int index,
+        public ListPathNode(AccessType type,
                             Function2<PathContext<T>, I, ?> fn1, Predicate2<PathContext<T>, O> flt2,
                             PathNode<?, I, ?> parent) {
             this.type   = type;
-            this.index = index;
+            this.index = parent.index() +1;
             this.flt2  = flt2;
             this.fn2   = fn1;
             this.parent = parent;
@@ -147,6 +154,10 @@ public interface PathNode<I, O, T extends Tuple> {
         @Override
         public PathNode<?, I, ?> getParent() {
             return parent;
+        }
+
+        public int index() {
+            return index;
         }
     }
 

@@ -1,75 +1,80 @@
 package org.drools.core;
 
-import org.drools.core.OOPathTest.Book;
-import org.drools.core.OOPathTest.Library;
-import org.drools.core.OOPathTest.Page;
-import org.drools.core.OOPathTest.Room;
-import org.drools.core.OOPathTest.Shelf;
-import org.drools.core.PathNode.ListPathNode;
 import org.drools.core.PathNode.RootPathNode;
-import org.drools.core.RuleBuilder.Join2First;
-import org.drools.core.RuleOOPathBuilder2.Path2;
-import org.drools.core.RuleOOPathBuilder2.Path3;
-import org.drools.core.RuleOOPathBuilder2.Path4;
-import org.drools.core.RuleOOPathBuilder2.Path5;
-import org.drools.core.RuleOOPathBuilder2.Path6;
+import org.drools.core.RuleOOPathBuilder.OOPathFinisher;
+import org.drools.core.RuleOOPathBuilder.Path2;
+import org.drools.core.RuleOOPathBuilder.Path3;
+import org.drools.core.RuleOOPathBuilder.Path4;
+import org.drools.core.RuleOOPathBuilder.Path5;
 import org.drools.core.function.Function2;
 import org.drools.core.function.Predicate2;
 
 import org.drools.core.function.Tuple;
-import org.drools.core.function.Tuple.Tuple0;
-import org.drools.core.function.Tuple.Tuple1;
 import org.drools.core.function.Tuple.Tuple2;
 import org.drools.core.function.Tuple.Tuple3;
 import org.drools.core.function.Tuple.Tuple4;
 import org.drools.core.function.Tuple.Tuple5;
-import org.drools.core.function.Tuple.Tuple6;
 
-public class OOPathBuilder<END> {
+public class OOPathBuilder<END, R, L, T extends Tuple> {
 
     protected END end;
 
-    public OOPathBuilder(END end) {
+    protected OOPathFinisher<R, L, T> finisher;
+
+    public OOPathBuilder(END end, OOPathFinisher<R, L, T> finisher) {
         this.end = end;
+        this.finisher = finisher;
     }
 
     public static class BuilderEnd<R, L, T extends Tuple> {
+
+        private OOPathFinisher<R, L, T> finisher;
+
+        public BuilderEnd(OOPathFinisher<R, L, T> finisher) {
+            this.finisher = finisher;
+        }
+
         public OOPath<R, L, T> build() {
-            return null;
+            return finisher.finish();
         }
     }
 
     <A, B, C, D, E> Path4<BuilderEnd<A, E, Tuple5<A, B, C, D, E>>,
                           Tuple5<A, B, C, D, E>, B, C, D, E> path5(Function2<PathContext<Tuple5<A, B, C, D, E>>, A,?> fn2,
                                                                    Predicate2<PathContext<Tuple5<A, B, C, D, E>>,B> flt2) {
-        RootPathNode<A> root = new RootPathNode<>((ctx, l) -> true);
-        ListPathNode<A, B, Tuple5<A, B, C, D, E>> path = new ListPathNode<>(AccessType.LIST, 1, fn2, flt2, root);
+        RootPathNode<A, Tuple5<A, B, C, D, E>> root = new RootPathNode<>((ctx, l) -> true);
 
-
-        Path5<BuilderEnd<A, E, Tuple5<A, B, C, D, E>>, Tuple5<A, B, C, D, E>, A, B, C, D, E> path5 = new Path5<>(path,
-                                                                                                                 (BuilderEnd<A, E, Tuple5<A, B, C, D, E>>)end);
+        Path5<BuilderEnd<A, E, Tuple5<A, B, C, D, E>>, Tuple5<A, B, C, D, E>, A, B, C, D, E> path5 = new Path5<>((BuilderEnd<A, E, Tuple5<A, B, C, D, E>>)end,
+                                                                                                                 (OOPathFinisher<A, E, Tuple5<A, B, C, D, E>>) finisher,
+                                                                                                                 root);
         return path5.path(fn2, flt2);
     }
 
-    <A, B, C, D> Path3<BuilderEnd, Tuple4<A, B, C, D>, B, C, D> path4(Function2<PathContext<Tuple4<A, B, C, D>>, A,?> fn2,
-                                                                      Predicate2<PathContext<Tuple4<A, B, C, D>>,B> flt2) {
-        RootPathNode<A> root = new RootPathNode<>((ctx, l) -> true);
-        ListPathNode<A, B, Tuple4<A, B, C, D>> path = new ListPathNode<>(AccessType.LIST, 1, fn2, flt2, root);
+    <A, B, C, D> Path3<BuilderEnd<A, D, Tuple4<A, B, C, D>>, Tuple4<A, B, C, D>, B, C, D> path4(Function2<PathContext<Tuple4<A, B, C, D>>, A,?> fn2,
+                                                                                                Predicate2<PathContext<Tuple4<A, B, C, D>>,B> flt2) {
+        RootPathNode<A, Tuple4<A, B, C, D>> root = new RootPathNode<>((ctx, l) -> true);
 
-        Path4<BuilderEnd, Tuple4<A, B, C, D>, A, B, C, D> path5 = new Path4<>(path,
-                                                                              (BuilderEnd<A, B, Tuple4<A, B, C, D>>)end);
-        return path5.path(fn2, flt2);
+        Path4<BuilderEnd<A, D, Tuple4<A, B, C, D>>, Tuple4<A, B, C, D>, A, B, C, D> path4 = new Path4<>((BuilderEnd<A, D, Tuple4<A, B, C, D>>)end,
+                                                                                                        (OOPathFinisher<A, D, Tuple4<A, B, C, D>>) finisher, root);
+
+        return path4.path(fn2, flt2);
     }
 
     <A, B, C> Path2<BuilderEnd,Tuple3<A, B, C>, B, C> path3(Function2<PathContext<Tuple3<A, B, C>>, A,?> fn2,
                                                             Predicate2<PathContext<Tuple3<A, B, C>>,B> flt2) {
-        Path3<BuilderEnd, Tuple3<A, B, C>, A, B, C> path3 = new Path3<>((BuilderEnd<A, C, Tuple3<A, B, C>>)end);
+        RootPathNode<A, Tuple3<A, B, C>> root = new RootPathNode<>((ctx, l) -> true);
+
+        Path3<BuilderEnd, Tuple3<A, B, C>, A, B, C> path3 = new Path3<>((BuilderEnd<A, C, Tuple3<A, B, C>>)end,
+                                                                        (OOPathFinisher<A, C, Tuple3<A, B, C>>)finisher, root);
         return path3.path(fn2, flt2);
     }
 
     <A, B> BuilderEnd path2(Function2<PathContext<Tuple2<A, B>>, A,?> fn2,
                             Predicate2<PathContext<Tuple2<A, B>>,B> flt2) {
-        Path2<BuilderEnd, Tuple2<A, B>, A, B> path2 = new Path2<>((BuilderEnd<A, B, Tuple2<A, B>>)end);
+        RootPathNode<A, Tuple2<A, B>> root = new RootPathNode<>((ctx, l) -> true);
+
+        Path2<BuilderEnd, Tuple2<A, B>, A, B> path2 = new Path2<>((BuilderEnd<A, B, Tuple2<A, B>>)end,
+                                                                  (OOPathFinisher<A, B, Tuple2<A, B>>)finisher, root);
         return path2.path(fn2, flt2);
     }
 

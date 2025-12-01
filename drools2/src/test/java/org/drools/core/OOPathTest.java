@@ -3,14 +3,8 @@ package org.drools.core;
 import org.drools.core.OOPathBuilder.BuilderEnd;
 import org.drools.core.PathNode.ListPathNode;
 import org.drools.core.PathNode.RootPathNode;
-import org.drools.core.RuleBuilderTest.Book;
-import org.drools.core.RuleBuilderTest.Page;
-import org.drools.core.RuleBuilderTest.Room;
-import org.drools.core.RuleBuilderTest.Shelf;
-import org.drools.core.function.Tuple.Tuple1;
-import org.drools.core.function.Tuple.Tuple2;
-import org.drools.core.function.Tuple.Tuple3;
-import org.drools.core.function.Tuple.Tuple4;
+import org.drools.core.RuleOOPathBuilder.OOPathFinisher;
+import org.drools.core.function.Consumer2;
 import org.drools.core.function.Tuple.Tuple5;
 import org.junit.jupiter.api.Test;
 
@@ -53,15 +47,15 @@ public class OOPathTest {
     public void test() {
         Library l1 = createLibrary("l1");
 
-        RootPathNode<Library> library = new RootPathNode<>( (ctx, l) -> true);
+        RootPathNode<Library, Tuple5<Library, Room, Shelf, Book, Page>> library = new RootPathNode<>((ctx, l) -> true);
 
-        ListPathNode<Library, Room, Tuple2<Library, Room>> room = new ListPathNode<>(AccessType.LIST, 1, (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null, library);
+        ListPathNode<Library, Room, Tuple5<Library, Room, Shelf, Book, Page>> room = new ListPathNode<>(AccessType.LIST, (ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null, library);
 
-        ListPathNode<Room, Shelf, Tuple3<Library, Room, Shelf>> shelf = new ListPathNode<>(AccessType.LIST, 2, (ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null, room);
+        ListPathNode<Room, Shelf, Tuple5<Library, Room, Shelf, Book, Page>> shelf = new ListPathNode<>(AccessType.LIST, (ctx, r) -> r.shelves(), (ctx, s) -> s.name() != null, room);
 
-        ListPathNode<Shelf, Book, Tuple4<Library, Room, Shelf, Book>> book = new ListPathNode<>(AccessType.LIST, 3, (ctx, s) -> s.books(), (ctx, b) -> b.title() != null, shelf);
+        ListPathNode<Shelf, Book, Tuple5<Library, Room, Shelf, Book, Page>> book = new ListPathNode<>(AccessType.LIST, (ctx, s) -> s.books(), (ctx, b) -> b.title() != null, shelf);
 
-        ListPathNode<Book, Page, Tuple5<Library, Room, Shelf, Book, Page>> page = new ListPathNode<>(AccessType.LIST, 4, (ctx, b) -> b.pages(), (ctx, p) -> p.number() >= 0, book);
+        ListPathNode<Book, Page, Tuple5<Library, Room, Shelf, Book, Page>> page = new ListPathNode<>(AccessType.LIST, (ctx, b) -> b.pages(), (ctx, p) -> p.number() >= 0, book);
 
         OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path = new OOPath<>(page);
 
@@ -78,9 +72,12 @@ public class OOPathTest {
     public void test1() {
         Library l1 = createLibrary("l1");
 
-        BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>> end = new BuilderEnd<>();
+        OOPathFinisher<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>> finisher = new OOPathFinisher<>();
 
-        OOPathBuilder<BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>>> builder = new OOPathBuilder<>(end);
+        BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>> end = new BuilderEnd<>(finisher);
+
+        OOPathBuilder<BuilderEnd<Library, Page,Tuple5<Library, Room, Shelf, Book, Page>>,
+                      Library, Page,Tuple5<Library, Room, Shelf, Book, Page>> builder = new OOPathBuilder<>(end, finisher);
 
         OOPath<Library, Page, Tuple5<Library, Room, Shelf, Book, Page>> path =
         builder.<Library, Room, Shelf, Book, Page>path5((ctx, l) -> l.rooms(), (ctx, r) -> r.name() != null)
@@ -103,6 +100,7 @@ public class OOPathTest {
             p = it.next();
             System.out.println(p + ":" + path.getPathContext(it).getContext(0).getTuple());
         }
+
     }
 
     public Library createLibrary(String name) {

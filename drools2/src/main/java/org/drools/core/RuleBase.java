@@ -7,13 +7,24 @@ public class RuleBase<DS> {
 
     }
 
-    public ChangeSet<DS> modify(String pkgName) {
-        return new ChangeSet(pkgName);
+    public ChangeSetSelector<DS> modify() {
+        return new ChangeSetSelector();
+    }
+
+    public class ChangeSetSelector<DS> {
+        public ChangeSet<DS> with(String pkgName) {
+            return new ChangeSet(pkgName);
+        }
     }
 
     public class ChangeSet<DS> {
 
         public ChangeSet(String pkgName) {
+
+        }
+
+        public ChangeSet<DS> with(String pkgName) {
+            return new ChangeSet(pkgName);
         }
 
         public ChangeSet<DS> add(BaseRuleBuilder rule) {
@@ -27,6 +38,6 @@ public class RuleBase<DS> {
         public void apply() {
 
         }
-
+        
     }
 }
