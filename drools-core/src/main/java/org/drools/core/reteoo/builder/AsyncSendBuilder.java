@@ -19,7 +19,7 @@
 package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.AsyncSend;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.reteoo.AsyncSendNode;
@@ -28,7 +28,7 @@ import org.drools.core.reteoo.CoreComponentFactory;
 public class AsyncSendBuilder implements ReteooComponentBuilder {
 
     @Override
-    public void build( BuildContext context, BuildUtils utils, RuleConditionElement rce ) {
+    public void build( BuildContext context, BuildUtils utils, RuleElement rce) {
         final AsyncSend send = (AsyncSend) rce;
         context.pushRuleComponent( send );
 
@@ -57,7 +57,7 @@ public class AsyncSendBuilder implements ReteooComponentBuilder {
     }
 
     @Override
-    public boolean requiresLeftActivation( BuildUtils utils, RuleConditionElement rce ) {
+    public boolean requiresLeftActivation( BuildUtils utils, RuleElement rce) {
         return true;
     }
 }

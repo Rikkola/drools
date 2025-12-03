@@ -85,7 +85,7 @@ public class EntryPointId extends ConditionalElement
      * It is not possible to nest elements inside an entry point, so
      * always return an empty list.
      */
-    public List<? extends RuleConditionElement> getNestedElements() {
+    public List<? extends RuleElement> getNestedElements() {
         return Collections.EMPTY_LIST;
     }
 

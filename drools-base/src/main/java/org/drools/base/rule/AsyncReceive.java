@@ -66,7 +66,7 @@ public class AsyncReceive extends ConditionalElement implements PatternSource {
     }
 
     @Override
-    public List<? extends RuleConditionElement> getNestedElements() {
+    public List<? extends RuleElement> getNestedElements() {
         return Collections.emptyList();
     }
 

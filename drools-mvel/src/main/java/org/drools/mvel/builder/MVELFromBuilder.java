@@ -34,7 +34,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.EntryPointId;
 import org.drools.base.rule.From;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
 import org.drools.core.rule.consequence.KnowledgeHelper;
 import org.drools.mvel.MVELDialectRuntimeData;
@@ -49,16 +49,16 @@ public class MVELFromBuilder
     implements
         FromBuilder {
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                      final BaseDescr descr) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                      final BaseDescr descr,
-                                      final Pattern prefixPattern) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
         String text = ((FromDescr) descr).getExpression();
         Optional<EntryPointId> entryPointId = context.getEntryPointId(text);
         if (entryPointId.isPresent()) {

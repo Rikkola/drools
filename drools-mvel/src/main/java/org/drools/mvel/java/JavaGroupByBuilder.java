@@ -53,7 +53,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.MultiAccumulate;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.SingleAccumulate;
 import org.drools.base.rule.accessor.Accumulator;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
@@ -79,16 +79,16 @@ public class JavaGroupByBuilder
     implements
         GroupByBuilder {
 
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr,
-                                       final Pattern prefixPattern ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
 
         final GroupByDescr groupByDescr = (GroupByDescr) descr;
         if ( !groupByDescr.hasValidInput() ) {
@@ -102,8 +102,8 @@ public class JavaGroupByBuilder
         }
         
         final RuleConditionBuilder builder = (RuleConditionBuilder) context.getDialect().getBuilder( input.getClass() );
-        final RuleConditionElement source = builder.build( context,
-                                                           input );
+        final RuleElement source = builder.build(context,
+                                                 input);
         if ( source == null ) {
             return null;
         }
@@ -204,7 +204,7 @@ public class JavaGroupByBuilder
 
     private Accumulate buildExternalFunctionCall( RuleBuildContext context,
                                                   GroupByDescr groupByDescr,
-                                                  RuleConditionElement source,
+                                                  RuleElement source,
                                                   Map<String, Declaration> declsInScope,
                                                   Map<String, Class< ? >> declCls,
                                                   boolean readLocalsFromTuple) {
@@ -338,7 +338,7 @@ public class JavaGroupByBuilder
     private AccumulateFunction getAccumulateFunction(RuleBuildContext context,
                                                      GroupByDescr groupByDescr,
                                                      AccumulateFunctionCallDescr fc,
-                                                     RuleConditionElement source,
+                                                     RuleElement source,
                                                      Map<String, Class< ? >> declCls) {
         String functionName = AccumulateUtil.getFunctionName(() -> MVELExprAnalyzer.getExpressionType(context, declCls, source, fc.getParams()[0]), fc.getFunction());
 
@@ -439,7 +439,7 @@ public class JavaGroupByBuilder
 
     private Accumulate buildInlineAccumulate( final RuleBuildContext context,
                                               final GroupByDescr groupByDescr,
-                                              final RuleConditionElement source,
+                                              final RuleElement source,
                                               Map<String, Declaration> decls,
                                               Map<String, Class< ? >> declCls,
                                               final boolean readLocalsFromTuple) {

@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.drools.base.rule.Accumulate;
 import org.drools.base.rule.GroupElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.reteoo.AccumulateNode;
@@ -41,14 +41,14 @@ public class AccumulateBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
         final Accumulate accumulate = (Accumulate) rce;
         context.pushRuleComponent( accumulate );
 
         final List<BetaConstraint>           resultBetaConstraints  = context.getBetaconstraints();
         final List<AlphaNodeFieldConstraint> resultAlphaConstraints = context.getAlphaConstraints();
 
-        RuleConditionElement source = accumulate.getSource();
+        RuleElement source = accumulate.getSource();
         if( source instanceof GroupElement ) {
             GroupElement ge = (GroupElement) source;
             if( ge.isAnd() && ge.getChildren().size() == 1 ) {
@@ -115,7 +115,7 @@ public class AccumulateBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

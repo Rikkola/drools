@@ -20,6 +20,7 @@ package org.drools.core;
 
 import org.drools.api.data.DataProcessor;
 import org.drools.api.data.DataSource;
+import org.drools.core.util.LinkedList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +29,6 @@ import java.util.function.Consumer;
 
 public abstract class AbstractDataSource<T> implements DataSource<T> {
 
-    protected final List<DataProcessor> subscribers = new ArrayList<>();
+    protected final LinkedList<DataProcessor<T>> subscribers = new LinkedList<>();
 
-//    protected final List<EntryPointDataProcessor> entryPointSubscribers = new CopyOnWriteArrayList<>();
-
-    public void subscribe(DataProcessor<T> processor) {
-    }
-
-    public void unsubscribe(DataProcessor<T> processor) {
-    }
 }

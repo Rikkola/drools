@@ -22,7 +22,7 @@ import java.io.Externalizable;
 import java.util.List;
 import java.util.Map;
 
-public interface RuleConditionElement
+public interface RuleElement
     extends
     RuleComponent,
     Externalizable,
@@ -58,14 +58,14 @@ public interface RuleConditionElement
      * Returns a clone from itself
      * @return
      */
-    RuleConditionElement clone();
+    RuleElement clone();
     
     /**
      * Returs a list of RuleConditionElement's that are nested
      * inside the current element
      * @return
      */
-    List<? extends RuleConditionElement> getNestedElements();
+    List<? extends RuleElement> getNestedElements();
     
     /**
      * Returns true in case this RuleConditionElement delimits

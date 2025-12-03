@@ -19,7 +19,7 @@
 package org.drools.compiler.rule.builder;
 
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.drl.ast.descr.BaseDescr;
 
 /**
@@ -28,11 +28,11 @@ import org.drools.drl.ast.descr.BaseDescr;
  */
 public interface RuleConditionBuilder<T extends BaseDescr> extends EngineElementBuilder {
 
-    RuleConditionElement build(final RuleBuildContext context,
-                               final T descr);
+    RuleElement build(final RuleBuildContext context,
+                      final T descr);
     
-    RuleConditionElement build(final RuleBuildContext context,
-                               final T descr,
-                               final Pattern prefixPattern);
+    RuleElement build(final RuleBuildContext context,
+                      final T descr,
+                      final Pattern prefixPattern);
 
 }

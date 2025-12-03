@@ -18,7 +18,7 @@
  */
 package org.drools.core.reteoo.builder;
 
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 
 /**
  * An interface for Reteoo Component builders
@@ -33,7 +33,7 @@ public interface ReteooComponentBuilder {
      */
     public void build(BuildContext context,
                       BuildUtils utils,
-                      RuleConditionElement rce);
+                      RuleElement rce);
 
     /**
      * A boolean function that indicates if the builder requires a previous left 
@@ -51,6 +51,6 @@ public interface ReteooComponentBuilder {
      * @return true if a tuple source is required, false otherwise.
      */
     public boolean requiresLeftActivation(BuildUtils utils,
-                                          RuleConditionElement rce);
+                                          RuleElement rce);
 
 }

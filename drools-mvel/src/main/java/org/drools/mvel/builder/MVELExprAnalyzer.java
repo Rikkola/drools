@@ -34,7 +34,7 @@ import org.drools.compiler.rule.builder.PackageBuildContext;
 import org.drools.compiler.rule.builder.RuleBuildContext;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.base.rule.Declaration;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.drl.ast.descr.BaseDescr;
 import org.drools.mvel.MVELDialectRuntimeData;
 import org.drools.mvel.asm.AsmUtil;
@@ -294,7 +294,7 @@ public class MVELExprAnalyzer {
 
     public static Class<?> getExpressionType(PackageBuildContext context,
                                              Map<String, Class< ? >> declCls,
-                                             RuleConditionElement source,
+                                             RuleElement source,
                                              String expression) {
         MVELDialectRuntimeData data = ( MVELDialectRuntimeData ) context.getPkg().getDialectRuntimeRegistry().getDialectData( "mvel" );
         ParserConfiguration conf = data.getParserConfiguration();

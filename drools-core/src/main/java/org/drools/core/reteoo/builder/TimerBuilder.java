@@ -19,7 +19,7 @@
 package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.Declaration;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.time.impl.Timer;
 import org.drools.core.reteoo.CoreComponentFactory;
 import org.drools.core.time.impl.BaseTimer;
@@ -30,7 +30,7 @@ public class TimerBuilder
 
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
         final Timer timer = (Timer) rce;
         context.pushRuleComponent( timer );
 
@@ -52,7 +52,7 @@ public class TimerBuilder
     }
 
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

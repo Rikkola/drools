@@ -46,7 +46,7 @@ import org.drools.wiring.api.util.ClassUtils;
 
 import static org.kie.internal.ruleunit.RuleUnitUtil.isDataSource;
 
-public class Pattern implements RuleConditionElement, AcceptsClassObjectType, Externalizable {
+public class Pattern implements RuleElement, AcceptsClassObjectType, Externalizable {
 
     private static final long serialVersionUID = 510l;
     private ObjectType objectType;
@@ -423,7 +423,7 @@ public class Pattern implements RuleConditionElement, AcceptsClassObjectType, Ex
         return Objects.equals(this.source, other.source);
     }
 
-    public List<RuleConditionElement> getNestedElements() {
+    public List<RuleElement> getNestedElements() {
         return this.source != null ? Collections.singletonList( this.source ) : Collections.EMPTY_LIST;
     }
 

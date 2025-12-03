@@ -22,7 +22,7 @@ import org.drools.base.definitions.InternalKnowledgePackage;
 import org.drools.base.definitions.rule.impl.QueryImpl;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.compiler.AnalysisResult;
@@ -442,16 +442,16 @@ public class PackageBuilderConfigurationTest {
             implements
             RuleConditionBuilder {
 
-        public RuleConditionElement build(RuleBuildContext context,
-                                          BaseDescr descr) {
+        public RuleElement build(RuleBuildContext context,
+                                 BaseDescr descr) {
             EvalDescr evalDescr = (EvalDescr) descr;
             evalDescr.setContent("eval was built");
             return null;
         }
 
-        public RuleConditionElement build(RuleBuildContext context,
-                                          BaseDescr descr,
-                                          Pattern prefixPattern) {
+        public RuleElement build(RuleBuildContext context,
+                                 BaseDescr descr,
+                                 Pattern prefixPattern) {
             return null;
         }
     }

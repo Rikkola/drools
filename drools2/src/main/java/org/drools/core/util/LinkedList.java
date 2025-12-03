@@ -19,6 +19,7 @@
 package org.drools.core.util;
 
 import org.drools.core.TupleImpl;
+import org.drools.core.function.Consumer1;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -388,6 +389,14 @@ public class LinkedList<T extends DoubleLinkedEntry<T>>
     
     public FastIterator<T> fastIterator() {
         return fastIterator;
+    }
+
+    public void forEach(Consumer1<T> c) {
+        T current = getFirst();
+        while ( current != null ) {
+            c.accept( current);
+            current = current.getNext();
+        }
     }
 
     // All the tuples except for TMS are AbstractTuple

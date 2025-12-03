@@ -32,7 +32,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.QueryArgument;
 import org.drools.base.rule.QueryElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
 import org.drools.base.rule.accessor.ReadAccessor;
 import org.drools.compiler.compiler.AnalysisResult;
@@ -65,20 +65,20 @@ public class QueryElementBuilder
         return INSTANCE;
     }
 
-    public RuleConditionElement build( RuleBuildContext context,
-                                       BaseDescr descr ) {
+    public RuleElement build(RuleBuildContext context,
+                             BaseDescr descr) {
         throw new UnsupportedOperationException();
     }
 
-    public RuleConditionElement build( RuleBuildContext context,
-                                       BaseDescr descr,
-                                       Pattern prefixPattern ) {
+    public RuleElement build(RuleBuildContext context,
+                             BaseDescr descr,
+                             Pattern prefixPattern) {
         throw new UnsupportedOperationException();
     }
 
-    public RuleConditionElement build( RuleBuildContext context,
-                                       BaseDescr descr,
-                                       QueryImpl query) {
+    public RuleElement build(RuleBuildContext context,
+                             BaseDescr descr,
+                             QueryImpl query) {
         PatternDescr patternDescr = (PatternDescr) descr;
 
         Declaration[] params = query.getParameters();

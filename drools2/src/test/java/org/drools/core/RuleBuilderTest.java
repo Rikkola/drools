@@ -17,8 +17,7 @@ public class RuleBuilderTest {
                   DataStore<OOPathTest.Library> libraries) {};
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
-
-
+        
         record P3(String p3_1, String p3_2, String p3_3) {
             public static final P3 V = new P3(null,null,null);
         };

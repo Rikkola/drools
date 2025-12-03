@@ -24,7 +24,7 @@ import java.util.List;
 import org.drools.base.rule.Accumulate;
 import org.drools.base.rule.Collect;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.SingleAccumulate;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.core.base.accumulators.CollectAccumulator;
@@ -45,7 +45,7 @@ public class CollectBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
 
         boolean existSubNetwort = false;
         final Collect collect = (Collect) rce;
@@ -122,7 +122,7 @@ public class CollectBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

@@ -103,9 +103,9 @@ public class LogicTransformer {
         List<GroupElement> result = new ArrayList<>();
 
         for (GroupElement and : ands) {
-            List<RuleConditionElement> children = and.getChildren();
+            List<RuleElement> children = and.getChildren();
             for (int i = 0; i < children.size(); i++) {
-                RuleConditionElement child = children.get(i);
+                RuleElement child = children.get(i);
                 if (child instanceof NamedConsequence) {
                     GroupElement clonedAnd = GroupElementFactory.newAndInstance();
                     for (int j = 0; j < i; j++) {
@@ -126,7 +126,7 @@ public class LogicTransformer {
     protected GroupElement[] splitOr( final GroupElement cloned ) {
         GroupElement[] ands = new GroupElement[cloned.getChildren().size()];
         int i = 0;
-        for ( final RuleConditionElement branch : cloned.getChildren() ) {
+        for ( final RuleElement branch : cloned.getChildren() ) {
             if ( ( branch instanceof GroupElement ) && ( ( (GroupElement) branch ).isAnd() ) ) {
                 ands[i++] = (GroupElement) branch;
             } else {
@@ -144,8 +144,8 @@ public class LogicTransformer {
      * we need to fix any references to cloned declarations.
      */
     protected void fixClonedDeclarations( GroupElement and, Map<String, Type> globals ) {
-        Deque<RuleConditionElement> contextList = new ArrayDeque<>();
-        DeclarationScopeResolver resolver = new DeclarationScopeResolver( globals, contextList );
+        Deque<RuleElement>       contextList = new ArrayDeque<>();
+        DeclarationScopeResolver resolver    = new DeclarationScopeResolver( globals, contextList );
 
         contextList.push( and );
         processElement( resolver,
@@ -158,10 +158,10 @@ public class LogicTransformer {
      * recurse through the rule condition elements updating the declaration objecs
      */
     private void processElement(final DeclarationScopeResolver resolver,
-                                final Deque<RuleConditionElement> contextList,
-                                final RuleConditionElement element) {
+                                final Deque<RuleElement> contextList,
+                                final RuleElement element) {
         if ( element instanceof Pattern pattern ) {
-            for ( RuleConditionElement ruleConditionElement : pattern.getNestedElements() ) {
+            for ( RuleElement ruleConditionElement : pattern.getNestedElements() ) {
                 processElement( resolver,
                                 contextList,
                                 ruleConditionElement );
@@ -177,7 +177,7 @@ public class LogicTransformer {
             processEvalCondition(resolver, eval);
 
         } else if ( element instanceof Accumulate accumulate ) {
-            for ( RuleConditionElement rce : element.getNestedElements() ) {
+            for ( RuleElement rce : element.getNestedElements() ) {
                 processElement( resolver, contextList, rce );
             }
             replaceDeclarations( resolver, accumulate );
@@ -241,7 +241,7 @@ public class LogicTransformer {
 
         } else {
             contextList.push( element );
-            for (RuleConditionElement ruleConditionElement : element.getNestedElements()) {
+            for (RuleElement ruleConditionElement : element.getNestedElements()) {
                 processElement(resolver,
                         contextList,
                         ruleConditionElement);
@@ -422,12 +422,12 @@ public class LogicTransformer {
         public void transform(final GroupElement parent) throws InvalidPatternException {
             final List<GroupElement> orsList = new ArrayList<>();
             // must keep order, so, using array
-            final RuleConditionElement[] others = new RuleConditionElement[parent.getChildren().size()];
+            final RuleElement[] others = new RuleElement[parent.getChildren().size()];
 
             // first we split children as OR or not OR
             int permutations = 1;
             int index = 0;
-            for (final RuleConditionElement child : parent.getChildren()) {
+            for (final RuleElement child : parent.getChildren()) {
                 if ( child instanceof GroupElement ge && ge.isOr()) {
                     permutations *= ge.getChildren().size();
                     orsList.add(ge);
@@ -517,7 +517,7 @@ public class LogicTransformer {
             parent.setType( GroupElement.NOT );
             parent.getChildren().clear();
             final GroupElement and = GroupElementFactory.newAndInstance();
-            for (RuleConditionElement ruleConditionElement : or.getChildren()) {
+            for (RuleElement ruleConditionElement : or.getChildren()) {
                 final GroupElement newNot = GroupElementFactory.newNotInstance();
                 newNot.addChild(ruleConditionElement);
                 and.addChild(newNot);
@@ -564,7 +564,7 @@ public class LogicTransformer {
             final GroupElement or = (GroupElement) parent.getChildren().get( 0 );
             parent.setType( GroupElement.AND );
             parent.getChildren().clear();
-            for (RuleConditionElement ruleConditionElement : or.getChildren()) {
+            for (RuleElement ruleConditionElement : or.getChildren()) {
                 final GroupElement newNot = GroupElementFactory.newNotInstance();
                 newNot.addChild(ruleConditionElement);
                 parent.addChild(newNot);

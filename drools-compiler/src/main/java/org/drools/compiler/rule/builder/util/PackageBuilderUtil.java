@@ -21,7 +21,7 @@ package org.drools.compiler.rule.builder.util;
 import org.drools.base.rule.EntryPointId;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.QueryElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.compiler.compiler.DescrBuildError;
 import org.drools.compiler.rule.builder.RuleBuildContext;
 import org.drools.drl.ast.descr.AccumulateDescr;
@@ -41,7 +41,7 @@ public class PackageBuilderUtil {
      */
     public static boolean isReadLocalsFromTuple(final RuleBuildContext context,
                                                 final AccumulateDescr accumDescr,
-                                                final RuleConditionElement source) {
+                                                final RuleElement source) {
         if (accumDescr.isMultiPattern()) {
             return true;
         }

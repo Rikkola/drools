@@ -31,7 +31,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.EvalCondition;
 import org.drools.base.rule.EvalConditionFactory;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
 import org.drools.core.rule.consequence.KnowledgeHelper;
 import org.drools.drl.ast.descr.BaseDescr;
@@ -47,8 +47,8 @@ public class MVELEvalBuilder
     implements
     RuleConditionBuilder {
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                      final BaseDescr descr) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
@@ -62,9 +62,9 @@ public class MVELEvalBuilder
      * 
      * @return the Eval Conditional Element
      */
-    public RuleConditionElement build(final RuleBuildContext context,
-                                      final BaseDescr descr,
-                                      final Pattern prefixPattern) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
         boolean typesafe = context.isTypesafe();
         // it must be an EvalDescr
         final EvalDescr evalDescr = (EvalDescr) descr;

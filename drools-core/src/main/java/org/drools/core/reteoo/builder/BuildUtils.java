@@ -30,7 +30,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.IntervalProviderConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.base.time.Interval;
@@ -63,7 +63,7 @@ public class BuildUtils {
     /**
      * Returns a builder for the given target from the builders map
      */
-    public ReteooComponentBuilder getBuilderFor(final RuleConditionElement target) {
+    public ReteooComponentBuilder getBuilderFor(final RuleElement target) {
         return getBuilderFor( target.getClass() );
     }
 
@@ -310,14 +310,14 @@ public class BuildUtils {
     }
 
     private void selectAllEventPatterns(List<Pattern> events,
-                                        RuleConditionElement rce) {
+                                        RuleElement rce) {
         if ( rce instanceof Pattern ) {
             Pattern p = (Pattern) rce;
             if ( p.getObjectType().isEvent() ) {
                 events.add( p );
             }
         }
-        for ( RuleConditionElement child : rce.getNestedElements() ) {
+        for ( RuleElement child : rce.getNestedElements() ) {
             selectAllEventPatterns( events,
                                     child );
         }

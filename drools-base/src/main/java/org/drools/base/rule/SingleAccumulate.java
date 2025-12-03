@@ -37,12 +37,12 @@ public class SingleAccumulate extends Accumulate {
 
     public SingleAccumulate() { }
 
-    public SingleAccumulate(final RuleConditionElement source,
+    public SingleAccumulate(final RuleElement source,
                             final Declaration[] requiredDeclarations) {
         super(source, requiredDeclarations);
     }
 
-    public SingleAccumulate(final RuleConditionElement source,
+    public SingleAccumulate(final RuleElement source,
                             final Declaration[] requiredDeclarations,
                             final Accumulator accumulator ) {
         super(source, requiredDeclarations);
@@ -140,8 +140,8 @@ public class SingleAccumulate extends Accumulate {
     }
 
     public SingleAccumulate clone() {
-        RuleConditionElement clonedSource = source instanceof GroupElement ge ? ge.cloneOnlyGroup() : source.clone();
-        SingleAccumulate clone = new SingleAccumulate( clonedSource, this.requiredDeclarations, this.accumulator );
+        RuleElement      clonedSource = source instanceof GroupElement ge ? ge.cloneOnlyGroup() : source.clone();
+        SingleAccumulate clone        = new SingleAccumulate( clonedSource, this.requiredDeclarations, this.accumulator );
         registerClone(clone);
         return clone;
     }

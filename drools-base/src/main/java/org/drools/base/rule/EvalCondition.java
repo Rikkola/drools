@@ -192,7 +192,7 @@ public class EvalCondition extends ConditionalElement
         this.outerDeclarations = outerDeclarations;
     }
 
-    public List<? extends RuleConditionElement> getNestedElements() {
+    public List<? extends RuleElement> getNestedElements() {
         return Collections.EMPTY_LIST;
     }
     

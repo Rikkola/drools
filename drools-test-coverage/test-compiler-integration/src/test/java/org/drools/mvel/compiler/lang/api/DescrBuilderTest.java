@@ -31,7 +31,7 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.io.ByteArrayResource;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.drl.ast.descr.AttributeDescr;
 import org.drools.drl.ast.descr.PackageDescr;
 import org.drools.drl.ast.dsl.DescrFactory;
@@ -530,13 +530,13 @@ public class DescrBuilderTest {
         RuleImpl r = ((RuleImpl) rule);
 
         assertThat(r.getLhs().getChildren().size()).isEqualTo(2);
-        Iterator<RuleConditionElement> iter = r.getLhs().getChildren().iterator();
+        Iterator<RuleElement> iter = r.getLhs().getChildren().iterator();
 
-        RuleConditionElement arg1 = iter.next();
+        RuleElement arg1 = iter.next();
         assertThat(arg1 instanceof GroupElement && ((GroupElement) arg1).getType() == GroupElement.Type.OR).isTrue();
         assertThat(((GroupElement) arg1).getChildren().size()).isEqualTo(2);
 
-        RuleConditionElement arg2 = iter.next();
+        RuleElement arg2 = iter.next();
         assertThat(arg2 instanceof Pattern).isTrue();
 
     }

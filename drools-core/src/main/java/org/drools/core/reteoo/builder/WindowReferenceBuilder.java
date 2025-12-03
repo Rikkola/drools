@@ -18,7 +18,7 @@
  */
 package org.drools.core.reteoo.builder;
 
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.WindowReference;
 import org.drools.core.reteoo.WindowNode;
 
@@ -34,7 +34,7 @@ public class WindowReferenceBuilder
      */
     public void build(BuildContext context,
                       BuildUtils utils,
-                      RuleConditionElement rce) {
+                      RuleElement rce) {
         final WindowReference window = (WindowReference) rce;
         final WindowNode node = context.getRuleBase().getReteooBuilder().getWindowNode( window.getName() );
         
@@ -46,7 +46,7 @@ public class WindowReferenceBuilder
      * @see org.kie.reteoo.builder.ReteooComponentBuilder#requiresLeftActivation(org.kie.reteoo.builder.BuildUtils, org.kie.rule.RuleConditionElement)
      */
     public boolean requiresLeftActivation(BuildUtils utils,
-                                          RuleConditionElement rce) {
+                                          RuleElement rce) {
         return true;
     }
 

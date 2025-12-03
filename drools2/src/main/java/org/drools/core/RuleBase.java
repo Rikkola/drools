@@ -3,6 +3,7 @@ package org.drools.core;
 import org.drools.core.RuleBuilder.BaseRuleBuilder;
 
 public class RuleBase<DS> {
+
     public RuleBase() {
 
     }
@@ -12,19 +13,23 @@ public class RuleBase<DS> {
     }
 
     public class ChangeSetSelector<DS> {
-        public ChangeSet<DS> with(String pkgName) {
-            return new ChangeSet(pkgName);
+        public ChangeSet<DS> selectPackage(String packageName) {
+            return new ChangeSet(packageName);
         }
     }
 
     public class ChangeSet<DS> {
 
-        public ChangeSet(String pkgName) {
+        public ChangeSet(String packageName) {
 
         }
 
-        public ChangeSet<DS> with(String pkgName) {
-            return new ChangeSet(pkgName);
+        public ChangeSet<DS> selectPackage(String packageName) {
+            return null;
+        }
+
+        public ChangeSet<DS> selectUnit(String unitName) {
+            return null;
         }
 
         public ChangeSet<DS> add(BaseRuleBuilder rule) {
@@ -38,6 +43,7 @@ public class RuleBase<DS> {
         public void apply() {
 
         }
-        
+
     }
+
 }

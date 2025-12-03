@@ -25,7 +25,6 @@ public class DefaultDataStore<T> extends AbstractDataSource<T> implements DataSt
         DataHandle dh = createDataHandle(t);
         store.put(t, dh);
 
-        //forEachSubscriber(s -> internalInsert(dh, s));
         subscribers.forEach(s -> s.add(dh, valueResolver));
         return dh;
     }

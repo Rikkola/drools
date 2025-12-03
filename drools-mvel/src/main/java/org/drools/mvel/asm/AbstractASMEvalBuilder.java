@@ -35,7 +35,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.EvalCondition;
 import org.drools.base.rule.EvalConditionFactory;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
 
 import static org.drools.base.rule.EvalCondition.logWarnIfImproperEval;
@@ -46,7 +46,7 @@ import static org.drools.mvel.java.JavaRuleBuilderHelper.generateMethodTemplate;
 import static org.drools.mvel.java.JavaRuleBuilderHelper.registerInvokerBytecode;
 
 public abstract class AbstractASMEvalBuilder implements RuleConditionBuilder {
-    public RuleConditionElement build(RuleBuildContext context, BaseDescr descr) {
+    public RuleElement build(RuleBuildContext context, BaseDescr descr) {
         // it must be an EvalDescr
         final EvalDescr evalDescr = (EvalDescr) descr;
 
@@ -70,7 +70,7 @@ public abstract class AbstractASMEvalBuilder implements RuleConditionBuilder {
         return buildEval(context, evalDescr, analysis, declarations);
      }
 
-    public RuleConditionElement build(RuleBuildContext context, BaseDescr descr, Pattern prefixPattern) {
+    public RuleElement build(RuleBuildContext context, BaseDescr descr, Pattern prefixPattern) {
         if (prefixPattern == null) {
             return build(context, descr);
         }
@@ -84,7 +84,7 @@ public abstract class AbstractASMEvalBuilder implements RuleConditionBuilder {
         return buildEval(context, evalDescr, analysis, declarations);
     }
 
-    private RuleConditionElement buildEval(RuleBuildContext context, EvalDescr evalDescr, AnalysisResult analysis, Declaration[] declarations) {
+    private RuleElement buildEval(RuleBuildContext context, EvalDescr evalDescr, AnalysisResult analysis, Declaration[] declarations) {
         String className = "eval" + context.getNextId();
         evalDescr.setClassMethodName( className );
 

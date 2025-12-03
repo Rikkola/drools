@@ -76,7 +76,7 @@ public class ConditionalBranch extends ConditionalElement implements Externaliza
      * It is not possible to nest elements inside a conditional branch, so
      * always return an empty list.
      */
-    public List<RuleConditionElement> getNestedElements() {
+    public List<RuleElement> getNestedElements() {
         return Collections.emptyList();
     }
 

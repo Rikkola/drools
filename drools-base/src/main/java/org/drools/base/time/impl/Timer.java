@@ -24,12 +24,12 @@ import org.drools.base.base.ValueResolver;
 import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.RuleComponent;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
 import org.kie.api.runtime.Calendars;
 
-public interface Timer extends Serializable, RuleComponent, RuleConditionElement {
+public interface Timer extends Serializable, RuleComponent, RuleElement {
 
     Trigger createTrigger( long timestamp, String[] calendarNames, Calendars calendars);
 

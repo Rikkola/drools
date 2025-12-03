@@ -14,13 +14,13 @@ public class DataHandleFactory {
     private IdsGenerator idGen;
 
     /** The number of facts created - used for recency. */
-    private AtomicLong counter;
+    private long counter;
 
     public DataHandleFactory() {
         // starts at 0. So first assigned is 1.
         // 0 is hard coded to Initialfact
         this.idGen = new IdsGenerator(0);
-        this.counter = new AtomicLong(0);
+        counter = 0;
     }
 
     public DataHandle newDataHandle(Object object) {
@@ -32,12 +32,12 @@ public class DataHandleFactory {
     }
 
     public long getCurrentRecency() {
-        return counter.get();
+        return counter;
     }
 
     public void reset(long id, long counter) {
         this.idGen = new IdsGenerator( id );
-        this.counter = new AtomicLong( counter );
+        this.counter = counter;
     }
 
 

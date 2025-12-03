@@ -20,7 +20,7 @@ package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.QueryElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.core.reteoo.CoreComponentFactory;
 
 
@@ -33,7 +33,7 @@ public class QueryElementBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
 
         final QueryElement qe = (QueryElement) rce;
         context.pushRuleComponent( qe );
@@ -60,7 +60,7 @@ public class QueryElementBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

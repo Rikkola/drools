@@ -105,7 +105,7 @@ public class QueryElement extends ConditionalElement
         return this.resultPattern.getOuterDeclarations();
     }
 
-    public List<? extends RuleConditionElement> getNestedElements() {
+    public List<? extends RuleElement> getNestedElements() {
         return Collections.EMPTY_LIST;
     }
     

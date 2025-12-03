@@ -48,7 +48,7 @@ import org.drools.base.reteoo.SortDeclarations;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.PatternSource;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.TypeDeclaration;
 import org.drools.base.rule.XpathBackReference;
 import org.drools.base.rule.accessor.AcceptsReadAccessor;
@@ -139,8 +139,8 @@ public class PatternBuilder implements RuleConditionBuilder<PatternDescr> {
     public PatternBuilder() {
     }
 
-    public RuleConditionElement build(RuleBuildContext context,
-                                      PatternDescr descr) {
+    public RuleElement build(RuleBuildContext context,
+                             PatternDescr descr) {
         boolean typeSafe = context.isTypesafe();
         try {
             return this.build(context,
@@ -155,9 +155,9 @@ public class PatternBuilder implements RuleConditionBuilder<PatternDescr> {
      * Build a pattern for the given descriptor in the current
      * context and using the given utils object
      */
-    public RuleConditionElement build(RuleBuildContext context,
-                                      PatternDescr patternDescr,
-                                      Pattern prefixPattern) {
+    public RuleElement build(RuleBuildContext context,
+                             PatternDescr patternDescr,
+                             Pattern prefixPattern) {
         Declaration xpathStartDeclaration = null;
         if (patternDescr.getObjectType() == null) {
             xpathStartDeclaration = lookupObjectType(context, patternDescr);
@@ -406,8 +406,8 @@ public class PatternBuilder implements RuleConditionBuilder<PatternDescr> {
         return null;
     }
 
-    private RuleConditionElement buildQuery(RuleBuildContext context, PatternDescr descr, PatternDescr patternDescr) {
-        RuleConditionElement rce = null;
+    private RuleElement buildQuery(RuleBuildContext context, PatternDescr descr, PatternDescr patternDescr) {
+        RuleElement rce = null;
         // it might be a recursive query, so check for same names
         if (context.getRule().getName().equals(patternDescr.getObjectType())) {
             // it's a query so delegate to the QueryElementBuilder
@@ -452,7 +452,7 @@ public class PatternBuilder implements RuleConditionBuilder<PatternDescr> {
         return rce;
     }
 
-    private RuleConditionElement buildQueryElement(RuleBuildContext context, BaseDescr descr, QueryImpl rule) {
+    private RuleElement buildQueryElement(RuleBuildContext context, BaseDescr descr, QueryImpl rule) {
         if (context.getRule() != rule) {
             context.getRule().addUsedQuery(rule);
         }

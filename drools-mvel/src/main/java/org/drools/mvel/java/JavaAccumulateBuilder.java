@@ -48,7 +48,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.MultiAccumulate;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.SingleAccumulate;
 import org.drools.base.rule.accessor.Accumulator;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
@@ -74,16 +74,16 @@ public class JavaAccumulateBuilder
     implements
         AccumulateBuilder {
 
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr,
-                                       final Pattern prefixPattern ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
 
         final AccumulateDescr accumDescr = (AccumulateDescr) descr;
         if ( !accumDescr.hasValidInput() ) {
@@ -97,8 +97,8 @@ public class JavaAccumulateBuilder
         }
         
         final RuleConditionBuilder builder = (RuleConditionBuilder) context.getDialect().getBuilder( input.getClass() );
-        final RuleConditionElement source = builder.build( context,
-                                                           input );
+        final RuleElement source = builder.build(context,
+                                                 input);
         if ( source == null ) {
             return null;
         }
@@ -135,7 +135,7 @@ public class JavaAccumulateBuilder
 
     private Accumulate buildExternalFunctionCall( RuleBuildContext context,
                                                   AccumulateDescr accumDescr,
-                                                  RuleConditionElement source,
+                                                  RuleElement source,
                                                   Map<String, Declaration> declsInScope,
                                                   Map<String, Class< ? >> declCls,
                                                   boolean readLocalsFromTuple) {
@@ -234,7 +234,7 @@ public class JavaAccumulateBuilder
     private AccumulateFunction getAccumulateFunction(RuleBuildContext context,
                                                      AccumulateDescr accumDescr,
                                                      AccumulateFunctionCallDescr fc,
-                                                     RuleConditionElement source,
+                                                     RuleElement source,
                                                      Map<String, Class< ? >> declCls) {
         String functionName = AccumulateUtil.getFunctionName(() -> MVELExprAnalyzer.getExpressionType(context, declCls, source, fc.getParams()[0]), fc.getFunction());
 
@@ -329,7 +329,7 @@ public class JavaAccumulateBuilder
 
     private Accumulate buildInlineAccumulate( final RuleBuildContext context,
                                               final AccumulateDescr accumDescr,
-                                              final RuleConditionElement source,
+                                              final RuleElement source,
                                               Map<String, Declaration> decls,
                                               Map<String, Class< ? >> declCls,
                                               final boolean readLocalsFromTuple) {

@@ -44,7 +44,7 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.MultiAccumulate;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.SingleAccumulate;
 import org.drools.base.rule.accessor.Accumulator;
 import org.drools.base.rule.constraint.Constraint;
@@ -68,17 +68,17 @@ public class MVELAccumulateBuilder
     implements
         AccumulateBuilder {
 
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
     @SuppressWarnings("unchecked")
-    public RuleConditionElement build( final RuleBuildContext context,
-                                       final BaseDescr descr,
-                                       final Pattern prefixPattern ) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
         boolean typesafe = context.isTypesafe();
         try {
             final AccumulateDescr accumDescr = (AccumulateDescr) descr;
@@ -90,8 +90,8 @@ public class MVELAccumulateBuilder
             final RuleConditionBuilder builder = (RuleConditionBuilder) context.getDialect().getBuilder( accumDescr.getInput().getClass() );
 
             // create source CE
-            final RuleConditionElement source = builder.build( context,
-                                                               accumDescr.getInput() );
+            final RuleElement source = builder.build(context,
+                                                     accumDescr.getInput());
 
             if ( source == null ) {
                 return null;
@@ -181,7 +181,7 @@ public class MVELAccumulateBuilder
                                                  Map<String, Declaration> sourceOuterDeclr,
                                                  BoundIdentifiers boundIds,
                                                  boolean readLocalsFromTuple,
-                                                 RuleConditionElement source,
+                                                 RuleElement source,
                                                  Map<String, Class<?>> declarationClasses) {
         Accumulator[] accumulators;
         List<AccumulateFunctionCallDescr> functions = accumDescr.getFunctions();

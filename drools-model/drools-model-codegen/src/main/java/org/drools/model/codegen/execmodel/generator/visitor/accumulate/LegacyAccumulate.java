@@ -42,7 +42,7 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.rule.Accumulate;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.DeclarationScopeResolver;
 import org.drools.drl.ast.descr.AccumulateDescr;
 import org.drools.drl.ast.descr.PatternDescr;
@@ -182,17 +182,17 @@ public class LegacyAccumulate {
         }
 
         @Override
-        public RuleConditionElement peekBuildStack() {
+        public RuleElement peekBuildStack() {
             return delegate.peekBuildStack();
         }
 
         @Override
-        public RuleConditionElement popBuildStack() {
+        public RuleElement popBuildStack() {
             return delegate.popBuildStack();
         }
 
         @Override
-        public void pushOnBuildStack( RuleConditionElement element ) {
+        public void pushOnBuildStack( RuleElement element) {
             delegate.pushOnBuildStack( element );
         }
 

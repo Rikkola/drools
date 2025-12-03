@@ -38,7 +38,7 @@ public class MultiAccumulate extends Accumulate {
 
     public MultiAccumulate() { }
 
-    public MultiAccumulate(final RuleConditionElement source,
+    public MultiAccumulate(final RuleElement source,
                            final Declaration[] requiredDeclarations,
                            final Accumulator[] accumulators,
                            int arraySize) {
@@ -187,7 +187,7 @@ public class MultiAccumulate extends Accumulate {
     }
 
     public MultiAccumulate clone() {
-        RuleConditionElement clonedSource = source instanceof GroupElement ? ((GroupElement) source).cloneOnlyGroup() : source.clone();
+        RuleElement clonedSource = source instanceof GroupElement ? ((GroupElement) source).cloneOnlyGroup() : source.clone();
         MultiAccumulate clone = new MultiAccumulate( clonedSource,
                                                      this.requiredDeclarations,
                                                      this.accumulators,

@@ -21,7 +21,7 @@ package org.drools.core.reteoo.builder;
 import java.util.List;
 
 import org.drools.base.rule.From;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.base.rule.constraint.XpathConstraint;
 import org.drools.core.common.BetaConstraints;
@@ -32,7 +32,7 @@ public class ReactiveFromBuilder implements ReteooComponentBuilder {
 
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
         final From from = (From) rce;
         context.pushRuleComponent( from );
 
@@ -69,7 +69,7 @@ public class ReactiveFromBuilder implements ReteooComponentBuilder {
     }
 
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

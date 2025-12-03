@@ -19,7 +19,7 @@
 package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.EntryPointId;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.core.reteoo.CoreComponentFactory;
 import org.drools.core.reteoo.EntryPointNode;
 
@@ -36,7 +36,7 @@ public class EntryPointBuilder
      */
     public void build(BuildContext context,
                       BuildUtils utils,
-                      RuleConditionElement rce) {
+                      RuleElement rce) {
         final EntryPointId entry = (EntryPointId) rce;
         context.setCurrentEntryPoint( entry );
         
@@ -56,7 +56,7 @@ public class EntryPointBuilder
      * @see org.kie.reteoo.builder.ReteooComponentBuilder#requiresLeftActivation(org.kie.reteoo.builder.BuildUtils, org.kie.rule.RuleConditionElement)
      */
     public boolean requiresLeftActivation(BuildUtils utils,
-                                          RuleConditionElement rce) {
+                                          RuleElement rce) {
         return true;
     }
 

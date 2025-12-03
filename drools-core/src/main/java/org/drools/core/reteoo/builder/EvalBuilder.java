@@ -19,7 +19,7 @@
 package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.EvalCondition;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.core.reteoo.CoreComponentFactory;
 
 public class EvalBuilder
@@ -31,7 +31,7 @@ public class EvalBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
 
         final EvalCondition eval = (EvalCondition) rce;
         context.pushRuleComponent( rce );
@@ -51,7 +51,7 @@ public class EvalBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

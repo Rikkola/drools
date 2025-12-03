@@ -19,7 +19,7 @@
 package org.drools.compiler.rule.builder;
 
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.WindowReference;
 import org.drools.compiler.compiler.DescrBuildError;
 import org.drools.drl.ast.descr.BaseDescr;
@@ -32,16 +32,16 @@ public class WindowReferenceBuilder
     implements
     RuleConditionBuilder {
 
-    public RuleConditionElement build(RuleBuildContext context,
-                                      BaseDescr descr) {
+    public RuleElement build(RuleBuildContext context,
+                             BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
-    public RuleConditionElement build(RuleBuildContext context,
-                                      BaseDescr descr,
-                                      Pattern prefixPattern) {
+    public RuleElement build(RuleBuildContext context,
+                             BaseDescr descr,
+                             Pattern prefixPattern) {
         final WindowReferenceDescr window = (WindowReferenceDescr) descr;
 
         if ( !context.getPkg().getWindowDeclarations().containsKey( window.getName() ) ) {

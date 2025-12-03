@@ -21,7 +21,7 @@ package org.drools.compiler.rule.builder;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.GroupElementFactory;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.drl.ast.descr.AndDescr;
 import org.drools.drl.ast.descr.BaseDescr;
 import org.drools.drl.ast.descr.ConditionalElementDescr;
@@ -33,16 +33,16 @@ public class GroupElementBuilder
     implements
     RuleConditionBuilder {
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                    final BaseDescr descr) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         return build( context,
                       descr,
                       null );
     }
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                    final BaseDescr descr,
-                                    final Pattern prefixPattern) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
         final ConditionalElementDescr cedescr = (ConditionalElementDescr) descr;
 
         final GroupElement ge = this.newGroupElementFor( descr );
@@ -65,7 +65,7 @@ public class GroupElementBuilder
             final RuleConditionBuilder builder = (RuleConditionBuilder) context.getDialect().getBuilder( child.getClass() );
 
             if ( builder != null ) {
-                final RuleConditionElement element = builder.build( context, child );
+                final RuleElement element = builder.build(context, child);
                 // in case there is a problem with the building,
                 // builder will return null. Ex: ClassNotFound for the pattern type
                 if ( element != null ) {

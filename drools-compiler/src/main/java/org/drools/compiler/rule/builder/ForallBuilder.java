@@ -21,7 +21,7 @@ package org.drools.compiler.rule.builder;
 import org.drools.base.rule.Forall;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.drl.ast.descr.BaseDescr;
 import org.drools.drl.ast.descr.ExistsDescr;
 import org.drools.drl.ast.descr.ForallDescr;
@@ -32,14 +32,14 @@ public class ForallBuilder
     implements
     RuleConditionBuilder {
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                    final BaseDescr descr,
-                                      final Pattern prefixPattern) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr,
+                             final Pattern prefixPattern) {
         return build( context, descr );
     }
 
-    public RuleConditionElement build(final RuleBuildContext context,
-                                      final BaseDescr descr) {
+    public RuleElement build(final RuleBuildContext context,
+                             final BaseDescr descr) {
         final ForallDescr forallDescr = (ForallDescr) descr;
 
         if (forallDescr.isSinglePattern()) {

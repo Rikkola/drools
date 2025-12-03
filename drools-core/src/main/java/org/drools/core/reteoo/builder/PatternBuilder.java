@@ -34,7 +34,7 @@ import org.drools.base.rule.IntervalProviderConstraint;
 import org.drools.base.rule.InvalidPatternException;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.PatternSource;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.TypeDeclaration;
 import org.drools.base.rule.WindowReference;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
@@ -67,7 +67,7 @@ public class PatternBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
 
         final Pattern pattern = (Pattern) rce;
 
@@ -256,7 +256,7 @@ public class PatternBuilder
     }
 
     private boolean isNegative(final BuildContext context) {
-        for ( RuleConditionElement rce : context.getBuildstack() ) {
+        for ( RuleElement rce : context.getBuildstack() ) {
             if ( rce instanceof GroupElement && ((GroupElement) rce).isNot() ) {
                 return true;
             }
@@ -408,7 +408,7 @@ public class PatternBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         PatternSource source = ((Pattern) rce).getSource();
         return (source != null && source.requiresLeftActivation() ) ||
                ! ((Pattern) rce).getBehaviors().isEmpty() ;

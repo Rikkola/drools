@@ -20,7 +20,7 @@ package org.drools.base.rule;
 
 public abstract class ConditionalElement
     implements
-    RuleConditionElement {
+    RuleElement {
 
     public abstract ConditionalElement clone();
 

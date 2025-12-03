@@ -28,7 +28,7 @@ import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.GroupElement.Type;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.BetaConstraints;
@@ -65,7 +65,7 @@ public class GroupElementBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
         final GroupElement ge = (GroupElement) rce;
 
         final ReteooComponentBuilder builder = this.geBuilders.get( ge.getType() );
@@ -85,7 +85,7 @@ public class GroupElementBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         final GroupElement ge = (GroupElement) rce;
 
         final ReteooComponentBuilder builder = this.geBuilders.get( ge.getType() );
@@ -106,18 +106,18 @@ public class GroupElementBuilder
          */
         public void build(final BuildContext context,
                           final BuildUtils utils,
-                          final RuleConditionElement rce) {
+                          final RuleElement rce) {
 
             final GroupElement ge = (GroupElement) rce;
 
             if (ge.getChildren().size() == 1) {
-                RuleConditionElement child = ge.getChildren().get(0);
+                RuleElement                  child   = ge.getChildren().get(0);
                 final ReteooComponentBuilder builder = utils.getBuilderFor(child);
                 builder.build( context, utils, child );
                 buildTupleSource( context, utils, isTerminalAlpha( context, child ) );
             } else {
 
-                for (final RuleConditionElement child : ge.getChildren()) {
+                for (final RuleElement child : ge.getChildren()) {
                     final ReteooComponentBuilder builder = utils.getBuilderFor( child );
                     builder.build( context, utils, child );
                     buildTupleSource( context, utils, false );
@@ -126,7 +126,7 @@ public class GroupElementBuilder
             }
         }
 
-        private boolean isTerminalAlpha( BuildContext context, RuleConditionElement child ) {
+        private boolean isTerminalAlpha( BuildContext context, RuleElement child) {
             boolean isInitialFact = ((Pattern) child).getObjectType().isAssignableTo(InitialFact.class);
             boolean hasTimer = context.getRule().getTimer() != null;
             RuleBaseConfiguration conf = context.getRuleBase().getRuleBaseConfiguration();
@@ -179,7 +179,7 @@ public class GroupElementBuilder
         }
 
         public boolean requiresLeftActivation(final BuildUtils utils,
-                                              final RuleConditionElement rce) {
+                                              final RuleElement rce) {
             final GroupElement and = (GroupElement) rce;
 
             // need to check this because in the case of an empty rule, the root AND
@@ -188,7 +188,7 @@ public class GroupElementBuilder
                 return true;
             }
 
-            final RuleConditionElement child = and.getChildren().get( 0 );
+            final RuleElement            child   = and.getChildren().get(0);
             final ReteooComponentBuilder builder = utils.getBuilderFor( child );
 
             return builder.requiresLeftActivation( utils,
@@ -205,12 +205,12 @@ public class GroupElementBuilder
          */
         public void build(final BuildContext context,
                           final BuildUtils utils,
-                          final RuleConditionElement rce) {
+                          final RuleElement rce) {
             throw new RuntimeException( "BUG: Can't build a rete network with an inner OR group element" );
         }
 
         public boolean requiresLeftActivation(final BuildUtils utils,
-                                              final RuleConditionElement rce) {
+                                              final RuleElement rce) {
             throw new RuntimeException( "BUG: Can't build a rete network with an inner OR group element" );
         }
     }
@@ -229,13 +229,13 @@ public class GroupElementBuilder
          */
         public void build(final BuildContext context,
                           final BuildUtils utils,
-                          final RuleConditionElement rce) {
+                          final RuleElement rce) {
             final GroupElement not = (GroupElement) rce;
 
             final LeftTupleSource tupleSource = context.getTupleSource();
 
             // get child
-            final RuleConditionElement child = not.getChildren().get( 0 );
+            final RuleElement child = not.getChildren().get(0);
 
             // get builder for child
             final ReteooComponentBuilder builder = utils.getBuilderFor( child );
@@ -289,7 +289,7 @@ public class GroupElementBuilder
         }
 
         public boolean requiresLeftActivation(final BuildUtils utils,
-                                              final RuleConditionElement rce) {
+                                              final RuleElement rce) {
             return true;
         }
     }
@@ -308,13 +308,13 @@ public class GroupElementBuilder
          */
         public void build(final BuildContext context,
                           final BuildUtils utils,
-                          final RuleConditionElement rce) {
+                          final RuleElement rce) {
             final GroupElement exists = (GroupElement) rce;
 
             final LeftTupleSource tupleSource = context.getTupleSource();
 
             // get child
-            final RuleConditionElement child = exists.getChildren().get( 0 );
+            final RuleElement child = exists.getChildren().get(0);
 
             // get builder for child
             final ReteooComponentBuilder builder = utils.getBuilderFor( child );
@@ -366,7 +366,7 @@ public class GroupElementBuilder
          * @inheritDoc
          */
         public boolean requiresLeftActivation(final BuildUtils utils,
-                                              final RuleConditionElement rce) {
+                                              final RuleElement rce) {
             return true;
         }
     }

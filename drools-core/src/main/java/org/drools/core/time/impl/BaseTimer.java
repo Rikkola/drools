@@ -26,7 +26,7 @@ import java.util.Map;
 import org.drools.base.reteoo.SortDeclarations;
 import org.drools.base.rule.ConditionalElement;
 import org.drools.base.rule.Declaration;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 
 
 public abstract class BaseTimer extends ConditionalElement{
@@ -46,7 +46,7 @@ public abstract class BaseTimer extends ConditionalElement{
         return null;
     }
 
-    public List<? extends RuleConditionElement> getNestedElements() {
+    public List<? extends RuleElement> getNestedElements() {
         return Collections.EMPTY_LIST;
     }
 

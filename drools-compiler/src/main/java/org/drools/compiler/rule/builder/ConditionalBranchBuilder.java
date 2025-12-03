@@ -26,7 +26,7 @@ import org.drools.base.rule.EvalCondition;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.NamedConsequence;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.compiler.compiler.RuleBuildError;
 import org.drools.drl.ast.descr.BaseDescr;
 import org.drools.drl.ast.descr.ConditionalBranchDescr;
@@ -73,9 +73,9 @@ public class ConditionalBranchBuilder implements RuleConditionBuilder {
         return lastPattern;
     }
 
-    private Pattern getLastPattern(List<RuleConditionElement> siblings) {
+    private Pattern getLastPattern(List<RuleElement> siblings) {
         for (int i = siblings.size()-1; i >= 0; i--) {
-            RuleConditionElement element = siblings.get(i);
+            RuleElement element = siblings.get(i);
             if (element instanceof Pattern) {
                 return (Pattern) element;
             }

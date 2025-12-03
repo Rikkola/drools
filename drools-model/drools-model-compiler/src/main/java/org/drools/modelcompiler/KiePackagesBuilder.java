@@ -59,7 +59,7 @@ import org.drools.base.rule.Pattern;
 import org.drools.base.rule.PatternSource;
 import org.drools.base.rule.QueryArgument;
 import org.drools.base.rule.QueryElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.SingleAccumulate;
 import org.drools.base.rule.TypeDeclaration;
 import org.drools.base.rule.WindowDeclaration;
@@ -437,7 +437,7 @@ public class KiePackagesBuilder {
             return true;
         }
         if (lhs.getType() == GroupElement.Type.AND) {
-            for (RuleConditionElement child : lhs.getChildren()) {
+            for (RuleElement child : lhs.getChildren()) {
                 if ( child instanceof GroupElement && (( GroupElement ) child).getType() == OR ) {
                     return true;
                 }
@@ -454,7 +454,7 @@ public class KiePackagesBuilder {
         }
     }
 
-    private boolean requiresLeftActivation( RuleConditionElement rce ) {
+    private boolean requiresLeftActivation( RuleElement rce) {
         if (rce instanceof GroupElement) {
             GroupElement and = (GroupElement) rce;
             return and.getChildren().isEmpty() || requiresLeftActivation( and.getChildren().get( 0 ) );
@@ -462,7 +462,7 @@ public class KiePackagesBuilder {
         return rce instanceof QueryElement;
     }
 
-    private RuleConditionElement conditionToElement( RuleContext ctx, GroupElement group, Condition condition ) {
+    private RuleElement conditionToElement(RuleContext ctx, GroupElement group, Condition condition) {
         if (condition.getType().isComposite()) {
             return addSubConditions( ctx, new GroupElement( conditionToGroupElementType( condition.getType() ) ), condition.getSubConditions() );
         }
@@ -471,7 +471,7 @@ public class KiePackagesBuilder {
             case SENDER:
             case RECEIVER:
             case PATTERN:
-                RuleConditionElement rce = buildPattern( ctx, group, (org.drools.model.Pattern<?>) condition );
+                RuleElement rce = buildPattern(ctx, group, (org.drools.model.Pattern<?>) condition);
                 if ( rce instanceof Pattern) {
                     // sometimes returns an eval
                     Pattern pattern = (Pattern) rce;
@@ -549,7 +549,7 @@ public class KiePackagesBuilder {
         return transformedForall;
     }
 
-    private RuleConditionElement buildAccumulate( RuleContext ctx, GroupElement group, AccumulatePattern accumulatePattern ) {
+    private RuleElement buildAccumulate(RuleContext ctx, GroupElement group, AccumulatePattern accumulatePattern) {
         Pattern pattern = null;
         boolean isGroupBy = accumulatePattern instanceof GroupByPattern;
         if (accumulatePattern.getAccumulateFunctions() != null) {
@@ -580,7 +580,7 @@ public class KiePackagesBuilder {
             }
         }
 
-        RuleConditionElement source;
+        RuleElement source;
         if (accumulatePattern.isQuerySource()) {
             source = buildQueryPattern( ctx, (( QueryCallPattern ) accumulatePattern.getCondition()) );
         } else if (accumulatePattern.isCompositePatterns()) {
@@ -660,12 +660,12 @@ public class KiePackagesBuilder {
             }
         } else if (c instanceof PatternImpl) {
             org.drools.model.Pattern pattern = (org.drools.model.Pattern<?>) c;
-            RuleConditionElement rce = buildPattern( ctx, allSubConditions, pattern );
+            RuleElement              rce     = buildPattern(ctx, allSubConditions, pattern);
             if (ctx.getAccumulateSource( pattern.getPatternVariable() ) == null) {
                 allSubConditions.addChild( rce );
             }
         } else if (c instanceof AccumulatePattern) {
-            RuleConditionElement rce = buildAccumulate( ctx, group, (AccumulatePattern) c );
+            RuleElement rce = buildAccumulate(ctx, group, (AccumulatePattern) c);
             if (rce != null) {
                 allSubConditions.addChild( rce );
             }
@@ -710,12 +710,12 @@ public class KiePackagesBuilder {
                                       consequence.getElseBranch() != null ? buildConditionalConsequence(ctx, consequence.getElseBranch()) : null );
     }
 
-    private RuleConditionElement addSubConditions( RuleContext ctx, GroupElement ge, List<Condition> subconditions ) {
+    private RuleElement addSubConditions(RuleContext ctx, GroupElement ge, List<Condition> subconditions) {
         if (ge.getType() == OR) {
             ctx.startOrCondition();
         }
         for (Condition subcondition : subconditions) {
-            RuleConditionElement element = conditionToElement(ctx, ge, subcondition);
+            RuleElement element = conditionToElement(ctx, ge, subcondition);
             if (element != null) {
                 ge.addChild(element);
             }
@@ -729,7 +729,7 @@ public class KiePackagesBuilder {
         return ge;
     }
 
-    private RuleConditionElement buildQueryPattern( RuleContext ctx, QueryCallPattern queryPattern ) {
+    private RuleElement buildQueryPattern(RuleContext ctx, QueryCallPattern queryPattern) {
         Pattern pattern = new Pattern( ctx.getNextPatternIndex(),
                                        0, // tupleIndex is 0 by default
                                        0, // patternIndex is 0 by default
@@ -773,7 +773,7 @@ public class KiePackagesBuilder {
                                  false ); // TODO: query.isAbductive() );
     }
 
-    private RuleConditionElement buildPattern(RuleContext ctx, GroupElement group, org.drools.model.Pattern<?> modelPattern) {
+    private RuleElement buildPattern(RuleContext ctx, GroupElement group, org.drools.model.Pattern<?> modelPattern) {
         Variable patternVariable = modelPattern.getPatternVariable();
 
         Pattern pattern = addPatternForVariable( ctx, group, patternVariable, modelPattern.getType() );
@@ -827,7 +827,7 @@ public class KiePackagesBuilder {
     }
 
     private Accumulate buildAccumulate(RuleContext ctx, AccumulatePattern accPattern, GroupElement group,
-                                       RuleConditionElement source, Pattern pattern,
+                                       RuleElement source, Pattern pattern,
                                        Set<String> usedVariableName, Collection<Binding> bindings) {
         boolean isGroupBy = accPattern instanceof GroupByPattern;
         AccumulateFunction[] accFunctions = accPattern.getAccumulateFunctions();
@@ -875,7 +875,7 @@ public class KiePackagesBuilder {
         return accumulate;
     }
 
-    private static Accumulate createAccumulate(RuleConditionElement source, boolean isGroupBy, AccumulateFunction[] accFunctions, Accumulator[] accumulators, List<Declaration> requiredDeclarationList) {
+    private static Accumulate createAccumulate(RuleElement source, boolean isGroupBy, AccumulateFunction[] accFunctions, Accumulator[] accumulators, List<Declaration> requiredDeclarationList) {
         if (accFunctions.length == 1) {
             return new SingleAccumulate(source,
                     requiredDeclarationList.toArray(new Declaration[requiredDeclarationList.size()]),
@@ -896,7 +896,7 @@ public class KiePackagesBuilder {
         return new LambdaGroupByAccumulate(accumulate, groupingDeclarations, groupByPattern.getGroupingFunction());
     }
 
-    private void processFunctions(RuleContext ctx, AccumulatePattern accPattern, RuleConditionElement source, Pattern pattern,
+    private void processFunctions(RuleContext ctx, AccumulatePattern accPattern, RuleElement source, Pattern pattern,
                                   Set<String> usedVariableName, Collection<Binding> bindings, boolean isGroupBy, AccumulateFunction accFunction,
                                   ReadAccessor selfReader, Accumulator[] accumulators,
                                   List<Declaration> requiredDeclarationList, int arrayIndexOffset, int i) {
@@ -933,7 +933,7 @@ public class KiePackagesBuilder {
         return bindings.stream().filter( b -> b.getBoundVariable() == accFunction.getSource() ).findFirst().orElse( null );
     }
 
-    private Declaration[] getRequiredDeclarationsForAccumulate( RuleContext ctx, RuleConditionElement source, AccumulateFunction accFunction, Binding binding, BindingEvaluator bindingEvaluator ) {
+    private Declaration[] getRequiredDeclarationsForAccumulate(RuleContext ctx, RuleElement source, AccumulateFunction accFunction, Binding binding, BindingEvaluator bindingEvaluator) {
         Declaration[] requiredDeclarations = getRequiredDeclarationsForAccumulate( ctx, binding, accFunction );
         if (requiredDeclarations.length == 0 && source instanceof Pattern && bindingEvaluator != null && bindingEvaluator.getDeclarations() != null) {
             List<Declaration> previousDecl = new ArrayList<>();
@@ -1019,7 +1019,7 @@ public class KiePackagesBuilder {
             if ( decl.getSource() == null ) {
                 Accumulate accSource = ctx.getAccumulateSource( patternVariable );
                 if (accSource != null) {
-                    for (RuleConditionElement element : group.getChildren()) {
+                    for (RuleElement element : group.getChildren()) {
                         if (element instanceof Pattern && (( Pattern ) element).getSource() == accSource) {
                             pattern = (Pattern) element;
                             break;

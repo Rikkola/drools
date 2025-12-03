@@ -20,7 +20,7 @@ package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.ConditionalBranch;
 import org.drools.base.rule.GroupElement;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.core.common.UpdateContext;
 import org.drools.core.reteoo.ConditionalBranchEvaluator;
 import org.drools.core.reteoo.ConditionalBranchNode;
@@ -29,7 +29,7 @@ import org.drools.core.reteoo.RuleTerminalNode;
 
 public class ConditionalBranchBuilder implements ReteooComponentBuilder {
 
-    public void build( BuildContext context, BuildUtils utils, RuleConditionElement rce ) {
+    public void build( BuildContext context, BuildUtils utils, RuleElement rce) {
         ConditionalBranch conditionalBranch = (ConditionalBranch) rce;
         ConditionalBranchEvaluator branchEvaluator = buildConditionalBranchEvaluator( context, conditionalBranch );
 
@@ -60,7 +60,7 @@ public class ConditionalBranchBuilder implements ReteooComponentBuilder {
                                                conditionalBranch.getElseBranch() != null ? buildConditionalBranchEvaluator( context, conditionalBranch.getElseBranch() ) : null  );
     }
 
-    public boolean requiresLeftActivation(BuildUtils utils, RuleConditionElement rce) {
+    public boolean requiresLeftActivation(BuildUtils utils, RuleElement rce) {
         return true;
     }
 }

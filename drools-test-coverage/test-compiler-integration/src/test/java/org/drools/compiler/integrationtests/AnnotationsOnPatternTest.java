@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.factmodel.AnnotationDefinition;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.testcoverage.common.util.KieBaseTestConfiguration;
 import org.drools.testcoverage.common.util.KieBaseUtil;
 import org.drools.testcoverage.common.util.KieUtil;
@@ -234,7 +234,7 @@ public class AnnotationsOnPatternTest {
 
         final RuleImpl rule = (RuleImpl) kbase.getRule(packageName, "test collect with annotation");
 
-        final List<? extends RuleConditionElement> nested = ((Pattern) rule.getLhs().getChildren().get(0)).getSource().getNestedElements();
+        final List<? extends RuleElement> nested = ((Pattern) rule.getLhs().getChildren().get(0)).getSource().getNestedElements();
 
         assertThat(nested.size()).isEqualTo(1);
 

@@ -33,7 +33,7 @@ import org.drools.base.rule.EntryPointId;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.RuleComponent;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.base.rule.constraint.XpathConstraint;
@@ -71,9 +71,9 @@ public class BuildContext implements RuleBuildContext {
     // the rule component being processed at the moment
     private final Deque<RuleComponent> ruleComponent = new ArrayDeque<>();
     // a build stack to track nested elements
-    private Deque<RuleConditionElement>    buildstack;
+    private Deque<RuleElement>         buildstack;
     // beta constraints from the last pattern attached
-    private List<BetaConstraint>           betaconstraints;
+    private List<BetaConstraint>       betaconstraints;
     // alpha constraints from the last pattern attached
     private List<AlphaNodeFieldConstraint> alphaConstraints;
     // xpath constraints from the last pattern attached
@@ -220,7 +220,7 @@ public class BuildContext implements RuleBuildContext {
     /**
      * Adds the rce to the build stack
      */
-    public void push(final RuleConditionElement rce) {
+    public void push(final RuleElement rce) {
         if (this.buildstack == null) {
             this.buildstack = new ArrayDeque<>();
         }
@@ -230,18 +230,18 @@ public class BuildContext implements RuleBuildContext {
     /**
      * Removes the top stack element
      */
-    public RuleConditionElement pop() {
+    public RuleElement pop() {
         return this.buildstack.removeLast();
     }
 
     /**
      * Returns the top stack element without removing it
      */
-    public RuleConditionElement peek() {
+    public RuleElement peek() {
         return this.buildstack.getLast();
     }
 
-    public Collection<RuleConditionElement> getBuildstack() {
+    public Collection<RuleElement> getBuildstack() {
         return this.buildstack == null ? Collections.emptyList() : buildstack;
     }
 

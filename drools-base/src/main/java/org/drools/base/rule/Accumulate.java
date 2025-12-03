@@ -42,15 +42,15 @@ public abstract class Accumulate extends ConditionalElement
 
     private static final long    serialVersionUID = 510l;
 
-    protected RuleConditionElement source;
-    protected Declaration[]        requiredDeclarations;
+    protected RuleElement   source;
+    protected Declaration[] requiredDeclarations;
     protected Declaration[]        innerDeclarationCache;
 
     protected List<Accumulate>     cloned           = Collections.emptyList();
 
     public Accumulate() { }
 
-    public Accumulate(final RuleConditionElement source,
+    public Accumulate(final RuleElement source,
                       final Declaration[] requiredDeclarations) {
 
         this.source = source;
@@ -61,7 +61,7 @@ public abstract class Accumulate extends ConditionalElement
     @SuppressWarnings("unchecked")
     public void readExternal(ObjectInput in) throws IOException,
                                             ClassNotFoundException {
-        source = (RuleConditionElement) in.readObject();
+        source = (RuleElement) in.readObject();
         requiredDeclarations = (Declaration[]) in.readObject();
         this.cloned = (List<Accumulate>) in.readObject();
         initInnerDeclarationCache();
@@ -126,7 +126,7 @@ public abstract class Accumulate extends ConditionalElement
         this.cloned.add( clone );
     }
 
-    public RuleConditionElement getSource() {
+    public RuleElement getSource() {
         return this.source;
     }
 
@@ -147,7 +147,7 @@ public abstract class Accumulate extends ConditionalElement
 
     public abstract Object createWorkingMemoryContext();
 
-    public List<RuleConditionElement> getNestedElements() {
+    public List<RuleElement> getNestedElements() {
         return Collections.singletonList( this.source );
     }
 

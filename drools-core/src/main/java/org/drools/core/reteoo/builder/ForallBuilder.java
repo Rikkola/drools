@@ -22,7 +22,7 @@ import org.drools.base.rule.Forall;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.GroupElementFactory;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 
 /**
  * The Reteoo component builder for forall CE
@@ -36,7 +36,7 @@ public class ForallBuilder
      */
     public void build(final BuildContext context,
                       final BuildUtils utils,
-                      final RuleConditionElement rce) {
+                      final RuleElement rce) {
         final Forall forall = (Forall) rce;
         context.pushRuleComponent( forall );
 
@@ -85,7 +85,7 @@ public class ForallBuilder
      * @inheritDoc
      */
     public boolean requiresLeftActivation(final BuildUtils utils,
-                                          final RuleConditionElement rce) {
+                                          final RuleElement rce) {
         return true;
     }
 

@@ -4,8 +4,6 @@ import org.drools.api.data.DataStore;
 import org.drools.core.RuleBuilderTest.Person;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
 public class RuleBaseTest {
 
     @Test
@@ -16,7 +14,7 @@ public class RuleBaseTest {
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        ruleBase.modify().with("org.domain")
+        ruleBase.modify().selectPackage("org.domain")
                 .add(builder.rule("r1").ifn(() -> {}))
                 .add(builder.rule("r2").ifn(() -> {}));
     }
@@ -37,7 +35,7 @@ public class RuleBaseTest {
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        ruleBase.modify().with("org.domain")
+        ruleBase.modify().selectPackage("org.domain")
                 .add(builder.rule("rule1").<P3>params()
                 .join(builder.from(persons).filter((ctx, b) -> b.age() > 20))
                 .filter((ctx, a, b) -> a.p3_1().length() > b.age()))

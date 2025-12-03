@@ -45,7 +45,7 @@ import org.drools.base.rule.GroupElementFactory;
 import org.drools.base.rule.InvalidPatternException;
 import org.drools.base.rule.InvalidRuleException;
 import org.drools.base.rule.LogicTransformer;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.accessor.CompiledInvoker;
 import org.drools.base.rule.accessor.Enabled;
 import org.drools.base.rule.accessor.Salience;
@@ -540,7 +540,7 @@ public class RuleImpl implements Externalizable,
      *            The <code>Test</code> to add.
      * @throws InvalidRuleException
      */
-    public void addPattern(final RuleConditionElement element) {
+    public void addPattern(final RuleElement element) {
         this.dirty = true;
         this.lhsRoot.addChild( element );
     }

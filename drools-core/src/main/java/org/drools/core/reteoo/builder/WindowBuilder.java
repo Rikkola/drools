@@ -19,7 +19,7 @@
 package org.drools.core.reteoo.builder;
 
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.drools.base.rule.WindowDeclaration;
 
 /**
@@ -51,7 +51,7 @@ public class WindowBuilder {
      * @inheritDoc
      */
     public boolean requiresLeftActivation( final BuildUtils utils,
-                                           final RuleConditionElement rce ) {
+                                           final RuleElement rce) {
         return false;
     }
 }

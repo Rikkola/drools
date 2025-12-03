@@ -33,7 +33,7 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.GroupElement;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.RuleConditionElement;
+import org.drools.base.rule.RuleElement;
 import org.kie.internal.ruleunit.RuleUnitDescription;
 
 import static org.drools.util.ClassUtils.rawType;
@@ -43,8 +43,8 @@ import static org.kie.internal.ruleunit.RuleUnitUtil.RULE_UNIT_DECLARATION;
  * A class capable of resolving a declaration in the current build context
  */
 public class DeclarationScopeResolver {
-    private final Deque<RuleConditionElement>   buildList;
-    private final Map<String, Type>              globalMap;
+    private final Deque<RuleElement> buildList;
+    private final Map<String, Type>  globalMap;
     private final InternalKnowledgePackage           pkg;
 
     private RuleImpl rule;
@@ -55,7 +55,7 @@ public class DeclarationScopeResolver {
     }
 
     public DeclarationScopeResolver(final Map<String, Type> globalMap,
-            final Deque<RuleConditionElement> buildList) {
+            final Deque<RuleElement> buildList) {
         this(globalMap, buildList, null);
     }
 
@@ -65,7 +65,7 @@ public class DeclarationScopeResolver {
     }
 
     private DeclarationScopeResolver(Map<String, Type> globalMap,
-                                     Deque<RuleConditionElement> buildList,
+                                     Deque<RuleElement> buildList,
                                      InternalKnowledgePackage pkg) {
         this.globalMap = globalMap;
         this.buildList = buildList;
@@ -77,15 +77,15 @@ public class DeclarationScopeResolver {
         this.ruleUnitDescr = pkg.getRuleUnitDescriptionLoader().getDescription(rule );
     }
 
-    public RuleConditionElement peekBuildStack() {
+    public RuleElement peekBuildStack() {
         return buildList.peek();
     }
 
-    public RuleConditionElement popBuildStack() {
+    public RuleElement popBuildStack() {
         return buildList.pop();
     }
 
-    public void pushOnBuildStack(RuleConditionElement element) {
+    public void pushOnBuildStack(RuleElement element) {
         buildList.push(element);
     }
 
@@ -109,7 +109,7 @@ public class DeclarationScopeResolver {
 
     public Declaration getDeclaration(String identifier) {
         // it may be a local bound variable
-        for (final Iterator<RuleConditionElement> iterator = buildList.iterator(); iterator.hasNext();) {
+        for (final Iterator<RuleElement> iterator = buildList.iterator(); iterator.hasNext();) {
             final Declaration declaration = iterator.next().resolveDeclaration( identifier );
             if ( declaration != null ) {
                 return declaration;
@@ -167,8 +167,8 @@ public class DeclarationScopeResolver {
 
     public boolean available(RuleImpl rule,
                              final String name) {
-        for (final Iterator<RuleConditionElement> iterator = buildList.descendingIterator(); iterator.hasNext();) {
-            RuleConditionElement rce = iterator.next();
+        for (final Iterator<RuleElement> iterator = buildList.descendingIterator(); iterator.hasNext();) {
+            RuleElement       rce         = iterator.next();
             final Declaration declaration = rce.resolveDeclaration( name );
             if ( declaration != null ) {
                 return true;
@@ -199,8 +199,8 @@ public class DeclarationScopeResolver {
         }
         
         
-        for (final Iterator<RuleConditionElement> iterator = buildList.descendingIterator(); iterator.hasNext();) {
-            RuleConditionElement rce = iterator.next();
+        for (final Iterator<RuleElement> iterator = buildList.descendingIterator(); iterator.hasNext();) {
+            RuleElement       rce         = iterator.next();
             final Declaration declaration = rce.resolveDeclaration( name );
             if ( declaration != null ) {
                 // if it is an OR and it is duplicated, we can stop looking for duplication now
@@ -232,7 +232,7 @@ public class DeclarationScopeResolver {
      */
     public Map<String, Declaration> getDeclarations(RuleImpl rule, String consequenceName) {
         Map<String, Declaration> declarations = new HashMap<>();
-        for (RuleConditionElement aBuildList : this.buildList) {
+        for (RuleElement aBuildList : this.buildList) {
             // if we are inside of an OR we don't want each previous stack entry added because we can't see those variables
             if (aBuildList instanceof GroupElement ge && ge.getType() == GroupElement.Type.OR) {
                 continue;
@@ -276,8 +276,8 @@ public class DeclarationScopeResolver {
     }
 
     private Pattern findPatternInNestedElements(final int id,
-                                                final RuleConditionElement rce) {
-        for ( RuleConditionElement element : rce.getNestedElements() ) {
+                                                final RuleElement rce) {
+        for ( RuleElement element : rce.getNestedElements() ) {
             if ( element instanceof Pattern p ) {
                 if (p.getPatternId() == id ) {
                     return p;

@@ -69,7 +69,7 @@ public class NamedConsequence extends ConditionalElement implements NamedConsequ
      * It is not possible to declare any new variables, so always
      * return an Empty Map
      *
-     * @see RuleConditionElement#getInnerDeclarations()
+     * @see RuleElement#getInnerDeclarations()
      */
     public Map<String,Declaration> getInnerDeclarations() {
         return Collections.emptyMap();
@@ -79,9 +79,9 @@ public class NamedConsequence extends ConditionalElement implements NamedConsequ
      * It is not possible to nest elements inside an entry point, so
      * always return an empty list.
      *
-     * @see RuleConditionElement#getNestedElements()
+     * @see RuleElement#getNestedElements()
      */
-    public List<RuleConditionElement> getNestedElements() {
+    public List<RuleElement> getNestedElements() {
         return Collections.emptyList();
     }
 
@@ -89,7 +89,7 @@ public class NamedConsequence extends ConditionalElement implements NamedConsequ
      * It is not possible to declare and export any variables,
      * so always return an empty map
      *
-     * @see RuleConditionElement#getOuterDeclarations()
+     * @see RuleElement#getOuterDeclarations()
      */
     public Map<String,Declaration> getOuterDeclarations() {
         return Collections.emptyMap();
@@ -98,7 +98,7 @@ public class NamedConsequence extends ConditionalElement implements NamedConsequ
     /**
      * Not possible to resolve any declaration, so always return null.
      *
-     * @see RuleConditionElement#resolveDeclaration(java.lang.String)
+     * @see RuleElement#resolveDeclaration(java.lang.String)
      */
     public Declaration resolveDeclaration(String identifier) {
         return null;
