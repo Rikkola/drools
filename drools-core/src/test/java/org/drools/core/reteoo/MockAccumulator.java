@@ -90,7 +90,7 @@ public class MockAccumulator
                            Declaration[] declarations,
                            Declaration[] innerDeclarations,
                            ValueResolver valueResolver) {
-        this.matchingObjects.add( handle.getObject() );
+        this.matchingObjects.add( handle.getObject());
         return handle.getObject();
     }
 

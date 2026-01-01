@@ -258,7 +258,7 @@ public class OverlappedByEvaluatorDefinition
                                            final VariableContextEntry context,
                                            final FactHandle left) {
             if ( context.rightNull || 
-                    context.declaration.getExtractor().isNullValue( valueResolver, left.getObject() )) {
+                    context.declaration.getExtractor().isNullValue( valueResolver, left.getObject())) {
                 return false;
             }
             
@@ -275,7 +275,7 @@ public class OverlappedByEvaluatorDefinition
                                           final VariableContextEntry context,
                                           final FactHandle right) {
             if ( context.leftNull ||
-                    context.extractor.isNullValue( valueResolver, right.getObject() ) ) {
+                    context.extractor.isNullValue( valueResolver, right.getObject()) ) {
                 return false;
             }
             
@@ -293,8 +293,8 @@ public class OverlappedByEvaluatorDefinition
                                 final FactHandle handle1,
                                 final ReadAccessor extractor2,
                                 final FactHandle handle2) {
-            if ( extractor1.isNullValue( valueResolver, handle1.getObject() ) ||
-                    extractor2.isNullValue( valueResolver, handle2.getObject() ) ) {
+            if (extractor1.isNullValue( valueResolver, handle1.getObject()) ||
+                extractor2.isNullValue( valueResolver, handle2.getObject()) ) {
                 return false;
             }
             

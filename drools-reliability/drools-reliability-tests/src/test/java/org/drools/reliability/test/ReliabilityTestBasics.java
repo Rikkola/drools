@@ -443,10 +443,10 @@ public abstract class ReliabilityTestBasics {
 
     protected Optional<FactHandle> getFactHandle(KieSession kieSession, Person person){
         return kieSession.getFactHandles()
-                .stream()
-                .filter(p -> p.getObject() instanceof Person)
-                .filter(p -> ( (Person) p.getObject()).getName().equals(person.getName()) )
-                .filter(p -> ( (Person) p.getObject()).getAge()==person.getAge() ).findFirst();
+                         .stream()
+                         .filter(p -> p.getObject() instanceof Person)
+                         .filter(p -> ( (Person) p.getObject()).getName().equals(person.getName()))
+                         .filter(p -> ( (Person) p.getObject()).getAge() == person.getAge()).findFirst();
     }
 
     protected Optional<Object> getObjectByType(Class objectClass){

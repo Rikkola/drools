@@ -61,7 +61,7 @@ public class GetFactHandlesCommandTest {
     }
     
     @Test
-    public void getEmptyFactHandlesTest() { 
+    public void getObjectEmptyFactHandlesTest() {
         GetFactHandlesCommand command = new GetFactHandlesCommand();
         Object result = runner.execute(command, context);
         if( result instanceof Collection<?> ) { 
@@ -74,7 +74,7 @@ public class GetFactHandlesCommandTest {
     }
     
     @Test
-    public void getOneFactHandleTest() { 
+    public void getObjectOneFactHandleTest() {
         String randomFact = "" + random.nextLong();
         ksession.insert(randomFact);
         GetFactHandlesCommand command = new GetFactHandlesCommand();
@@ -84,7 +84,7 @@ public class GetFactHandlesCommandTest {
     }
 
     @Test
-    public void getMultipleFactHandleTest() { 
+    public void getObjectMultipleFactHandleTest() {
         HashSet<String> factSet = new HashSet<String>();
         int numFacts = 4;
         for( int i = 0; i < numFacts; ++i ) { 
@@ -101,7 +101,7 @@ public class GetFactHandlesCommandTest {
     }
 
     @Test
-    public void getEmptyDisconnectedFactHandlesTest() { 
+    public void getObjectEmptyDisconnectedFactHandlesTest() {
         GetFactHandlesCommand command = new GetFactHandlesCommand(true);
         Object result = runner.execute(command, context);
         if( result instanceof Collection<?> ) { 
@@ -114,7 +114,7 @@ public class GetFactHandlesCommandTest {
     }
 
     @Test
-    public void getOneDisconnectedFactHandleTest() { 
+    public void getObjectOneDisconnectedFactHandleTest() {
         System.out.println( Thread.currentThread().getStackTrace()[1].getMethodName() );
         String randomFact = "" + random.nextLong();
         ksession.insert(randomFact);
@@ -141,7 +141,7 @@ public class GetFactHandlesCommandTest {
     }
 
     @Test
-    public void getMultipleDisconnectedFactHandleTest() { 
+    public void getObjectMultipleDisconnectedFactHandleTest() {
         System.out.println( "\nTest: " + Thread.currentThread().getStackTrace()[1].getMethodName() );
         HashSet<String> factSet = new HashSet<String>();
         int numFacts = 4;

@@ -328,7 +328,7 @@ public class MVELCompilationUnit
                                ValueResolver valueResolver,
                                GlobalResolver globalResolver,
                                VariableResolverFactory factory ) {
-        updateFactory( null, null, null, rightHandle, rightHandle != null ? rightHandle.getObject() : null, tuple, localVars, valueResolver, globalResolver, factory );
+        updateFactory(null, null, null, rightHandle, rightHandle != null ? rightHandle.getObject() : null, tuple, localVars, valueResolver, globalResolver, factory);
     }    
     
     private void updateFactory( Object knowledgeHelper,

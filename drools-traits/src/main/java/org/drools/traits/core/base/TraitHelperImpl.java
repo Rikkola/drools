@@ -517,7 +517,7 @@ public class TraitHelperImpl implements Externalizable,
             Iterator<InternalFactHandle> iter = store.iterateFactHandles();
             while ( iter.hasNext() ) {
                 InternalFactHandle handle = iter.next();
-                if ( handle.isTraitable() && handle.getObject() instanceof CoreWrapper && ( (CoreWrapper) handle.getObject() ).getCore() == core ) {
+                if (handle.isTraitable() && handle.getObject() instanceof CoreWrapper && ( (CoreWrapper) handle.getObject() ).getCore() == core ) {
                     return handle;
                 }
             }

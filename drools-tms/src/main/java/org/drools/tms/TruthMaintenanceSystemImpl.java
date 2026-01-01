@@ -180,8 +180,8 @@ public class TruthMaintenanceSystemImpl implements TruthMaintenanceSystem {
                 key = fh.getEqualityKey();
                 if ( key == null ) {
                     // we use the FH's Object here, not the inserted object
-                    ObjectTypeConf typeC = this.typeConfReg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject() );
-                    enableTMS( fh.getObject(), typeC );
+                    ObjectTypeConf typeC = this.typeConfReg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject());
+                    enableTMS(fh.getObject(), typeC);
                     key = fh.getEqualityKey();
                 }
             }

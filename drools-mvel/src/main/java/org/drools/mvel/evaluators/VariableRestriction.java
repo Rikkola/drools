@@ -225,9 +225,9 @@ public class VariableRestriction {
             this.object = handle.getObject();
             this.valueResolver = valueResolver;
             this.rightNull = this.extractor.isNullValue( valueResolver,
-                                                         handle.getObject() );
+                                                         handle.getObject());
             this.right = this.extractor.getValue( valueResolver,
-                                                  handle.getObject() );
+                                                  handle.getObject());
         }
 
         public void resetTuple() {
@@ -295,7 +295,7 @@ public class VariableRestriction {
 
             if ( !rightNull ) { // avoid a NullPointerException
                 this.right = this.extractor.getWholeNumberValue( valueResolver,
-                                                          handle.getObject() );
+                                                          handle.getObject());
             } else {
                 this.right = 0;
             }
@@ -357,7 +357,7 @@ public class VariableRestriction {
 
             if ( !rightNull ) { // avoid a NullPointerException
                 this.right = (char) this.extractor.getWholeNumberValue( valueResolver,
-                                                          handle.getObject() );
+                                                          handle.getObject());
             } else {
                 this.right = 0;
             }
@@ -415,11 +415,11 @@ public class VariableRestriction {
             this.object = handle.getObject();
             this.valueResolver = valueResolver;
             this.rightNull = this.extractor.isNullValue( valueResolver,
-                                                         handle.getObject() );
+                                                         handle.getObject());
 
             if ( !rightNull ) { // avoid a NullPointerException
                 this.right = this.extractor.getDecimalValue( valueResolver,
-                                                            handle.getObject() );
+                                                            handle.getObject());
             } else {
                 this.right = 0;
             }
@@ -471,10 +471,10 @@ public class VariableRestriction {
             this.object = handle.getObject();
             this.valueResolver = valueResolver;
             this.rightNull = this.extractor.isNullValue( valueResolver,
-                                                         handle.getObject() );
+                                                         handle.getObject());
 
             // avoid a NullPointerException
-            this.right = !rightNull && this.extractor.getBooleanValue( valueResolver, handle.getObject() );
+            this.right = !rightNull && this.extractor.getBooleanValue( valueResolver, handle.getObject());
         }
     }
     
@@ -540,7 +540,7 @@ public class VariableRestriction {
                                                              handle.getObject());
                 if ( !rightNull ) { // avoid a NullPointerException
                     this.timestamp = this.extractor.getWholeNumberValue( valueResolver,
-                                                                  handle.getObject() );
+                                                                  handle.getObject());
                 } else {
                     this.timestamp = 0;
                 }
@@ -654,7 +654,7 @@ public class VariableRestriction {
 
         public void updateFromFactHandle(final ValueResolver valueResolver,
                                          final FactHandle handle) {
-            this.object = handle.getObject(); 
+            this.object = handle.getObject();
             this.valueResolver = valueResolver;
             
             if ( this.extractor.isSelfReference() ) {
@@ -665,7 +665,7 @@ public class VariableRestriction {
                                                            handle.getObject());
               if ( !rightNull ) { // avoid a NullPointerException
                   this.startTS = this.extractor.getWholeNumberValue( valueResolver,
-                                                              handle.getObject() );
+                                                              handle.getObject());
               } else {
                     this.startTS = 0;
               }  

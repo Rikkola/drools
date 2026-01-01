@@ -115,7 +115,7 @@ public class RowAdapter implements Row {
         }
         StringBuilder sbuilder = new StringBuilder();
         for ( int i = 0, length = this.factHandles.length -1; i < length; i++ ) {
-            sbuilder.append( this.factHandles[i].getObject().toString() );
+            sbuilder.append( this.factHandles[i].getObject().toString());
             if ( i < length - 1 ) {
                 sbuilder.append( ", " );
             }

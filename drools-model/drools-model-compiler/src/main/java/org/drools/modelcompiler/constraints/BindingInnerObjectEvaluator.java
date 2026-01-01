@@ -33,6 +33,6 @@ public class BindingInnerObjectEvaluator extends BindingEvaluator {
 
     @Override
     public Object evaluate(FactHandle handle, BaseTuple tuple, ValueResolver reteEvaluator, Declaration[] declarations, Declaration[] innerDeclarations) {
-        return (( BindViewItem1 ) binding).eval( handle.getObject() );
+        return (( BindViewItem1 ) binding).eval( handle.getObject());
     }
 }

@@ -130,12 +130,12 @@ public class SimpleBeliefSystem
         if ( beliefSet.isEmpty() && bfh.getEqualityKey() != null && bfh.getEqualityKey().getStatus() == EqualityKey.JUSTIFIED ) {
             ep.immediateDelete(bfh, bfh.getObject(), getObjectTypeConf(beliefSet), context.getRuleOrigin(),
                                internalMatch != null ? SuperCacheFixer.asTerminalNode(internalMatch.getTuple()) : null);
-        } else if ( !beliefSet.isEmpty() && bfh.getObject() == payload && payload != bfh.getObject() ) {
+        } else if (!beliefSet.isEmpty() && bfh.getObject() == payload && payload != bfh.getObject() ) {
             // prime has changed, to update new object
             // Equality might have changed on the object, so remove (which uses the handle id) and add back in
             WorkingMemoryEntryPoint ep = bfh.getEntryPoint(this.ep.getReteEvaluator());
             ep.getObjectStore().updateHandle(bfh, beliefSet.getFirst().getObject().getObject());
-            ep.update( bfh, bfh.getObject(), allSetButTraitBitMask(), Object.class, null );
+            ep.update(bfh, bfh.getObject(), allSetButTraitBitMask(), Object.class, null);
         }
 
         if ( beliefSet.isEmpty() && bfh.getEqualityKey() != null ) {
@@ -166,7 +166,7 @@ public class SimpleBeliefSystem
         bfh.getEqualityKey().setStatus( EqualityKey.JUSTIFIED ); // revert to justified
 
         // Add the FH back into the network
-        ep.insert(bfh, bfh.getObject(), context.getRuleOrigin(), null, getObjectTypeConf(beliefSet) );
+        ep.insert(bfh, bfh.getObject(), context.getRuleOrigin(), null, getObjectTypeConf(beliefSet));
     }
 
     private ObjectTypeConf getObjectTypeConf(BeliefSet beliefSet) {
@@ -174,7 +174,7 @@ public class SimpleBeliefSystem
         ObjectTypeConfigurationRegistry reg;
         ObjectTypeConf typeConf;
         reg = ep.getObjectTypeConfigurationRegistry();
-        typeConf = reg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject() );
+        typeConf = reg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject());
         return typeConf;
     }
 

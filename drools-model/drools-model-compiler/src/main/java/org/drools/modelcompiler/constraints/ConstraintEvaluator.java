@@ -289,7 +289,7 @@ public class ConstraintEvaluator {
         public abstract boolean evaluate(FactHandle handle, BaseTuple tuple, ValueResolver reteEvaluator) throws Exception;
 
         protected Object getArgument(FactHandle handle, ValueResolver reteEvaluator, Declaration declaration, BaseTuple tuple ) {
-            return declaration == patternDeclaration ? handle.getObject() : BindingEvaluator.getArgument( handle, reteEvaluator, declaration, tuple );
+            return declaration == patternDeclaration ? handle.getObject() : BindingEvaluator.getArgument(handle, reteEvaluator, declaration, tuple);
         }
 
         static class _1 extends InnerEvaluator {
@@ -327,7 +327,7 @@ public class ConstraintEvaluator {
 
             @Override
             public boolean evaluate( FactHandle handle, ValueResolver reteEvaluator ) throws Exception {
-                return predicate.test( handle.getObject() );
+                return predicate.test( handle.getObject());
             }
 
             @Override

@@ -66,7 +66,7 @@ public class TraitObjectTypeNode extends ObjectTypeNode {
                                && ! typeMask.isEmpty()
                                && supersetOrEqualset( vetoMask, this.typeMask ) );
 
-            boolean allowed = ! vetoed || sameAndNotCoveredByDescendants((TraitProxyImpl) factHandle.getObject(), typeMask );
+            boolean allowed = ! vetoed || sameAndNotCoveredByDescendants((TraitProxyImpl) factHandle.getObject(), typeMask);
             if ( allowed ) {
                 proxy.assignOtn( this.typeMask );
             }

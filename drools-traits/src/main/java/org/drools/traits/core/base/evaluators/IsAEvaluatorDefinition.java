@@ -179,7 +179,7 @@ public class IsAEvaluatorDefinition implements EvaluatorDefinition {
          */
         public boolean evaluate(ValueResolver valueResolver,
                                 ReadAccessor extractor, FactHandle handle, FieldValue value) {
-            final Object objectValue = extractor.getValue( valueResolver, handle.getObject() );
+            final Object objectValue = extractor.getValue( valueResolver, handle.getObject());
             final Object literal = value.getValue();
             if ( cachedValue != literal) {
                 cachedValue = literal;
@@ -292,8 +292,8 @@ public class IsAEvaluatorDefinition implements EvaluatorDefinition {
         public boolean evaluate(ValueResolver valueResolver,
                                 ReadAccessor leftExtractor, FactHandle left,
                                 ReadAccessor rightExtractor, FactHandle right) {
-            Object source = leftExtractor.getValue( valueResolver, left != null ? left.getObject() : null );
-            Object target = rightExtractor.getValue( valueResolver, right != null ? right.getObject() : null );
+            Object source = leftExtractor.getValue( valueResolver, left != null ? left.getObject() : null);
+            Object target = rightExtractor.getValue( valueResolver, right != null ? right.getObject() : null);
 
             return compare( source, target, valueResolver );
         }
@@ -303,7 +303,7 @@ public class IsAEvaluatorDefinition implements EvaluatorDefinition {
                                            VariableContextEntry context, FactHandle right ) {
 
             Object target = ((VariableRestriction.ObjectVariableContextEntry) context).left;
-            Object source = context.getFieldExtractor().getValue( valueResolver, right.getObject() );
+            Object source = context.getFieldExtractor().getValue( valueResolver, right.getObject());
 
             return compare( source, target, valueResolver );
         }
@@ -311,7 +311,7 @@ public class IsAEvaluatorDefinition implements EvaluatorDefinition {
         public boolean evaluateCachedRight( ValueResolver valueResolver,
                                             VariableContextEntry context, FactHandle left ) {
 
-            Object target = context.getFieldExtractor().getValue( valueResolver, left.getObject() );
+            Object target = context.getFieldExtractor().getValue( valueResolver, left.getObject());
             Object source = ((VariableRestriction.ObjectVariableContextEntry) context).right;
 
             return compare( source, target, valueResolver );

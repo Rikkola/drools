@@ -54,7 +54,7 @@ public class ActivationPropertyHandler implements PropertyHandler {
                 
         Declaration declr = item.getTerminalNode().getSubRule().getOuterDeclarations().get( name );
         if ( declr != null ) {
-            return declr.getValue( null, item.getTuple().get( declr ).getObject() );
+            return declr.getValue( null, item.getTuple().get( declr ).getObject());
         } else {
             return item.getRule().getMetaData( name );
         }

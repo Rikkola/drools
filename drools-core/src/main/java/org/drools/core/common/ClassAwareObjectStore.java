@@ -168,7 +168,7 @@ public class ClassAwareObjectStore implements Externalizable, ObjectStore {
 
     @Override
     public void removeHandle(InternalFactHandle handle) {
-        if ( getOrCreateConcreteClassStore(handle.getObject()).removeHandle(handle) != null ) {
+        if (getOrCreateConcreteClassStore(handle.getObject()).removeHandle(handle) != null ) {
             size--;
         }
     }

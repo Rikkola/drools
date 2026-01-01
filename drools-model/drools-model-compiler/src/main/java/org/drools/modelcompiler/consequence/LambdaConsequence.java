@@ -102,7 +102,7 @@ public class LambdaConsequence implements Consequence<KnowledgeHelper> {
                 Declaration declaration = declarations[declrCounter++];
                 FactHandle fh = getOriginalFactHandle(tuple.get(declaration));
                 if ( useDrools ) {
-                    fhLookup.put( fh.getObject(), fh );
+                    fhLookup.put(fh.getObject(), fh);
                 }
                 objects[index++] = declaration.getValue( valueResolver, fh );
             } else {
@@ -278,7 +278,7 @@ public class LambdaConsequence implements Consequence<KnowledgeHelper> {
         public void resolveAndStore(Object[] facts, ValueResolver reteEvaluator, FactHandle factHandle, FactHandleLookup fhLookup) {
             FactHandle fh = getOriginalFactHandle( factHandle );
             if ( useDrools ) {
-                fhLookup.put( fh.getObject(), fh );
+                fhLookup.put(fh.getObject(), fh);
             }
             facts[supplierIndex] = declaration.getValue(reteEvaluator, fh);
         }

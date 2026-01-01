@@ -136,7 +136,7 @@ public abstract class EqualityKey extends LinkedList<DefaultFactHandle>
             return this == object;
         }
 
-        return this.getFirst().getObject().equals( object );
+        return this.getFirst().getObject().equals(object);
     }
 
 }

@@ -163,7 +163,7 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                 final ReadAccessor extractor,
                                 final FactHandle handle1,
                                 final FieldValue handle2) {
-            final String value1 = (String) extractor.getValue( valueResolver, handle1.getObject() );
+            final String value1 = (String) extractor.getValue( valueResolver, handle1.getObject());
             final String value2 = (String) handle2.getValue();
 
             return soundslike(value1,value2);
@@ -173,12 +173,12 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                            final VariableContextEntry context, final FactHandle left) {
             final String value = (String) ((ObjectVariableContextEntry) context).right;
 
-            return soundslike( value, (String) context.declaration.getExtractor().getValue( valueResolver, left.getObject() ) );
+            return soundslike( value, (String) context.declaration.getExtractor().getValue( valueResolver, left.getObject()));
         }
 
         public boolean evaluateCachedLeft(final ValueResolver valueResolver,
                                           final VariableContextEntry context, final FactHandle rightHandle) {
-            final String value = (String) context.extractor.getValue( valueResolver, rightHandle.getObject() );
+            final String value = (String) context.extractor.getValue( valueResolver, rightHandle.getObject());
 
             return soundslike(value, (String) ((ObjectVariableContextEntry) context).left );
         }
@@ -188,8 +188,8 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                 final FactHandle handle1,
                                 final ReadAccessor extractor2,
                                 final FactHandle handle2) {
-            final Object value1 = extractor1.getValue( valueResolver, handle1.getObject() );
-            final Object value2 = extractor2.getValue( valueResolver, handle2.getObject() );
+            final Object value1 = extractor1.getValue( valueResolver, handle1.getObject());
+            final Object value2 = extractor2.getValue( valueResolver, handle2.getObject());
 
             return soundslike( (String) value1, (String) value2 );
         }
@@ -213,7 +213,7 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                 final ReadAccessor extractor,
                                 final FactHandle handle1,
                                 final FieldValue object2) {
-            final String value1 = (String) extractor.getValue( valueResolver, handle1.getObject() );
+            final String value1 = (String) extractor.getValue( valueResolver, handle1.getObject());
             final String value2 = (String) object2.getValue();
 
             return ! soundslike( value1,  value2 );
@@ -224,13 +224,13 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                            final FactHandle left) {
             final String value = (String) ((ObjectVariableContextEntry) context).right;
 
-            return ! soundslike( value, (String) context.declaration.getExtractor().getValue( valueResolver, left.getObject() ) );
+            return ! soundslike( value, (String) context.declaration.getExtractor().getValue( valueResolver, left.getObject()));
         }
 
         public boolean evaluateCachedLeft(final ValueResolver valueResolver,
                                           final VariableContextEntry context,
                                           final FactHandle right) {
-            final String value = (String) context.extractor.getValue( valueResolver, right.getObject() );
+            final String value = (String) context.extractor.getValue( valueResolver, right.getObject());
 
             return ! soundslike( value, (String) ((ObjectVariableContextEntry) context).left );
         }
@@ -240,8 +240,8 @@ public class SoundslikeEvaluatorsDefinition implements EvaluatorDefinition {
                                 final FactHandle handl1,
                                 final ReadAccessor extractor2,
                                 final FactHandle handl2) {
-            final Object value1 = extractor1.getValue( valueResolver, handl1.getObject() );
-            final Object value2 = extractor2.getValue( valueResolver, handl2.getObject() );
+            final Object value1 = extractor1.getValue( valueResolver, handl1.getObject());
+            final Object value2 = extractor2.getValue( valueResolver, handl2.getObject());
 
             return ! soundslike( (String) value1,  (String) value2 );
         }

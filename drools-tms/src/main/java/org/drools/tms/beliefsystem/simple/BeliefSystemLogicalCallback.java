@@ -91,13 +91,13 @@ public class BeliefSystemLogicalCallback extends PropagationEntry.AbstractPropag
         if ( update ) {
             if ( !bs.isEmpty() ) {
                 // We need the isEmpty check, in case the BeliefSet was made empty (due to retract) after this was scheduled
-                nep.update( handle, handle.getObject(), allSetButTraitBitMask(), Object.class, null );
+                nep.update(handle, handle.getObject(), allSetButTraitBitMask(), Object.class, null);
             }
         } else  {
             if ( fullyRetract ) {
                 nep.delete(this.handle, context.getRuleOrigin(), SuperCacheFixer.asTerminalNode(this.internalMatch.getTuple()));
             } else {
-                ObjectTypeConf typeConf = nep.getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( nep.getEntryPoint(), handle.getObject() );
+                ObjectTypeConf typeConf = nep.getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( nep.getEntryPoint(), handle.getObject());
                 nep.getEntryPointNode().immediateDeleteObject( handle, context, typeConf, reteEvaluator );
             }
         }

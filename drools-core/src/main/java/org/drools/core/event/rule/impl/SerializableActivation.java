@@ -101,7 +101,7 @@ public class SerializableActivation
     public List<Object> getObjects() {
         List<Object> objects = new ArrayList<>( this.factHandles.size() );
         for( FactHandle handle : this.factHandles ) {
-            objects.add( ((InternalFactHandle)handle).getObject() );
+            objects.add( ((InternalFactHandle)handle).getObject());
         }
         return Collections.unmodifiableList( objects );
     }

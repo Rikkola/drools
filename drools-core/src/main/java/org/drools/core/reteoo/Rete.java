@@ -96,7 +96,7 @@ public class Rete extends ObjectSource implements ObjectSink {
         EntryPointId entryPoint = context.getEntryPoint();
         EntryPointNode node = this.entryPoints.get( entryPoint );
         ObjectTypeConf typeConf = reteEvaluator.getEntryPoint( entryPoint.getEntryPointId() )
-                .getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( entryPoint, factHandle.getObject() );
+                .getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( entryPoint, factHandle.getObject());
         node.assertObject( factHandle, context, typeConf, reteEvaluator );
     }
 
@@ -115,7 +115,7 @@ public class Rete extends ObjectSource implements ObjectSink {
         EntryPointId entryPoint = context.getEntryPoint();
         EntryPointNode node = this.entryPoints.get( entryPoint );
         ObjectTypeConf typeConf = reteEvaluator.getEntryPoint( entryPoint.getEntryPointId() )
-                .getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getObject() );
+                .getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getObject());
         node.retractObject( handle, context, typeConf, reteEvaluator );
     }
     

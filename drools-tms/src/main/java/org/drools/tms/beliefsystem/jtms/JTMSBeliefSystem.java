@@ -78,7 +78,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
             // if it was decided, first remove it and re-add it. So it's in the correct map
             ep.getObjectStore().removeHandle(fh);
             fh.setNegated( beliefSet.isNegated() );
-            ep.getObjectStore().addHandle(fh, fh.getObject() );
+            ep.getObjectStore().addHandle(fh, fh.getObject());
         } else {
             fh.setNegated( beliefSet.isNegated() );
         }
@@ -136,7 +136,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
             // if it was decided, first remove it and re-add it. So it's in the correct map
             ep.getObjectStore().removeHandle(fh);
             fh.setNegated( beliefSet.isNegated() );
-            ep.getObjectStore().addHandle(fh, fh.getObject() );
+            ep.getObjectStore().addHandle(fh, fh.getObject());
         } else {
             fh.setNegated( beliefSet.isNegated() );
         }
@@ -148,7 +148,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
                       internalMatch != null ? SuperCacheFixer.asTerminalNode(internalMatch.getTuple()) : null);
         } else  if ( !(processBeliefSet(rule, internalMatch, payload, context, jtmsBeliefSet, wasDecided, wasNegated, fh) && beliefSet.isEmpty())  ) {
             //  The state of the BS did not change, but maybe the prime did
-            if ( fh.getObject() == payload ) {
+            if (fh.getObject() == payload ) {
                 // prime, node.object which is the current fh.object,  has changed and object is decided, so update
                 String value;
                 Object object = null;
@@ -174,10 +174,10 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
                 }
 
                 // Equality might have changed on the object, so remove (which uses the handle id) and add back in
-                if ( fh.getObject() != object ) {
+                if (fh.getObject() != object ) {
                     WorkingMemoryEntryPoint wmep = fh.getEntryPoint(ep.getReteEvaluator());
                     wmep.getObjectStore().updateHandle( fh, object );
-                    wmep.update( fh, fh.getObject(), allSetButTraitBitMask(), object.getClass(), null );
+                    wmep.update(fh, fh.getObject(), allSetButTraitBitMask(), object.getClass(), null);
                 }
             }
         }
@@ -219,7 +219,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
             final PropagationContext updatePctx = ep.getPctxFactory().createPropagationContext(ep.getReteEvaluator().getNextPropagationIdCounter(), PropagationContext.Type.MODIFICATION,
                                                                                                        pctx.getRuleOrigin(), pctx.getTerminalNodeOrigin(),
                                                                                                        fh, ep.getEntryPoint());
-            ep.update(fh, fh.getObject(), fh.getObject(),  getObjectTypeConf(jtmsBeliefSet), updatePctx );
+            ep.update(fh, fh.getObject(), fh.getObject(), getObjectTypeConf(jtmsBeliefSet), updatePctx);
         }
         return false;
     }
@@ -236,7 +236,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
         InternalFactHandle bfh = beliefSet.getFactHandle();
 
         // Add the FH back into the network
-        ep.insert(bfh, bfh.getObject(), context.getRuleOrigin(), null, getObjectTypeConf(beliefSet) );
+        ep.insert(bfh, bfh.getObject(), context.getRuleOrigin(), null, getObjectTypeConf(beliefSet));
     }
 
     private ObjectTypeConf getObjectTypeConf(BeliefSet<M> jtmsBeliefSet) {
@@ -244,7 +244,7 @@ public class JTMSBeliefSystem<M extends JTMSMode<M>>
         ObjectTypeConfigurationRegistry reg;
         ObjectTypeConf typeConf;
         reg = ep.getObjectTypeConfigurationRegistry();
-        typeConf = reg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject() );
+        typeConf = reg.getOrCreateObjectTypeConf( ep.getEntryPoint(), fh.getObject());
         return typeConf;
     }
 

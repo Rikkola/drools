@@ -112,7 +112,7 @@ public class MVELAccumulatorFunctionExecutor
         
         VariableResolverFactory factory = unit.getFactory( null, null, null, handle, tuple, null, valueResolver, valueResolver.getGlobalResolver()  );
         
-        final Object value = evaluator.evaluate( handle.getObject(), factory );
+        final Object value = evaluator.evaluate(handle.getObject(), factory);
         return this.function.accumulateValue( (Serializable) context, value );
     }
 

@@ -417,8 +417,8 @@ public class ProtobufInputMarshaller {
 
             if ( !_handle.getIsJustified() ) {
                 // BeliefSystem handles the Object type 
-                if ( handle.getObject() != null ) {
-                    objectStore.addHandle( handle, handle.getObject() );
+                if (handle.getObject() != null ) {
+                    objectStore.addHandle( handle, handle.getObject());
                 }
 
                 // add handle to object type node
@@ -532,7 +532,7 @@ public class ProtobufInputMarshaller {
 
             // ObjectTypeConf state is not marshalled, so it needs to be re-determined
             ObjectTypeConf typeConf = context.getWorkingMemory().getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( handle.getEntryPointId(),
-                                                                                                         handle.getObject() );
+                                                                                                         handle.getObject());
             if ( !typeConf.isTMSEnabled() && (!wasOTCSerialized || tmsEnabled.contains(typeConf.getTypeName()) ) ) {
                 typeConf.enableTMS();
             }
@@ -543,7 +543,7 @@ public class ProtobufInputMarshaller {
             if ( key.getStatus() == EqualityKey.JUSTIFIED ) {
                 // not yet added to the object stores
                 handle.getEntryPoint((( NamedEntryPoint ) wmep).getReteEvaluator()).getObjectStore()
-                        .addHandle( handle, handle.getObject() );
+                        .addHandle( handle, handle.getObject());
                 // add handle to object type node
                 assertHandleIntoOTN( context,
                                      context.getWorkingMemory(),
@@ -601,7 +601,7 @@ public class ProtobufInputMarshaller {
                     }
 
                     ObjectTypeConf typeConf = context.getWorkingMemory().getObjectTypeConfigurationRegistry().getOrCreateObjectTypeConf( handle.getEntryPointId(),
-                                                                                                                 handle.getObject() );
+                                                                                                                 handle.getObject());
                     tms.readLogicalDependency(handle, object, value, internalMatch, typeConf);
                 }
             } else {

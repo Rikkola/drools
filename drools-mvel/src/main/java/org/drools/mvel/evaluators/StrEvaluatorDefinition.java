@@ -202,13 +202,13 @@ public class StrEvaluatorDefinition implements EvaluatorDefinition {
 
                 switch (parameter) {
                 case startsWith:
-                    return this.getOperator().isNegated() ^ (((String)right.getObject()).startsWith( (String)((ObjectVariableContextEntry)
+                    return this.getOperator().isNegated() ^ (((String)right.getObject()).startsWith((String)((ObjectVariableContextEntry)
                             context).left) );
                 case endsWith:
-                    return this.getOperator().isNegated() ^ (((String)right.getObject()).endsWith( (String)((ObjectVariableContextEntry)
+                    return this.getOperator().isNegated() ^ (((String)right.getObject()).endsWith((String)((ObjectVariableContextEntry)
                             context).left));
                 case length:
-                    return this.getOperator().isNegated() ^ (((String)right.getObject()).length() ==  ((Number)((ObjectVariableContextEntry)
+                    return this.getOperator().isNegated() ^ (((String)right.getObject()).length() == ((Number)((ObjectVariableContextEntry)
                             context).left).longValue());
                 default:
                     throw new IllegalAccessError("Illegal str comparison parameter");

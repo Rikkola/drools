@@ -186,7 +186,7 @@ public class NotNodeLeftTuple extends LeftTuple {
             if ( !rightTuple.isSubnetworkTuple()) {
                 InternalFactHandle fh = rightTuple.getFactHandleForEvaluation();
                 if ( constraints.isAllowedCachedLeft( contextEntry, fh ) ) {
-                    result.add( fh.getObject() );
+                    result.add( fh.getObject());
                 }
             }
             rightTuple = nextRight;

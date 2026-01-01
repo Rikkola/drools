@@ -156,7 +156,7 @@ public class UnificationConstraint extends MutableTypeConstraint<ContextEntry> i
             return evaluator.evaluate(handle, tuple, reteEvaluator);
         }
         Object argument = leftIndexingDeclaration.getValue(null, query);
-        return handle.getObject().equals( argument );
+        return handle.getObject().equals(argument);
     }
 
     @Override

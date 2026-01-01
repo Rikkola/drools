@@ -204,7 +204,7 @@ public class DefaultKnowledgeHelper implements KnowledgeHelper, Externalizable {
     }
     
     public FactHandle getFactHandle(FactHandle handle) {
-        FactHandle handleFromWM = getFactHandleFromWM( handle.getObject() );
+        FactHandle handleFromWM = getFactHandleFromWM( handle.getObject());
         return handleFromWM != null ? handleFromWM : handle;
     }
     

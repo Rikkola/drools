@@ -102,7 +102,7 @@ public abstract class MapObjectStore implements Externalizable, ObjectStore {
 
     @Override
     public void removeHandle( InternalFactHandle handle ) {
-        fhStorage.remove( handle.getObject() );
+        fhStorage.remove( handle.getObject());
     }
 
     @Override
@@ -122,7 +122,7 @@ public abstract class MapObjectStore implements Externalizable, ObjectStore {
 
     @Override
     public Iterator<InternalFactHandle> iterateFactHandles( ObjectFilter filter ) {
-        return fhStorage.values().stream().filter( fh -> filter.accept( fh.getObject() ) ).iterator();
+        return fhStorage.values().stream().filter( fh -> filter.accept( fh.getObject())).iterator();
     }
 
     @Override
@@ -159,7 +159,7 @@ public abstract class MapObjectStore implements Externalizable, ObjectStore {
         @Override
         public Iterator<InternalFactHandle> iterator() {
             ObjectFilter filter = new ClassObjectFilter( clazz );
-            return fhStorage.values().stream().filter( fh -> filter.accept( fh.getObject() ) ).collect( toList() ).iterator();
+            return fhStorage.values().stream().filter( fh -> filter.accept( fh.getObject())).collect(toList()).iterator();
         }
     }
 }

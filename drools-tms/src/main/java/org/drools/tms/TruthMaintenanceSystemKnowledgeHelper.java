@@ -103,7 +103,7 @@ public class TruthMaintenanceSystemKnowledgeHelper<T extends ModedAssertion<T>> 
         LogicalDependency<T> dep = null;
         if ( this.previousJustified != null ) {
             for ( dep = this.previousJustified.getFirst(); dep != null; dep = dep.getNext() ) {
-                if ( object.equals( ((BeliefSet)dep.getJustified()).getFactHandle().getObject() ) ) {
+                if ( object.equals( ((BeliefSet)dep.getJustified()).getFactHandle().getObject()) ) {
                     this.previousJustified.remove( dep );
                     break;
                 }

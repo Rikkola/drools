@@ -21,6 +21,8 @@ package org.drools.ruleunits.impl.factory;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.drools.base.rule.EntryPointId;
+import org.drools.core.common.EqualityKey;
 import org.drools.ruleunits.api.DataHandle;
 
 public class DataHandleImpl implements DataHandle {
@@ -28,6 +30,18 @@ public class DataHandleImpl implements DataHandle {
 
     private final long id = counter.incrementAndGet();
     private Object object;
+
+
+    protected long recency;
+    private   EqualityKey key;
+    protected int         objectHashCode;
+    protected int identityHashCode;
+
+    protected EntryPointId entryPointId;
+
+    private boolean disconnected;
+
+    private boolean valid = true;
 
     public DataHandleImpl(Object object) {
         this.object = object;

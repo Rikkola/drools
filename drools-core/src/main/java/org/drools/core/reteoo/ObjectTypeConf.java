@@ -53,8 +53,7 @@ public interface ObjectTypeConf {
      * Enable TMS for this object type. 
      * */
     void enableTMS();
-    
-    EntryPointId getEntryPoint();
+
 
     InternalFactHandle createFactHandle(FactHandleFactory factHandleFactory, long id, Object object, long recency,
                                         ReteEvaluator reteEvaluator, WorkingMemoryEntryPoint entryPoint);

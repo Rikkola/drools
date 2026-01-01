@@ -332,7 +332,7 @@ public class JTMSTest {
 
         Iterator<EqualityKey> it = tms.getEqualityKeys().iterator();
         TruthMaintenanceSystemEqualityKey key = (TruthMaintenanceSystemEqualityKey) it.next();
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = (TruthMaintenanceSystemEqualityKey) it.next();
         }
 
@@ -343,7 +343,7 @@ public class JTMSTest {
         kSession.fireAllRules();
         it = tms.getEqualityKeys().iterator();
         key = ( TruthMaintenanceSystemEqualityKey  ) it.next();
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = ( TruthMaintenanceSystemEqualityKey  ) it.next();
         }
 
@@ -354,7 +354,7 @@ public class JTMSTest {
         kSession.fireAllRules();
         it = tms.getEqualityKeys().iterator();
         key = ( TruthMaintenanceSystemEqualityKey  )  it.next();
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = ( TruthMaintenanceSystemEqualityKey  )  it.next();
         }
 
@@ -433,7 +433,7 @@ public class JTMSTest {
         assertThat(tms.getEqualityKeysSize()).isEqualTo(1); // Only Person type is logical
         Iterator it = tms.getEqualityKeys().iterator();
         TruthMaintenanceSystemEqualityKey key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
         }
 
@@ -444,7 +444,7 @@ public class JTMSTest {
         kSession.fireAllRules();
         it = tms.getEqualityKeys().iterator();
         key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
         }
 
@@ -455,7 +455,7 @@ public class JTMSTest {
         kSession.fireAllRules();
         it = tms.getEqualityKeys().iterator();
         key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
-        while ( !key.getFactHandle().getObject().equals( new Person( "darth") ) ) {
+        while ( !key.getFactHandle().getObject().equals(new Person("darth")) ) {
             key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
         }
 
@@ -528,7 +528,7 @@ public class JTMSTest {
         assertThat(tms.getEqualityKeysSize()).isEqualTo(2); // go1, neg are two different strings.
         Iterator it = tms.getEqualityKeys().iterator();
         TruthMaintenanceSystemEqualityKey key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
-        while ( !key.getFactHandle().getObject().equals( "neg") ) {
+        while ( !key.getFactHandle().getObject().equals("neg") ) {
             key = ( TruthMaintenanceSystemEqualityKey  ) it.next() ;
         }
 

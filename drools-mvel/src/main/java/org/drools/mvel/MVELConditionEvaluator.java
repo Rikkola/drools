@@ -121,7 +121,7 @@ public class MVELConditionEvaluator implements ConditionEvaluator {
                                        valueResolver.getGlobalResolver(),
                                        factory );
 
-        return evaluator.evaluate( handle.getObject(), factory );
+        return evaluator.evaluate(handle.getObject(), factory);
     }
 
     private boolean evaluate(MvelEvaluator<Boolean> evaluator, Object object, Map<String, Object> vars) {

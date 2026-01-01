@@ -230,7 +230,7 @@ public class Declaration implements Externalizable, AcceptsReadAccessor, TupleVa
     }
 
     public Object getValue(ValueResolver valueResolver, FactHandle fh) {
-        return getValue( valueResolver, fh.getObject() );
+        return getValue( valueResolver, fh.getObject());
     }
 
     public Object getValue(ValueResolver valueResolver,

@@ -27,7 +27,6 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.base.reteoo.BaseTuple;
 import org.drools.core.reteoo.TupleImpl;
 import org.drools.core.reteoo.LeftTuple;
-import org.drools.core.reteoo.Tuple;
 import org.drools.base.rule.accessor.ReadAccessor;
 import org.drools.base.rule.accessor.TupleValueExtractor;
 import org.drools.core.util.FastIterator;

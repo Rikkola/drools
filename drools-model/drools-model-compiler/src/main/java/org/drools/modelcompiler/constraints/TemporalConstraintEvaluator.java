@@ -78,11 +78,11 @@ public class TemporalConstraintEvaluator extends ConstraintEvaluator {
 
     private long getStartTimestamp( FactHandle fh, ValueResolver reteEvaluator, Declaration decl, Function1<Object, ?> f ) {
         if (f != null) {
-            return getTimestampFromDate( f.apply( decl.getValue( reteEvaluator, fh.getObject() ) ) );
+            return getTimestampFromDate( f.apply( decl.getValue( reteEvaluator, fh.getObject())));
         }
         return fh instanceof DefaultEventHandle && !(decl.getExtractor() instanceof LambdaReadAccessor) ?
                 ( (DefaultEventHandle) fh).getStartTimestamp() :
-                getTimestampFromDate( decl.getValue( reteEvaluator, fh.getObject() ) );
+                getTimestampFromDate( decl.getValue( reteEvaluator, fh.getObject()));
     }
 
     @Override

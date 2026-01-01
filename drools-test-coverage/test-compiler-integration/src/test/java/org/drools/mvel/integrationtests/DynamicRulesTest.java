@@ -656,9 +656,9 @@ public class DynamicRulesTest {
             assertThat(results.contains(h9.getObject())).isTrue();
             results.clear();
 
-            ((Person) h3.getObject()).setName( "ed" );
+            ((Person) h3.getObject()).setName("ed");
             session.update( h3,
-                            h3.getObject() );
+                            h3.getObject());
             session.fireAllRules();
 
             assertThat(results.size()).isEqualTo(1);

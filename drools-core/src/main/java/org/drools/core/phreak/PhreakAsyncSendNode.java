@@ -137,7 +137,7 @@ public class PhreakAsyncSendNode {
                            BetaConstraints betaConstraints,
                            Object context ) {
         if (betaConstraints.isAllowedCachedLeft(context, factHandle)) {
-            AsyncMessagesCoordinator.get().propagate( node.getMessageId(), new AsyncMessage( reteEvaluator, factHandle.getObject() ) );
+            AsyncMessagesCoordinator.get().propagate( node.getMessageId(), new AsyncMessage( reteEvaluator, factHandle.getObject() ));
         }
     }
 }

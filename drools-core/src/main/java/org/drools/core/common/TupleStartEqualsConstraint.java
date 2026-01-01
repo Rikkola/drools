@@ -96,7 +96,7 @@ public class TupleStartEqualsConstraint
                                        final FactHandle handle) {
         // object MUST be a ReteTuple
         int size = ((TupleStartEqualsConstraintContextEntry) context).compareSize;
-        final Tuple tuple = ((Tuple) handle.getObject()).getSubTuple( size );
+        final Tuple tuple = ((Tuple) handle.getObject()).getSubTuple(size);
         return ((TupleStartEqualsConstraintContextEntry) context).leftTuple.getSubTuple(size).equals(tuple);
     }
 

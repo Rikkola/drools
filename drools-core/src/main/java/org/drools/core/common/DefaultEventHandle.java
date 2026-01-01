@@ -210,7 +210,7 @@ public class DefaultEventHandle extends DefaultFactHandle implements EventHandle
     public DefaultEventHandle clone() {
         DefaultEventHandle clone = new DefaultEventHandle(getId(),
                                                           getIdentityHashCode(),
-                                                          getObject(),
+                                                          this.getObject(),
                                                           getRecency(),
                                                           getStartTimestamp(),
                                                           getDuration(),
@@ -227,7 +227,7 @@ public class DefaultEventHandle extends DefaultFactHandle implements EventHandle
     private DefaultEventHandle cloneWithoutTuples() {
         DefaultEventHandle clone = new DefaultEventHandle(getId(),
                                                           getIdentityHashCode(),
-                                                          getObject(),
+                                                          this.getObject(),
                                                           getRecency(),
                                                           getStartTimestamp(),
                                                           getDuration(),
@@ -248,7 +248,7 @@ public class DefaultEventHandle extends DefaultFactHandle implements EventHandle
     }
 
     public void quickCloneUpdate(DefaultFactHandle clone) {
-        clone.setObject( getObject() );
+        clone.setObject(this.getObject());
         clone.setRecency( getRecency() );
         clone.setEqualityKey( getEqualityKey() );
 

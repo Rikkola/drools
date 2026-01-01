@@ -541,7 +541,7 @@ public class NamedEntryPoint implements InternalWorkingMemoryEntryPoint, Propert
 
     public void removeFromObjectStore(InternalFactHandle handle) {
         this.objectStore.removeHandle( handle );
-        ObjectTypeConf typeConf = getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getObject() );
+        ObjectTypeConf typeConf = getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getObject());
         deleteFromTMS( handle, handle.getEqualityKey(), typeConf, null );
     }
 
