@@ -21,6 +21,7 @@ package org.drools.core.reteoo;
 import java.util.Collections;
 
 import org.drools.base.base.ClassObjectType;
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.BiLinearBetaConstraints;
@@ -73,6 +74,7 @@ public class BiLinearNetworkSimulationTest {
     public void setupBiLinearNetwork() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         buildContext = new BuildContext(kBase, Collections.emptyList());
+        buildContext.setRule(new RuleImpl("test"));
     }
     
     @Test

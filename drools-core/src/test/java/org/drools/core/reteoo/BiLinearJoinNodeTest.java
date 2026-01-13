@@ -20,6 +20,7 @@ package org.drools.core.reteoo;
 
 import java.util.Collections;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.common.BiLinearBetaConstraints;
 import org.drools.core.common.EmptyBetaConstraints;
@@ -39,7 +40,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeConstruction() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         // Create mock sources for the two left inputs
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
@@ -68,7 +70,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeObjectCount() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         // Create mock sources with known object counts
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         firstLeftSource.setObjectCount(2); // Simulates 2 objects in first network
@@ -97,7 +100,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeWithDeclarationContext() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
         final MockObjectSource objectSource = new MockObjectSource(3);
@@ -131,7 +135,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeConstraintWrapping() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
         final MockObjectSource objectSource = new MockObjectSource(3);
@@ -158,7 +163,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeSecondInputUpdate() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
         final MockTupleSource newSecondLeftSource = new MockTupleSource(6, buildContext);
@@ -186,7 +192,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearTupleCreation() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
         final MockObjectSource objectSource = new MockObjectSource(3);
@@ -225,7 +232,8 @@ public class BiLinearJoinNodeTest {
     public void testBiLinearJoinNodeToString() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         final MockTupleSource firstLeftSource = new MockTupleSource(1, buildContext);
         final MockTupleSource secondLeftSource = new MockTupleSource(2, buildContext);
         final MockObjectSource objectSource = new MockObjectSource(3);

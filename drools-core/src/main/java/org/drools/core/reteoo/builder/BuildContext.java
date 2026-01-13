@@ -216,21 +216,7 @@ public class BuildContext implements RuleBuildContext {
     }
 
     public int getNextMemoryId() {
-        org.drools.core.reteoo.ReteooBuilder.IdGenerator generator = ruleBase.getReteooBuilder().getMemoryIdsGenerator();
-        int memoryId = generator.getNextId();
-        
-        // CRITICAL FIX: Ensure regular memory IDs never conflict with BiLinear reserved range (1-10)
-        // If the generator returns an ID in the reserved range, skip to the safe range (11+)
-        if (memoryId <= 10) {
-            // Advance generator to safe range (11+)
-            while (generator.getLastId() < 11) {
-                generator.getNextId();
-            }
-            // Get the first safe ID
-            memoryId = generator.getNextId();
-        }
-        
-        return memoryId;
+        return ruleBase.getReteooBuilder().getMemoryIdsGenerator().getNextId();
     }
 
     // Global reservation counter for BiLinear nodes (the only shared nodes that can have memory ID collisions)
@@ -241,48 +227,21 @@ public class BuildContext implements RuleBuildContext {
     
     /**
      * Gets next reserved memory ID for BiLinearJoinNode with rule-specific isolation
-     * CRITICAL FIX: Each rule gets its own memory context to prevent contamination
      */
     public int getNextBiLinearMemoryId() {
-        String ruleName = getCurrentRuleName();
-        
-        if (ruleName != null && !ruleName.isEmpty()) {
-            // Rule-specific memory ID - prevents cross-rule contamination
-            return ruleSpecificBiLinearMemoryIds.computeIfAbsent(ruleName, 
+        String ruleName = rule.getName();
+
+        // TODO Memory Ids Generator for Bilinear Memory IDs? Or merge the two?
+
+        return ruleSpecificBiLinearMemoryIds.computeIfAbsent(ruleName,
                 k -> getNextGlobalBiLinearMemoryId());
-        } else {
-            // Fallback to global counter for rules without names
-            return getNextGlobalBiLinearMemoryId();
-        }
     }
-    
-    /**
-     * Global BiLinear memory ID allocation (legacy behavior)
-     */
+
     private int getNextGlobalBiLinearMemoryId() {
         if (biLinearMemoryIdCounter > 10) {
             biLinearMemoryIdCounter = 1;
         }
         return biLinearMemoryIdCounter++;
-    }
-    
-    /**
-     * Gets current rule name for memory isolation
-     */
-    private String getCurrentRuleName() {
-        if (rule != null) {
-            return rule.getName();
-        }
-        // Try to get from build stack
-        if (buildstack != null && !buildstack.isEmpty()) {
-            for (org.drools.base.rule.RuleConditionElement element : buildstack) {
-                if (element instanceof org.drools.base.rule.GroupElement) {
-                    // This is a simplified approach - in practice we'd need rule context
-                    break;
-                }
-            }
-        }
-        return null;
     }
 
     /**

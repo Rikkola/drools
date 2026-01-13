@@ -18,6 +18,7 @@
  */
 package org.drools.core.reteoo;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.common.EmptyBetaConstraints;
 import org.drools.core.impl.InternalRuleBase;
@@ -44,6 +45,7 @@ public class BiLinearNodeConstructionTest {
     void setUp() {
         ruleBase = RuleBaseFactory.newRuleBase();
         buildContext = new BuildContext(ruleBase, Collections.emptyList());
+        buildContext.setRule(new RuleImpl("test"));
         nodeFactory = new PhreakNodeFactory();
     }
 

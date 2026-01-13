@@ -383,17 +383,13 @@ public class ReteooBuilder
     public static class IdGenerator implements Externalizable {
 
         private static final long serialVersionUID = 510l;
-        private static final int DEFAULT_FIRST_ID = 11;
+        private static final int FIRST_ID = 11;
 
         private Queue<Integer>    recycledIds;
         private int               nextId;
 
         public IdGenerator() {
-            this(DEFAULT_FIRST_ID);
-        }
-
-        public IdGenerator(final int firstId) {
-            this.nextId = firstId;
+            this.nextId = FIRST_ID;
             this.recycledIds = new ArrayDeque<>();
         }
 

@@ -20,6 +20,7 @@ package org.drools.core.reteoo;
 
 import java.util.Collections;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.BiLinearBetaConstraints;
@@ -42,7 +43,8 @@ public class BiLinearJoinNodeIntegrationTest {
     public void testBiLinearJoinNodeConstructorCompatibility() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         // Create mock sources similar to BiLinearNetworkTest
         final LeftTupleSource joinNodeABC = new MockTupleSource(1, buildContext);
         final LeftTupleSource cLiaNode = new MockTupleSource(2, buildContext);
@@ -88,7 +90,8 @@ public class BiLinearJoinNodeIntegrationTest {
     public void testBiLinearJoinNodeWithRealConstraints() {
         InternalRuleBase kBase = RuleBaseFactory.newRuleBase();
         BuildContext buildContext = new BuildContext(kBase, Collections.emptyList());
-        
+        buildContext.setRule(new RuleImpl("test"));
+
         // Create the sources
         final LeftTupleSource joinNodeABC = new MockTupleSource(1, buildContext);
         final LeftTupleSource cLiaNode = new MockTupleSource(2, buildContext);

@@ -18,6 +18,7 @@
  */
 package org.drools.core.phreak;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.BiLinearBetaConstraints;
 import org.drools.core.common.EmptyBetaConstraints;
@@ -58,6 +59,7 @@ public class PhreakBiLinearJoinNodeTest {
         MockitoAnnotations.openMocks(this);
         ruleBase = RuleBaseFactory.newRuleBase();
         buildContext = new BuildContext(ruleBase, Collections.emptyList());
+        buildContext.setRule(new RuleImpl("test"));
     }
 
     @Test
