@@ -1,6 +1,5 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
 import org.drools.api.data.DataProcessor;
 import org.drools.base.base.ObjectType;
 

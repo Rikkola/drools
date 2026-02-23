@@ -24,9 +24,6 @@ import org.drools.core.TupleImpl;
 import org.drools.core.TupleMemory;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.LinkedList;
-import org.drools.core.util.SingleLinkedNode;
-
-import java.io.Serializable;
 
 public class TupleList<T> extends LinkedList<TupleImpl<T>> implements TupleMemory<T> {
 
@@ -37,7 +34,7 @@ public class TupleList<T> extends LinkedList<TupleImpl<T>> implements TupleMemor
     public TupleList() {
     }
 
-    public TupleList( TupleImpl<T> first, TupleImpl<T> last, int size ) {
+    public TupleList(TupleImpl<T> first, TupleImpl<T> last, int size) {
         super(first, last, size);
     }
 
@@ -63,7 +60,7 @@ public class TupleList<T> extends LinkedList<TupleImpl<T>> implements TupleMemor
     public TupleImpl<T> get(final InternalDataHandle<T> handle) {
         TupleImpl<T> current = getFirst();
         while ( current != null ) {
-            if ( handle == current.getFactHandle() ) {
+            if ( handle == current.getObjectHandle() ) {
                 return current;
             }
             current = current.getNext();
@@ -117,9 +114,9 @@ public class TupleList<T> extends LinkedList<TupleImpl<T>> implements TupleMemor
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        FastIterator<TupleImpl<T>> it = super.fastIterator();
-        for ( TupleImpl<T> tuple = getFirst(); tuple != null; tuple = it.next(tuple) ) {
+        StringBuilder              builder = new StringBuilder();
+        FastIterator<TupleImpl<T>> it      = super.fastIterator();
+        for (TupleImpl<T> tuple = getFirst(); tuple != null; tuple = it.next(tuple) ) {
             builder.append(tuple).append("\n");
         }
 
@@ -129,7 +126,7 @@ public class TupleList<T> extends LinkedList<TupleImpl<T>> implements TupleMemor
     protected void copyStateInto(TupleList<T> other) {
         super.copyStateInto(other);
 
-        for ( TupleImpl<T> current = getFirst(); current != null; current = current.getNext() ) {
+        for (TupleImpl<T> current = getFirst(); current != null; current = current.getNext() ) {
             current.setMemory(other);
         }
     }

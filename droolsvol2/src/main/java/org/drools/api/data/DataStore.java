@@ -26,32 +26,32 @@ public interface DataStore<T> extends DataSource<T> {
 
     /**
      * Add an object to this DataStore.
-     * @return The {@link DataHandle} to be further modified
+     * @return The {@link ObjectHandle} to be further modified
      */
-    DataHandle<T> add(T object);
+    ObjectHandle<T> add(T object);
 
     /**
-     * Updates the fact for which the given {@link DataHandle} was assigned with the new
+     * Updates the fact for which the given {@link ObjectHandle} was assigned with the new
      * fact set as the second parameter in this method.
      * It is also possible to optionally specify the set of properties that have been modified.
      *
      * @param handle the FactHandle for the fact to be updated.
      * @param object the new value for the fact being updated.
      */
-    void update(DataHandle<T> handle, T object);
+    void update(ObjectHandle<T> handle, T object);
 
     /**
-     * Deletes the fact for which the given {@link DataHandle} was assigned.
+     * Deletes the fact for which the given {@link ObjectHandle} was assigned.
      *
      * @param handle the handle whose fact is to be retracted.
      */
-    void remove(DataHandle<T> handle);
+    void remove(ObjectHandle<T> handle);
 
     /**
      * Deletes a fact from this DataStore.
      */
     void remove(T object);
 
-    DataHandle lookup(T object);
+    ObjectHandle lookup(T object);
 
 }

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-public abstract class AbstractDataSource<T> implements DataSource<T> {
-
+public abstract class AbstractDataSource<T> extends BaseNode implements DataSource<T> {
+    public AbstractDataSource(int id) {
+        super(id, 0, -1);
+    }
 }

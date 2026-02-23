@@ -37,8 +37,6 @@ public class DataHandleImpl implements DataHandle {
     protected int         objectHashCode;
     protected int identityHashCode;
 
-    protected EntryPointId entryPointId;
-
     private boolean disconnected;
 
     private boolean valid = true;
@@ -75,11 +73,16 @@ public class DataHandleImpl implements DataHandle {
         return Objects.hash(id);
     }
 
+
     @Override
     public String toString() {
-        return "DataHandleImpl{" +
-                "id=" + id +
-                ", object=" + object +
-                '}';
+        return "DataHandleImpl[" +
+               "id=" + id +
+               ", object=" + object +
+               ", recency=" + recency +
+               ", objectHashCode=" + objectHashCode +
+               ", identityHashCode=" + identityHashCode +
+               ", valid=" + valid +
+               ']';
     }
 }

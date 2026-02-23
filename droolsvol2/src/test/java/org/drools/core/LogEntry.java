@@ -1,5 +1,5 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 
-public record LogEntry<T>(int index, String action, DataHandle<T> handle, Object object) {}
+public record LogEntry<T>(int index, String action, ObjectHandle<T> handle, Object object) {}

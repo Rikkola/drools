@@ -400,9 +400,9 @@ public class LinkedList<T extends DoubleLinkedNode<T>>
     }
 
     // All the tuples except for TMS are AbstractTuple
-    public static class LinkedListFastIterator implements FastIterator<TupleImpl> {
+    public static class LinkedListFastIterator<T> implements FastIterator<TupleImpl<T>> {
 
-        public TupleImpl next(TupleImpl object) {
+        public TupleImpl<T> next(TupleImpl<T> object) {
             return object.getNext();
         }
         

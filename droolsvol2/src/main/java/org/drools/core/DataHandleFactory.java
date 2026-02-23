@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -23,8 +23,8 @@ public class DataHandleFactory {
         counter = 0;
     }
 
-    public DataHandle newDataHandle(Object object) {
-        return new DataHandleImpl(idGen.getNextId(), object);
+    public ObjectHandle newDataHandle(Object object, NetworkNode node) {
+        return new ObjectHandleImpl(idGen.getNextId(), object, node);
     }
 
     public long getCurrentId() {

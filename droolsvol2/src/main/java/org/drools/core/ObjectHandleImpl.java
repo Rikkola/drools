@@ -19,23 +19,35 @@
 package org.drools.core;
 
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 
-public class DataHandleImpl<T> implements DataHandle<T> {
+public class ObjectHandleImpl<T> extends TupleImpl<T> implements ObjectHandle<T> {
 
     private final long id;
     private T object;
     private int hashCode;
 
-    public DataHandleImpl(long id, T object, int hashCode) {
+    public ObjectHandleImpl(long id, T object, int hashCode, NetworkNode node) {
+        super(node);
         this.id = id;
         this.object = object;
     }
 
-    public DataHandleImpl(long id, T object) {
+    public ObjectHandleImpl(long id, T object, NetworkNode node) {
+        super(node);
         this.id = id;
         this.object = object;
         this.hashCode = object.hashCode();
+    }
+
+    @Override
+    public TupleImpl getParent() {
+        return null; // ObjectHandle's are root and have no parent
+    }
+
+    @Override
+    public TupleImpl getNextParentWithHandle() {
+        return this;
     }
 
     @Override
@@ -44,12 +56,16 @@ public class DataHandleImpl<T> implements DataHandle<T> {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        DataHandleImpl that = (DataHandleImpl) o;
+        ObjectHandleImpl that = (ObjectHandleImpl) o;
         return id == that.id;
     }
 
     @Override
     public T getObject() {
+        return object;
+    }
+
+    public T get() {
         return object;
     }
 
@@ -68,10 +84,21 @@ public class DataHandleImpl<T> implements DataHandle<T> {
 
     @Override
     public String toString() {
-        return "DataHandleImpl{" +
-                "id=" + id +
-                ", object=" + object +
-                '}';
+        return "ObjectHandleImpl[" +
+               "id=" + id +
+               ", object=" + object +
+               ", hashCode=" + hashCode +
+               ']';
+    }
+
+    @Override
+    public ObjectHandle<T> getObjectHandle() {
+        return this;
+    }
+
+    @Override
+    public ObjectHandle getHandle() {
+        return this;
     }
 
     @Override
@@ -104,11 +131,27 @@ public class DataHandleImpl<T> implements DataHandle<T> {
         return "";
     }
 
-    public void removeLeftTuple(TupleImpl<T> tuple) {
+    public void removeLeftTuple(TupleImpl<T> t) {
 
     }
 
-    public void addLastLeftTuple(TupleImpl<T> tTuple) {
+    public void addLeftTuple(TupleImpl<T> t) {
+        if (getLastChild() != null ) {
+            TupleImpl<T> lastChild = getLastChild();
+            lastChild.setLeftNext( t );
+        } else {
+            setFirstChild(t);
+        }
+        setLastChild(t);
+    }
 
+    @Override
+    public boolean hasLeftParent() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRightParent() {
+        return false;
     }
 }

@@ -1,89 +1,108 @@
 package org.drools.core;
 
+import org.drools.core.TupleUtil.DynamicInvocationHandler;
 import org.drools.core.function.LinearTuplePredicateCache;
-import org.drools.core.function.Predicate1;
-import org.drools.core.function.Predicate2;
-import org.drools.core.function.Predicate3;
-import org.drools.core.function.Predicate4;
-import org.drools.core.function.Predicate5;
+import org.drools.core.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LinearTuplePredicateCacheTest {
+    private char[] letters = TupleUtil.getAlphabet();
 
     @Test
-    public void test1() {
-        TupleImpl<B> b = rootTuple(new B("b1"));
-        TupleImpl<C> c = rightTuple(new C("c1"));
-        TupleImpl<D> d = rightTuple(new D("d1"));
-        TupleImpl<E> e = rightTuple(new E("e1"));
+    public void testExecutionCacheLeft() throws Exception {
+        List<TupleImpl<?>> objects = new ArrayList<>();
+        List<TupleImpl<?>> joins = new ArrayList<>();
 
-        TupleImpl<C> bc = joinTuple(b, c);
-        TupleImpl<D> bcd = joinTuple(bc, d);
+        for(int i = 1; i < 10; i++) {
+            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1));
+        }
 
-        record DS() {}
+        joins.add(objects.get(0));
 
-        LinearTuplePredicateCache cache    = new LinearTuplePredicateCache();
-        final List<String>              recorder = new ArrayList<>();
-        cache.setLeft(b, (Predicate3<Context<DS>, B, C>) (ctx, p1, p2) -> recorder.add(p1.name() + ":" + p2.name()));
-        cache.applyRight(new ContextPojoDS(new DS()), c);
-        cache.clear();
-        assertThat(recorder).containsExactly("b1:c1");
+        for(int i = 1; i < 9; i++) {
+            joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i));
+        }
 
-        recorder.clear();
-        cache.setLeft(bc, (Predicate4<Context<DS>, B, C, D>) (ctx, p1, p2, p3) -> recorder.add(p1.name() + ":" + p2.name() + ":" + p3.name()));
-        cache.applyRight(new ContextPojoDS(new DS()), d);
-        cache.clear();
-        assertThat(recorder).containsExactly("b1:c1:d1");
+        for ( int i = 3; i < 10; i++ ) {
+            Class cls = Class.forName(Predicate.class.getName() + (i));
 
-        recorder.clear();
-        cache.setLeft(bcd, (Predicate5<Context<DS>, B, C, D, E>) (ctx, p1, p2, p3, p4) -> recorder.add(p1.name() + ":" + p2.name() + ":" +
-                                                                                                                               p3.name() + ":" + p4.name()));
-        cache.applyRight(new ContextPojoDS(new DS()), e);
-        cache.clear();
-        assertThat(recorder).containsExactly("b1:c1:d1:e1");
+            final List<String> recorder = new ArrayList<>();
+            Predicate proxy =  (Predicate) Proxy.newProxyInstance(
+                    LinearTuplePredicateCacheTest.class.getClassLoader(),
+                    new Class[] { cls },
+                    new DynamicInvocationHandler(recorder, i));
 
-    }
+            LinearTuplePredicateCache cache    = new LinearTuplePredicateCache(proxy);
+            cache.setLeft(joins.get(i-2));
+            cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), objects.get(i-2));
 
-    private static int counter;
-    public <T> TupleImpl<T> rootTuple(T o) {
-        return new LeftTuple(new DataHandleImpl<>(counter++, o), new Sink() {
-            @Override
-            public char[] getId() {
-                return new char[0];
+            Object[] args = new Object[i];
+            String s = "Predicate" + i + ".test ctx, ";
+            for ( int j = 1; j < args.length; j++ ) {
+                args[j] = Character.toString(letters[j]);
+                s = s + args[j];
+                if (j < args.length - 1) {
+                    s = s + ", ";
+                }
             }
-        }, true);
+
+            assertThat(recorder).containsExactly(s);
+
+            recorder.clear();
+            cache.clear();
+        }
     }
 
-    public <T> TupleImpl<T> rightTuple(T o) {
-        return new RightTuple(new DataHandleImpl<>(counter++, o), new Sink() {
-            @Override
-            public char[] getId() {
-                return new char[0];
+    @Test
+    public void testExecutionCacheRight() throws Exception {
+        List<TupleImpl<?>> objects = new ArrayList<>();
+        List<TupleImpl<?>> joins = new ArrayList<>();
+
+        for(int i = 1; i < 10; i++) {
+            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1));
+        }
+
+        joins.add(objects.get(0));
+
+        for(int i = 1; i < 9; i++) {
+            joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i));
+        }
+
+        for ( int i = 3; i < 10; i++ ) {
+            Class cls = Class.forName(Predicate.class.getName() + (i));
+
+            final List<String> recorder = new ArrayList<>();
+            Predicate proxy =  (Predicate) Proxy.newProxyInstance(
+                    LinearTuplePredicateCacheTest.class.getClassLoader(),
+                    new Class[] { cls },
+                    new DynamicInvocationHandler(recorder, i));
+
+            LinearTuplePredicateCache cache    = new LinearTuplePredicateCache(proxy);
+
+            cache.setRight(objects.get(i-2));
+            cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), joins.get(i-2));
+
+            Object[] args = new Object[i];
+            String s = "Predicate" + i + ".test ctx, ";
+            for ( int j = 1; j < args.length; j++ ) {
+                args[j] = Character.toString(letters[j]);
+                s = s + args[j];
+                if (j < args.length - 1) {
+                    s = s + ", ";
+                }
             }
-        }, true);
+
+            assertThat(recorder).containsExactly(s);
+
+            recorder.clear();
+            cache.clear();
+        }
     }
 
-    public <T1, T2> TupleImpl<T2> joinTuple(TupleImpl <T1> leftTuple, TupleImpl<T2> rightTuple) {
-        return new LeftTuple(leftTuple, rightTuple, new Sink() {
-            @Override
-            public char[] getId() {
-                return new char[0];
-            }
-        });
-    }
-
-    record B(String name) {}
-
-    record C(String name) {}
-
-    record D(String name) {}
-
-    record E(String name) {}
-
-    record F(String name) {}
 }

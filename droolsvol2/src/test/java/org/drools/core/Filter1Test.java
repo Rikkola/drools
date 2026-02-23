@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataStore;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,7 @@ public class Filter1Test {
 
     @Test
     public void testPropagation() {
-        PropagatingDataStore<Person> persons = new PropagatingDataStore(new TypeIndexer<>());
+        PropagatingDataStore<Person> persons = new PropagatingDataStore(0, new TypeIndexer<>());
 
         Filter1<DataStore<Person>, Person> f1 = new Filter1<>((ctx, p) -> p.age() > 0) {};
         persons.subscribe(f1);
@@ -21,7 +21,7 @@ public class Filter1Test {
         List<LogEntry> list = recorder.getLog();
         f1.subscribe(recorder);
 
-        DataHandle<Person> h1 = persons.add(new Person("Darth", 100, "London"));
+        ObjectHandle<Person> h1 = persons.add(new Person("Darth", 100, "London"));
         assertThat(list).hasSize(1);
         assertThat(list.get(0).action()).isEqualTo("add");
         assertThat(list.get(0).object()).isSameAs(h1.getObject());

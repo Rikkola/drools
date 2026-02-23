@@ -1,13 +1,8 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
-import org.drools.api.data.DataProcessor;
 import org.drools.api.data.DataSource;
-import org.drools.api.data.DataStore;
-import org.drools.api.data.DataStream;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ContextMapDS extends AbstractContext<Map<String, DataSource<?>>>

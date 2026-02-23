@@ -93,4 +93,5 @@ public class LeftTuple
     public boolean isLeftTuple() {
         return true;
     }
+
 }

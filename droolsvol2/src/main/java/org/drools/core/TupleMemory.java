@@ -64,11 +64,11 @@ public interface TupleMemory<T> {
         return getFirst();
     }
     
-    void removeAdd(TupleImpl<T> tuple );
+    void removeAdd(TupleImpl<T> tuple);
 
-    void add(TupleImpl<T> tuple );
+    void add(TupleImpl<T> tuple);
 
-    void remove(TupleImpl<T> tuple );
+    void remove(TupleImpl<T> tuple);
 
     boolean isIndexed();
 
@@ -89,7 +89,7 @@ public interface TupleMemory<T> {
      * @param tuple
      * @return
      */
-    FastIterator<TupleImpl<T>> fullFastIterator(TupleImpl<T> tuple );
+    FastIterator<TupleImpl<T>> fullFastIterator(TupleImpl<T> tuple);
 
     IndexType getIndexType();
 

@@ -1,12 +1,9 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataProcessor;
-import org.drools.api.data.DataSource;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractContext<DS> implements Context<DS> {
 
@@ -26,7 +23,7 @@ public abstract class AbstractContext<DS> implements Context<DS> {
     }
 
     @Override
-    public <T, K extends T> List<DataProcessor<DS, K>> getDataProcessorsByTypeAssignment(DataHandle<T> handle) {
+    public <T, K extends T> List<DataProcessor<DS, K>> getDataProcessorsByTypeAssignment(ObjectHandle<T> handle) {
         return typeIndexer.getDataProcessorsByTypeAssignment(handle.getObject().getClass());
     }
 

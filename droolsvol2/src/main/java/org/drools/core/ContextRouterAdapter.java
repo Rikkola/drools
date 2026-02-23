@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataProcessor;
 
 public class ContextRouterAdapter<I, O, T> implements DataProcessor<I, T> {
@@ -14,17 +14,17 @@ public class ContextRouterAdapter<I, O, T> implements DataProcessor<I, T> {
     }
 
     @Override
-    public void add(Context<I> ctx, DataHandle<T> handle) {
+    public void add(Context<I> ctx, ObjectHandle<T> handle) {
         router.add(index, handle);
     }
 
     @Override
-    public void update(Context<I> ctx, DataHandle<T> handle) {
+    public void update(Context<I> ctx, ObjectHandle<T> handle) {
         router.update(index, handle);
     }
 
     @Override
-    public void remove(Context<I> ctx, DataHandle<T> handle) {
+    public void remove(Context<I> ctx, ObjectHandle<T> handle) {
         router.remove(index, handle);
     }
 }

@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataProcessor;
 
 import java.util.ArrayList;
@@ -39,19 +39,19 @@ public class Router<DS> {
         processors.get(index).add(dataProcessor);
     }
 
-    public <T> void add(int index, DataHandle handle) { // lose the Generics, so handle can be used for any type
+    public <T> void add(int index, ObjectHandle handle) { // lose the Generics, so handle can be used for any type
         contexts.forEach(ctx -> {
             processors.get(index).forEach( dp -> dp.add(ctx, handle));
         });
     }
 
-    public void update(int index, DataHandle handle) { // lose the Generics, so handle can be used for any type
+    public void update(int index, ObjectHandle handle) { // lose the Generics, so handle can be used for any type
         contexts.forEach(ctx -> {
             processors.get(index).forEach( dp -> dp.update(ctx, handle));
         });
     }
 
-    public void remove(int index, DataHandle handle) { // lose the Generics, so handle can be used for any type
+    public void remove(int index, ObjectHandle handle) { // lose the Generics, so handle can be used for any type
         contexts.forEach(ctx -> {
             processors.get(index).forEach( dp -> dp.remove(ctx, handle));
         });

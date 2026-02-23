@@ -18,208 +18,34 @@
  */
 package org.drools.core;
 
+import org.drools.api.data.ObjectHandle;
 import org.drools.base.rule.Declaration;
-import org.drools.core.util.DoubleLinkedNode;
-import org.drools.core.util.index.TupleList;
+import org.drools.core.util.AbstractDoubleLinkedNode;
 import org.kie.api.runtime.rule.FactHandle;
 
-import java.util.Arrays;
-
-public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { //Tuple<TupleImpl<T>> {
+public class TupleImpl<T> extends AbstractDoubleLinkedNode<TupleImpl<T>> { //Tuple<TupleImpl<T>> {
     private static final long          serialVersionUID = 540l;
-
-    private            int           index;
-
-    protected DataHandleImpl<T> handle;
-
-    /**
-     * The parent we retrieve data from, this might be different to the linked LeftParent, if the leftParent has no data
-     */
-    private TupleImpl parent;
-
-    /**
-     * The left parent linked list
-     */
-    private TupleImpl leftParent;
-    private TupleImpl handlePrevious;
-    private TupleImpl handleNext;
-
-    /**
-     * The right parent linked list
-     */
-    private TupleImpl rightParent;
-    private TupleImpl rightParentPrevious;
-    private TupleImpl rightParentNext;
 
     /**
      * The children linked list
      */
-    private TupleImpl               firstChild;
-    private TupleImpl               lastChild;
+    private TupleImpl firstChild;
+    private TupleImpl lastChild;
 
-    /**
-     * Node memory linked list
-     */
-    private TupleImpl<T> previous;
-    private TupleImpl<T> next;
+    private NetworkNode node;
 
-    private Object contextObject;
-
-    private PropagationContext propagationContext;
-
-    private Sink sink;
-
-    private boolean expired;
-
-    // node memory
-    protected TupleList memory;
-
+    private TupleMemory<T> memory;
 
     public TupleImpl() {
         // constructor needed for serialisation
     }
 
-    public TupleImpl(DataHandleImpl<T> handle,
-                     Sink sink,
-                     boolean leftTupleMemoryEnabled) {
-        setSink(sink);
-        this.handle = handle;
-        if ( leftTupleMemoryEnabled ) {
-            handle.addLastLeftTuple( this );
-        }
-    }
-
-    public TupleImpl(DataHandleImpl<T> factHandle,
-                     TupleImpl leftTuple,
-                     Sink sink) {
-        setSink(sink);
-        this.handle = factHandle;
-        this.index = leftTuple.getIndex() + 1;
-        this.parent = leftTuple.getNextParentWithHandle();
-        this.leftParent = leftTuple;
-    }
-
-    public TupleImpl(TupleImpl leftTuple,
-                     Sink sink,
-                     PropagationContext pctx,
-                     boolean leftTupleMemoryEnabled) {
-        setSink(sink);
-        this.index = leftTuple.getIndex() + 1;
-        this.parent = leftTuple.getNextParentWithHandle();
-        this.leftParent = leftTuple;
-        setPropagationContext( pctx );
-
-        if ( leftTupleMemoryEnabled ) {
-            if ( leftTuple.getLastChild() != null ) {
-                this.handlePrevious = leftTuple.getLastChild();
-                this.handlePrevious.setHandleNext( this );
-            } else {
-                leftTuple.setFirstChild( this );
-            }
-            leftTuple.setLastChild( this );
-        }
-    }
-
-    public TupleImpl(TupleImpl leftTuple,
-                     TupleImpl<T> rightTuple,
-                     Sink sink) {
-        setSink(sink);
-        this.index = leftTuple.getIndex() + 1;
-        this.parent = leftTuple.getNextParentWithHandle();
-        this.leftParent = leftTuple;
-        this.rightParent = rightTuple;
-
-        this.handle = rightTuple.getFactHandle();
-        setPropagationContext( rightTuple.getPropagationContext() );
-
-        // insert at the end of the list
-        if ( leftTuple.getLastChild() != null ) {
-            this.handlePrevious = leftTuple.getLastChild();
-            this.handlePrevious.setHandleNext( this );
-        } else {
-            leftTuple.setFirstChild( this );
-        }
-        leftTuple.setLastChild( this );
-
-        // insert at the end of the list
-        if ( rightTuple.getLastChild() != null ) {
-            this.rightParentPrevious = rightTuple.getLastChild();
-            this.rightParentPrevious.setRightParentNext( this );
-        } else {
-            rightTuple.setFirstChild( this );
-        }
-        rightTuple.setLastChild( this );
-    }
-
-    public TupleImpl(TupleImpl leftTuple,
-                     TupleImpl<T> rightTuple,
-                     TupleImpl currentLeftChild,
-                     TupleImpl<T> currentRightChild,
-                     Sink sink,
-                     boolean leftTupleMemoryEnabled) {
-        setSink(sink);
-        this.handle = rightTuple.getFactHandle();
-        this.index = leftTuple.getIndex() + 1;
-        this.parent = leftTuple.getNextParentWithHandle();
-        this.leftParent = leftTuple;
-        this.rightParent = rightTuple;
-        setPropagationContext( rightTuple.getPropagationContext() );
-
-        if ( leftTupleMemoryEnabled ) {
-            if( currentLeftChild == null ) {
-                // insert at the end of the list
-                if ( leftTuple.getLastChild() != null ) {
-                    this.handlePrevious = leftTuple.getLastChild();
-                    this.handlePrevious.setHandleNext( this );
-                } else {
-                    leftTuple.setFirstChild( this );
-                }
-                leftTuple.setLastChild( this );
-            } else {
-                // insert before current child
-                this.handleNext = currentLeftChild;
-                this.handlePrevious = currentLeftChild.getHandlePrevious();
-                currentLeftChild.setHandlePrevious( this );
-                if( this.handlePrevious == null ) {
-                    this.leftParent.setFirstChild( this  );
-                } else {
-                    this.handlePrevious.setHandleNext( this );
-                }
-            }
-
-            if( currentRightChild == null ) {
-                // insert at the end of the list
-                if ( rightTuple.getLastChild() != null ) {
-                    this.rightParentPrevious = rightTuple.getLastChild();
-                    this.rightParentPrevious.setRightParentNext( this );
-                } else {
-                    rightTuple.setFirstChild( this );
-                }
-                rightTuple.setLastChild( this );
-            } else {
-                // insert before current child
-                this.rightParentNext = currentRightChild;
-                this.rightParentPrevious = currentRightChild.getRightParentPrevious();
-                currentRightChild.setRightParentPrevious( this );
-                if( this.rightParentPrevious == null ) {
-                    this.rightParent.setFirstChild( this );
-                } else {
-                    this.rightParentPrevious.setRightParentNext( this );
-                }
-            }
-        }
+    public TupleImpl(NetworkNode node) {
+        this.node = node;
     }
 
     public Object getObject(Declaration declaration) {
         return getObject(declaration.getTupleIndex());
-    }
-
-    public Object getContextObject() {
-        return this.contextObject;
-    }
-
-    public final void setContextObject( final Object contextObject ) {
-        this.contextObject = contextObject;
     }
 
     public TupleImpl getFirstChild() {
@@ -239,143 +65,155 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
     }
 
     public TupleImpl getRightParent() {
-        return rightParent;
+        throw new UnsupportedOperationException();
     }
 
-    public void setRightParent(TupleImpl rightParent) {
-        this.rightParent = rightParent;
+    public void setRightParent(TupleImpl rightParent){
+        throw new UnsupportedOperationException();
     }
 
     public TupleImpl getRightParentPrevious() {
-        return rightParentPrevious;
+        throw new UnsupportedOperationException();
     }
 
-    public void setRightParentPrevious(TupleImpl rightParentLeft) {
-        this.rightParentPrevious = rightParentLeft;
+    public void setRightParentPrevious(TupleImpl rightParentPrevious) {
+        throw new UnsupportedOperationException();
     }
 
     public TupleImpl getRightParentNext() {
-        return rightParentNext;
+        throw new UnsupportedOperationException();
     }
 
-    public void setRightParentNext(TupleImpl rightParentRight) {
-        this.rightParentNext = rightParentRight;
+    public void setRightParentNext(TupleImpl rightParentNext){
+        throw new UnsupportedOperationException();
     }
 
     public T get() {
-        return handle.get();
+        throw new UnsupportedOperationException();
     }
 
-    public DataHandleImpl get(int index) {
+    public ObjectHandle get(int index) {
         TupleImpl entry =  this;
-        while ( entry.getIndex() != index) {
+        while ( entry.getNetworkNode().getPathIndex() != index) {
             entry = entry.getParent();
         }
-        return entry.getFactHandle();
+        return entry.getObjectHandle();
     }
 
     public FactHandle[] toFactHandles() {
-        // always use the count of the node that created join (not the sink target)
-        FactHandle[] handles = new FactHandle[((LeftTupleSinkNode)getSink()).getLeftTupleSource().getObjectCount()];
-        TupleImpl    entry   =  skipEmptyHandles();
-        for(int i = handles.length-1; i >= 0; i--) {
-            handles[i] = entry.getFactHandle();
-            entry = entry.getParent();
-        }
-        return handles;
+//        // always use the count of the node that created join (not the sink target)
+//        FactHandle[] handles = new FactHandle[((LeftTupleSinkNode)getSink()).getLeftTupleSource().getObjectCount()];
+//        TupleImpl    entry   =  skipEmptyHandles();
+//        for(int i = handles.length-1; i >= 0; i--) {
+//            handles[i] = entry.getObjectHandle();
+//            entry = entry.getParent();
+//        }
+//        return handles;
+        return null;
     }
 
     public Object[] toObjects(boolean reverse) {
-        // always use the count of the node that created join (not the sink target)
-        Object[]  objs  = new Object[((LeftTupleSinkNode)getSink()).getLeftTupleSource().getObjectCount()];
-        TupleImpl entry =  skipEmptyHandles();
-
-        if (!reverse) {
-            for (int i = objs.length - 1; i >= 0; i--) {
-                objs[i] = entry.getFactHandle().getObject();
-                entry = entry.getParent();
-            }
-        } else {
-            for (int i = 0; i < objs.length; i++) {
-                objs[i] = entry.getFactHandle().getObject();
-                entry = entry.getParent();
-            }
-        }
-
-        return objs;
+//        // always use the count of the node that created join (not the sink target)
+//        Object[]  objs  = new Object[((LeftTupleSinkNode)getSink()).getLeftTupleSource().getObjectCount()];
+//        TupleImpl entry =  skipEmptyHandles();
+//
+//        if (!reverse) {
+//            for (int i = objs.length - 1; i >= 0; i--) {
+//                objs[i] = entry.getObjectHandle().getObject();
+//                entry = entry.getParent();
+//            }
+//        } else {
+//            for (int i = 0; i < objs.length; i++) {
+//                objs[i] = entry.getObjectHandle().getObject();
+//                entry = entry.getParent();
+//            }
+//        }
+//
+//        return objs;
+        return null;
     }
 
     public void clearBlocker() {
         throw new UnsupportedOperationException();
     }
 
-    public void setBlocker(RightTuple blocker) {
+    public void setBlocker(TupleImpl blocker) {
         throw new UnsupportedOperationException();
     }
 
-    public RightTuple getBlocker() {
+    public TupleImpl getBlocker() {
         throw new UnsupportedOperationException();
     }
 
-    public LeftTuple getBlockedPrevious() {
+    public JoinTupleBlockable getBlockedPrevious() {
         throw new UnsupportedOperationException();
     }
 
-    public void setBlockedPrevious(LeftTuple blockerPrevious) {
+    public void setBlockedPrevious(JoinTupleBlockable blockerPrevious) {
         throw new UnsupportedOperationException();
     }
 
-    public LeftTuple getBlockedNext() {
+    public JoinTupleBlockable getBlockedNext() {
         throw new UnsupportedOperationException();
     }
 
-    public void setBlockedNext(LeftTuple blockerNext) {
+    public void setBlockedNext(JoinTupleBlockable blockerNext) {
+        throw new UnsupportedOperationException();
+    }
+
+    public TupleImpl getBlocked() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setBlocked(TupleImpl leftTuple) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void addBlocked(JoinTupleBlockable leftTuple) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void removeBlocked(JoinTupleBlockable leftTuple) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
+        buffer.append(getClass().getSimpleName() + "[");
 
-        TupleImpl entry = skipEmptyHandles();;
+        TupleImpl entry = hasRightParent() ? this : skipEmptyHandles();
+        buffer.append("index=").append(getNetworkNode().getPathIndex()).append(", ");
+        buffer.append("handles=[");
         while ( entry != null ) {
-            //buffer.append( entry.handle );
-            buffer.append(entry.getFactHandle());
+            if (entry.hasRightParent()) {
+                buffer.append(entry.getRightParent());
+            } else {
+                buffer.append(entry.getObjectHandle());
+            }
             if ( entry.getParent() != null ) {
-                buffer.append("\n");
+                buffer.append(", ");
             }
             entry = entry.getParent();
         }
+        buffer.append("]");
+        buffer.append("]");
         return buffer.toString();
     }
 
     @Override
     public int hashCode() {
-        return getFactHandle() == null ? 0 : getFactHandle().hashCode();
+        return getObjectHandle() == null ? 0 : getObjectHandle().hashCode();
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object == this) {
-            return true;
-        }
-
-        TupleImpl other =  (TupleImpl) object;
-
-        // A AbstractTuple is  only the same if it has the same hashCode, factId and parent
-        if ( this.hashCode() != other.hashCode() || getFactHandle() != other.getFactHandle() ) {
-            return false;
-        }
-
-        if ( this.parent == null ) {
-            return (other.getParent() == null);
-        } else {
-            return this.parent.equals( other.getParent() );
-        }
+    public boolean equals(Object o) {
+        TupleImpl<?> tuple = (TupleImpl<?>) o;
+        return node.equals(tuple.node);
     }
 
     public int size() {
-        return this.index + 1;
+        throw new UnsupportedOperationException();
     }
 
     public TupleImpl getSubTuple(final int elements) {
@@ -383,7 +221,7 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
         if ( elements <= this.size() ) {
             final int lastindex = elements - 1;
 
-            while ( entry.getIndex() != lastindex ) {
+            while ( entry.getNetworkNode().getPathIndex() != lastindex ) {
                 // This uses getLeftParent, instead of getParent, as the subnetwork tuple
                 // parent could be any node
                 entry = entry.getParent();
@@ -393,23 +231,24 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
     }
 
     public TupleImpl getParent() {
-        return parent;
+        throw new UnsupportedOperationException();
     }
 
     protected String toExternalString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append( String.format( "%08X", System.identityHashCode( this ) ) ).append( ":" );
-        long[] ids = new long[this.index+1];
-        TupleImpl entry = skipEmptyHandles();;
-        while( entry != null ) {
-            ids[entry.getIndex()] = entry.getFactHandle().getId();
-            entry = entry.getParent();
-        }
-        builder.append(Arrays.toString(ids))
-               .append( " sink=" )
-               .append( this.getSink().getClass().getSimpleName() )
-               .append( "(" ).append( getSink().getId() ).append( ")" );
-        return  builder.toString();
+//        StringBuilder builder = new StringBuilder();
+//        builder.append( String.format( "%08X", System.identityHashCode( this ) ) ).append( ":" );
+//        long[]    ids   = new long[getIndex()+1];
+//        TupleImpl entry = skipEmptyHandles();;
+//        while( entry != null ) {
+//            ids[entry.getIndex()] = entry.getObjectHandle().getId();
+//            entry = entry.getParent();
+//        }
+//        builder.append(Arrays.toString(ids))
+//               .append( " sink=" )
+//               .append( this.getSink().getClass().getSimpleName() )
+//               .append( "(" ).append( getSink().getId() ).append( ")" );
+//        return  builder.toString();
+        return "";
     }
 
     @Override
@@ -417,49 +256,25 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
         this.memory = null;
     }
 
-    public DataHandleImpl<T> getFactHandle() {
-        return handle;
+    public ObjectHandle<T> getObjectHandle() {
+        return null;
     }
 
-    public DataHandleImpl getHandle() {
-        return handle;
+    public ObjectHandle getHandle() {
+        return null;
     }
 
-    public void setFactHandle( DataHandleImpl handle ) {
-        this.handle = handle;
-    }
-
-    public PropagationContext getPropagationContext() {
-        return propagationContext;
-    }
-
-    public void setPropagationContext(PropagationContext propagationContext) {
-        this.propagationContext = propagationContext;
-    }
-
-    public TupleImpl getPrevious() {
-        return previous;
-    }
-
-    public void setPrevious(TupleImpl previous) {
-        this.previous = previous;
-    }
-
-    public TupleImpl getNext() {
-        return next;
-    }
-
-    public void setNext(TupleImpl next) {
-        this.next = next;
+    public void setObjectHandle( ObjectHandle handle) {
+        throw new UnsupportedOperationException();
     }
 
     public FactHandle get(Declaration declaration) {
         return get(declaration.getTupleIndex());
     }
 
-    public TupleImpl getTuple(int index) {
+    public TupleImpl getTuple(int pathIndex) {
         TupleImpl entry = this;
-        while ( entry.getIndex() != index) {
+        while ( entry.getNetworkNode().getPathIndex() != pathIndex) {
             entry = entry.getParent();
         }
         return entry;
@@ -472,204 +287,79 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
     public TupleImpl skipEmptyHandles() {
         // because getParent now only returns a tuple that as an FH, we only need to cheeck the current tuple,
         // and not the parent chain
-        return getFactHandle() == null ? getParent() : this;
+        return getObjectHandle() == null ? getParent() : this;
     }
 
     public TupleImpl getLeftParent() {
-        return leftParent;
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean hasLeftParent() {
+        return false;
+    }
+
+    public boolean hasRightParent() {
+        return false;
     }
 
     public void setLeftParent(TupleImpl leftParent) {
-        this.leftParent = leftParent;
+        throw new UnsupportedOperationException();
     }
 
     public TupleImpl getNextParentWithHandle() {
-        // if parent is null, then we are LIAN
-        return (handle!=null) ? this : parent != null ? parent.getNextParentWithHandle() : this;
+        throw new UnsupportedOperationException();
     }
 
-    public abstract void reAdd();
+    public void reAdd() {
+        throw new UnsupportedOperationException();
+    }
 
     public void reAddLeft() {
-        // The parent can never be the FactHandle (root AbstractTuple) as that is handled by reAdd()
-        // make sure we aren't already at the end
-        if ( this.handleNext != null ) {
-            if ( this.handlePrevious != null ) {
-                // remove the current AbstractTuple from the middle of the chain
-                this.handlePrevious.setHandleNext( this.handleNext );
-                this.handleNext.setHandlePrevious( this.handlePrevious );
-            } else {
-                if( this.leftParent.getFirstChild() == this ) {
-                    // remove the current AbstractTuple from start start of the chain
-                    this.leftParent.setFirstChild( getHandleNext() );
-                }
-                this.handleNext.setHandlePrevious( null );
-            }
-            // re-add to end
-            this.handlePrevious = this.leftParent.getLastChild();
-            this.handlePrevious.setHandleNext( this );
-            this.leftParent.setLastChild( this );
-            this.handleNext = null;
-        }
+        throw new UnsupportedOperationException();
     }
 
     public void reAddRight() {
-        // make sure we aren't already at the end
-        if ( this.rightParentNext != null ) {
-            if ( this.rightParentPrevious != null ) {
-                // remove the current AbstractTuple from the middle of the chain
-                this.rightParentPrevious.setRightParentNext( this.rightParentNext );
-                this.rightParentNext.setRightParentPrevious( this.rightParentPrevious );
-            } else {
-                if( this.rightParent.getFirstChild() == this ) {
-                    // remove the current AbstractTuple from the start of the chain
-                    this.rightParent.setFirstChild( this.rightParentNext );
-                }
-                this.rightParentNext.setRightParentPrevious( null );
-            }
-            // re-add to end
-            this.rightParentPrevious = this.rightParent.getLastChild();
-            this.rightParentPrevious.setRightParentNext( this );
-            this.rightParent.setLastChild( this );
-            this.rightParentNext = null;
-        }
+        throw new UnsupportedOperationException();
     }
 
-    public void unlinkFromLeftParent() {
-        TupleImpl previousParent = getHandlePrevious();
-        TupleImpl nextParent     = getHandleNext();
-
-        if ( previousParent != null && nextParent != null ) {
-            //remove  from middle
-            this.handlePrevious.setHandleNext( nextParent );
-            this.handleNext.setHandlePrevious( previousParent );
-        } else if ( nextParent != null ) {
-            //remove from first
-            if ( this.leftParent != null ) {
-                this.leftParent.setFirstChild( nextParent );
-            } else {
-                // This is relevant to the root node and only happens at rule removal time
-                getFactHandle().removeLeftTuple( this );
-            }
-            nextParent.setHandlePrevious( null );
-        } else if ( previousParent != null ) {
-            //remove from end
-            if ( this.leftParent != null ) {
-                this.leftParent.setLastChild( previousParent );
-            } else {
-                // relevant to the root node, as here the parent is the FactHandle, only happens at rule removal time
-                getFactHandle().removeLeftTuple( this );
-            }
-            previousParent.setHandleNext( null );
-        } else {
-            // single remaining item, no previous or next
-            if( leftParent != null ) {
-                this.leftParent.setFirstChild( null );
-                this.leftParent.setLastChild( null );
-            } else {
-                // it is a root tuple - only happens during rule removal
-                getFactHandle().removeLeftTuple( this );
-            }
-        }
-
-        this.handlePrevious = null;
-        this.handleNext = null;
+    public void removeFromLeftParent() {
+        throw new UnsupportedOperationException();
     }
 
-    public void unlinkFromRightParent() {
-        doUnlinkFromRightParent();
+    public void removeFromRightParent() {
+        throw new UnsupportedOperationException();
     }
 
-    public void doUnlinkFromRightParent() {
-        if ( this.rightParent == null ) {
-            // no right parent;
-            return;
-        }
+    public TupleImpl getLeftPrevious() {
+        throw new UnsupportedOperationException();
+    };
 
-        TupleImpl previousParent = this.rightParentPrevious;
-        TupleImpl nextParent     = this.rightParentNext;
+    public void setLeftPrevious(TupleImpl leftPrevious){
+        throw new UnsupportedOperationException();
+    };
 
-        if ( previousParent != null && nextParent != null ) {
-            // remove from middle
-            this.rightParentPrevious.setRightParentNext( this.rightParentNext );
-            this.rightParentNext.setRightParentPrevious( this.rightParentPrevious );
-        } else if ( nextParent != null ) {
-            // remove from the start
-            this.rightParent.setFirstChild( nextParent );
-            nextParent.setRightParentPrevious( null );
-        } else if ( previousParent != null ) {
-            // remove from end
-            this.rightParent.setLastChild( previousParent );
-            previousParent.setRightParentNext( null );
-        } else {
-            // single remaining item, no previous or next
-            this.rightParent.setFirstChild( null );
-            this.rightParent.setLastChild( null );
-        }
+    public TupleImpl getLeftNext(){
+        throw new UnsupportedOperationException();
+    };
 
-        this.rightParentPrevious = null;
-        this.rightParentNext = null;
+    public void setLeftNext(TupleImpl leftNext){
+        throw new UnsupportedOperationException();
+    };
+
+    public NetworkNode getNetworkNode() {
+        return node;
     }
 
-    public int getIndex() {
-        return this.index;
+    protected void setNetworkNode(NetworkNode node) {
+        this.node = node;
     }
 
-    /* Had to add the set method because sink adapters must override
-     * the tuple sink set when the tuple was created.
-     */
-    public void setLeftTupleSink( LeftTupleSink sink ) {
-        setSink(sink);
-    }
-
-    public TupleImpl getHandlePrevious() {
-        return handlePrevious;
-    }
-
-    public void setHandlePrevious(TupleImpl handlePrevious) {
-        this.handlePrevious = handlePrevious;
-    }
-
-    public TupleImpl getHandleNext() {
-        return handleNext;
-    }
-
-    public void setHandleNext(TupleImpl handleNext) {
-        this.handleNext = handleNext;
-    }
-
-    public boolean isExpired() {
-        return expired;
-    }
-
-    public void setExpired() {
-        this.expired = true;
-    }
-
-    public Sink getSink() {
-        return sink;
-    }
-
-    protected void setSink(Sink sink) {
-        this.sink = sink;
-    }
-
-    public TupleList getMemory() {
+    public TupleMemory<T> getMemory() {
         return this.memory;
     }
 
-    public void setMemory(TupleList memory) {
+    public void setMemory(TupleMemory<T> memory) {
         this.memory = memory;
-    }
-
-    public void initPeer(TupleImpl original, Sink sink) {
-        this.index = original.index;
-        this.parent = original.parent;
-        this.leftParent = original.leftParent;
-
-        setFactHandle( original.getFactHandle() );
-        setPropagationContext( original.getPropagationContext() );
-        setSink(sink);
     }
 
     public <O> O getObject(int index) {
@@ -678,10 +368,12 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
 
 
     public T getObject() {
-        return handle.getObject();
+        throw new UnsupportedOperationException();
     }
 
-    public abstract ObjectTypeNodeId getInputOtnId();
+    public ObjectTypeNodeId getInputOtnId() {
+        throw new UnsupportedOperationException();
+    }
 
 
     public InternalDataHandle getFactHandleForEvaluation() {
@@ -710,7 +402,9 @@ public abstract class TupleImpl<T> implements DoubleLinkedNode<TupleImpl<T>> { /
 //        return result;
 //    }
 
-    public abstract boolean isLeftTuple();
+    public boolean isLeftTuple() {
+        throw new UnsupportedOperationException();
+    }
 
     public boolean isFullMatch() {
         return false;

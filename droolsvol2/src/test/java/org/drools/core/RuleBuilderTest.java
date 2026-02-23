@@ -75,7 +75,7 @@ public class RuleBuilderTest {
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        DataStore<Object> ds = new PropagatingDataStore<>(new TypeIndexer<>());
+        DataStore<Object> ds = new PropagatingDataStore<>(0, new TypeIndexer<>());
 
         builder.rule("rule1").<Library>params()
                .<Room, Shelf, Book, Page>path5((ctx,l) -> l.rooms(), (ctx, r) -> r.name() != null)
@@ -144,7 +144,7 @@ public class RuleBuilderTest {
 
     @Test
     public void testDataSource() {
-        DS ds = new DS(new PropagatingDataStore<>(new TypeIndexer<>()));
+        DS ds = new DS(new PropagatingDataStore<>(0, new TypeIndexer<>()));
 
         ContextPojoDS pojoCtx = new ContextPojoDS(ds);
 

@@ -1,6 +1,5 @@
 package org.drools.core.function;
 
-import org.drools.api.data.DataHandle;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.constraint.Constraint;
 import org.drools.core.TupleImpl;

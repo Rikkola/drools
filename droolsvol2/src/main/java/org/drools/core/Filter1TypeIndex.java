@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataProcessor;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public class Filter1TypeIndex<DS, T> extends AbstractDataProcessor<DS, T> implem
     }
 
     @Override
-    public void add(Context<DS> ctx, DataHandle<T> handle) {
+    public void add(Context<DS> ctx, ObjectHandle<T> handle) {
         List<DataProcessor<DS, T>> list = ctx.getDataProcessorsByTypeAssignment(handle);
         if (list != null) {
             for (int i = 0, size = list.size(); i < size; i++) {
@@ -23,7 +23,7 @@ public class Filter1TypeIndex<DS, T> extends AbstractDataProcessor<DS, T> implem
     }
 
     @Override
-    public void update(Context<DS> ctx, DataHandle<T> handle) {
+    public void update(Context<DS> ctx, ObjectHandle<T> handle) {
         List<DataProcessor<DS, T>> list = ctx.getDataProcessorsByTypeAssignment(handle);
         if (list != null) {
             for (int i = 0, size = list.size(); i < size; i++) {
@@ -34,7 +34,7 @@ public class Filter1TypeIndex<DS, T> extends AbstractDataProcessor<DS, T> implem
     }
 
     @Override
-    public void remove(Context<DS> ctx, DataHandle<T> handle) {
+    public void remove(Context<DS> ctx, ObjectHandle<T> handle) {
         List<DataProcessor<DS, T>> list = ctx.getDataProcessorsByTypeAssignment(handle);
         if (list != null) {
             for (int i = 0, size = list.size(); i < size; i++) {

@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataStore;
 import org.drools.base.base.ClassObjectType;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MultiTypeDataStoreTest {
     @Test
     public void testNonIndexedPropagation() {
-        PropagatingDataStore<Object> objects = new PropagatingDataStore(new TypeIndexer<>());
+        PropagatingDataStore<Object> objects = new PropagatingDataStore(0, new TypeIndexer<>());
 
         record DS1(DataStore<Object> objects) {};
 
@@ -40,7 +40,7 @@ public class MultiTypeDataStoreTest {
         List<LogEntry> list0 = recorder0.getLog();
         List<LogEntry> list1 = recorder1.getLog();
 
-        DataHandle<Object> h1 = objects.add(new Person("Darth", 100, "London"));
+        ObjectHandle<Object> h1 = objects.add(new Person("Darth", 100, "London"));
         assertThat(list1).hasSize(0);
         assertThat(list0).hasSize(1);
         assertThat(list0.get(0).action()).isEqualTo("add");
@@ -59,7 +59,7 @@ public class MultiTypeDataStoreTest {
         assertThat(list0.get(2).object()).isSameAs(h1.getObject());
         assertThat(list1).hasSize(0);
 
-        DataHandle<Object> c1 = objects.add(new City("London"));
+        ObjectHandle<Object> c1 = objects.add(new City("London"));
         assertThat(list1).hasSize(1);
         assertThat(list1.get(0).action()).isEqualTo("add");
         assertThat(list1.get(0).object()).isSameAs(c1.getObject());
@@ -81,7 +81,7 @@ public class MultiTypeDataStoreTest {
     public void testIndexedPropagation() {
         TypeIndexer<DataStore<Object>> typeIndex =new TypeIndexer<>();
 
-        PropagatingDataStore<Object> objects = new PropagatingDataStore(typeIndex);
+        PropagatingDataStore<Object> objects = new PropagatingDataStore(0, typeIndex);
 
         record DS1(DataStore<Object> objects) {};
 
@@ -112,28 +112,28 @@ public class MultiTypeDataStoreTest {
         List<LogEntry> list1 = recorder1.getLog();
         List<LogEntry> list2 = recorder2.getLog();
 
-        DataHandle<Object> h1 = objects.add(new Base1());
+        ObjectHandle<Object> h1 = objects.add(new Base1());
         assertThat(list0).hasSize(1);
         assertThat(list1).hasSize(0);
         assertThat(list2).hasSize(0);
         assertThat(list0.get(0).action()).isEqualTo("add");
         assertThat(list0.get(0).object()).isSameAs(h1.getObject());
 
-        DataHandle<Object> h2 = objects.add(new Base2());
+        ObjectHandle<Object> h2 = objects.add(new Base2());
         assertThat(list0).hasSize(1);
         assertThat(list1).hasSize(1);
         assertThat(list2).hasSize(0);
         assertThat(list1.get(0).action()).isEqualTo("add");
         assertThat(list1.get(0).object()).isSameAs(h2.getObject());
 
-        DataHandle<Object> h3 = objects.add(new Base3());
+        ObjectHandle<Object> h3 = objects.add(new Base3());
         assertThat(list0).hasSize(1);
         assertThat(list1).hasSize(1);
         assertThat(list2).hasSize(1);
         assertThat(list2.get(0).action()).isEqualTo("add");
         assertThat(list2.get(0).object()).isSameAs(h3.getObject());
 
-        DataHandle<Object> h123 = objects.add(new Base123());
+        ObjectHandle<Object> h123 = objects.add(new Base123());
         assertThat(list0).hasSize(2);
         assertThat(list1).hasSize(2);
         assertThat(list2).hasSize(2);

@@ -30,8 +30,7 @@ public class RuleBaseTest {
             public static final P3 V = new P3(null,null,null);
         };
 
-
-        DataStore<Person> persons = new PropagatingDataStore<>(new TypeIndexer<>());
+        DataStore<Person> persons = new PropagatingDataStore<>(0, new TypeIndexer<>());
 
         RuleBuilder<DS> builder = new RuleBuilder<>();
 

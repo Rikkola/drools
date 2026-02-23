@@ -24,10 +24,8 @@ import org.kie.api.runtime.rule.FactHandle;
 /**
  * An handle to an object inserted into a {@link DataStore}.
  */
-public interface DataHandle<T> extends Handle, FactHandle {
+public interface ObjectHandle<T> extends Handle, FactHandle {
     T getObject();
 
-    default T get() {
-        return getObject();
-    }
+    T get();
 }

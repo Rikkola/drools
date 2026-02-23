@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataStore;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -105,8 +105,8 @@ public class Executor {
     }
 
     public class DataStoreOperation {
-        public <T, K extends T> Future<DataHandle<K>> add(DataStore<T> ds, K o) {
-            Command<DataStore<T>, K, Void, DataHandle<K>> cmd = new Command<>();
+        public <T, K extends T> Future<ObjectHandle<K>> add(DataStore<T> ds, K o) {
+            Command<DataStore<T>, K, Void, ObjectHandle<K>> cmd = new Command<>();
             cmd.set(CommandType.ADD,
                     ds, o, null,
                     new CompletableFuture<>());
@@ -114,8 +114,8 @@ public class Executor {
             return cmd.future();
         }
 
-        public <T, K extends T> Future<DataHandle<K>> update(DataStore<T> ds, DataHandle<K> h, K o) {
-            Command<DataStore<T>, DataHandle<K>, K, DataHandle<K>> cmd = new Command<>();
+        public <T, K extends T> Future<ObjectHandle<K>> update(DataStore<T> ds, ObjectHandle<K> h, K o) {
+            Command<DataStore<T>, ObjectHandle<K>, K, ObjectHandle<K>> cmd = new Command<>();
             cmd.set(CommandType.ADD,
                     ds, h, o,
                     new CompletableFuture<>());
@@ -123,8 +123,8 @@ public class Executor {
             return cmd.future();
         }
 
-        public <T, K extends T> Future<DataHandle<K>> remove(DataStore<T> ds, DataHandle<K> h) {
-            Command<DataStore<T>, DataHandle<K>, Void, DataHandle<K>> cmd = new Command<>();
+        public <T, K extends T> Future<ObjectHandle<K>> remove(DataStore<T> ds, ObjectHandle<K> h) {
+            Command<DataStore<T>, ObjectHandle<K>, Void, ObjectHandle<K>> cmd = new Command<>();
             cmd.set(CommandType.REMOVE,
                     ds, h,null,
                     new CompletableFuture<>());

@@ -1,6 +1,5 @@
 package org.drools.core.rete;
 
-import org.drools.api.data.DataHandle;
 import org.drools.core.Context;
 import org.drools.core.Memory;
 import org.drools.core.TupleImpl;
@@ -39,10 +38,10 @@ public class JoinN<DS, T> extends NetworkNode {
     }
 
     private void leftAdd(Context<DS> ctx, TupleImpl<T> tp) {
-        Join4Memory memory = ctx.getMemory(this);
-        TupleMemory rightMemory = memory.rightMemory();
-        TupleImpl rightTp = rightMemory.getFirstN(tp);
-        FastIterator<TupleImpl> it = rightMemory.fastIterator();
+        Join4Memory             memory      = ctx.getMemory(this);
+        TupleMemory             rightMemory = memory.rightMemory();
+        TupleImpl               rightTp     = rightMemory.getFirstN(tp);
+        FastIterator<TupleImpl> it          = rightMemory.fastIterator();
 
         while ((rightTp = it.next(rightTp)) != null) {
 

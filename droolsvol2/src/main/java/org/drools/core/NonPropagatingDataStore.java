@@ -1,7 +1,7 @@
 package org.drools.core;
 
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataStore;
 
 import java.util.IdentityHashMap;
@@ -11,21 +11,22 @@ public class NonPropagatingDataStore<T> extends AbstractDataSource<T> implements
 
     private DataHandleFactory handleFactory;
 
-    private Map<T, DataHandle> store;
+    private Map<T, ObjectHandle> store;
 
-    protected NonPropagatingDataStore() {
+    protected NonPropagatingDataStore(int id) {
+        super(id);
         this.handleFactory = new DataHandleFactory();
         this.store = new IdentityHashMap<>();
     }
 
-    public DataHandle add(T t) {
-        DataHandle dh = createDataHandle(t);
+    public ObjectHandle add(T t) {
+        ObjectHandle dh = createDataHandle(t);
         store.put(t, dh);
         return dh;
     }
 
     @Override
-    public void update(DataHandle<T> dh, T object) {
+    public void update(ObjectHandle<T> dh, T object) {
         ((InternalDataHandle<T>)dh).setObject(object);
     }
 
@@ -35,16 +36,16 @@ public class NonPropagatingDataStore<T> extends AbstractDataSource<T> implements
     }
 
     @Override
-    public void remove(DataHandle<T> dh) {
+    public void remove(ObjectHandle<T> dh) {
         store.remove(dh.getObject());
     }
 
-    protected DataHandle createDataHandle(T t) {
-        return handleFactory.newDataHandle(t);
+    protected ObjectHandle createDataHandle(T t) {
+        return handleFactory.newDataHandle(t, this);
     }
 
     @Override
-    public DataHandle lookup(T object) {
+    public ObjectHandle lookup(T object) {
         return store.get(object);
     }
 

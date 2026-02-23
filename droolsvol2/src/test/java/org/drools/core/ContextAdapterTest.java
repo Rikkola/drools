@@ -1,6 +1,6 @@
 package org.drools.core;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.api.data.DataStore;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +13,8 @@ public class ContextAdapterTest {
 
     @Test
     public void testPropagation() {
-        PropagatingDataStore<Person> persons = new PropagatingDataStore(new TypeIndexer<>());
-        PropagatingDataStore<City> cities = new PropagatingDataStore(new TypeIndexer<>());
+        PropagatingDataStore<Person> persons = new PropagatingDataStore(0, new TypeIndexer<>());
+        PropagatingDataStore<City> cities = new PropagatingDataStore(1, new TypeIndexer<>());
 
         record DS1(DataStore<Person> persons, DataStore<City> cities) {};
 
@@ -36,7 +36,7 @@ public class ContextAdapterTest {
         List<LogEntry> list0 = recorder0.getLog();
         List<LogEntry> list1 = recorder1.getLog();
 
-        DataHandle<Person> h1 = persons.add(new Person("Darth", 100, "London"));
+        ObjectHandle<Person> h1 = persons.add(new Person("Darth", 100, "London"));
         assertThat(list0).hasSize(1);
         assertThat(list0.get(0).action()).isEqualTo("add");
         assertThat(list0.get(0).object()).isSameAs(h1.getObject());
@@ -51,7 +51,7 @@ public class ContextAdapterTest {
         assertThat(list0.get(2).action()).isEqualTo("remove");
         assertThat(list0.get(2).object()).isSameAs(h1.getObject());
 
-        DataHandle<City> c1 = cities.add(new City( "London"));
+        ObjectHandle<City> c1 = cities.add(new City("London"));
         assertThat(list1).hasSize(1);
         assertThat(list1.get(0).action()).isEqualTo("add");
         assertThat(list1.get(0).object()).isSameAs(c1.getObject());
@@ -71,9 +71,9 @@ public class ContextAdapterTest {
 
     @Test
     public void testAddRemoveMultipleContexts() {
-        PropagatingDataStore<Person> persons1 = new PropagatingDataStore(new TypeIndexer<>());
-        PropagatingDataStore<Person> persons2 = new PropagatingDataStore(new TypeIndexer<>());
-        PropagatingDataStore<City> cities = new PropagatingDataStore(new TypeIndexer<>());
+        PropagatingDataStore<Person> persons1 = new PropagatingDataStore(0, new TypeIndexer<>());
+        PropagatingDataStore<Person> persons2 = new PropagatingDataStore(1, new TypeIndexer<>());
+        PropagatingDataStore<City> cities = new PropagatingDataStore(2, new TypeIndexer<>());
         List<String> list1 = new ArrayList<>();
         List<String> list2 = new ArrayList<>();
 
@@ -98,17 +98,17 @@ public class ContextAdapterTest {
         router.subscribe(0, pfn);
         router.subscribe(1, cfn);
 
-        DataHandle<Person> data1H = persons1.add(new Person("Darth", 100, "London"));
+        ObjectHandle<Person> data1H = persons1.add(new Person("Darth", 100, "London"));
         assertThat(ctx1.ds().list()).containsExactly("ctx1:Darth");
         assertThat(ctx2.ds().list()).containsExactly("ctx2:Darth");
 
         router.removeContext(ctx1H);
-        DataHandle<Person> data2H = persons1.add(new Person("Yoda", 300, "Paris"));
+        ObjectHandle<Person> data2H = persons1.add(new Person("Yoda", 300, "Paris"));
         assertThat(ctx1.ds().list()).containsExactly("ctx1:Darth");
         assertThat(ctx2.ds().list()).containsExactly("ctx2:Darth", "ctx2:Yoda");
 
         ctx1H = router.addContext(ctx1);
-        DataHandle<Person> data3H = persons1.add(new Person("Luke", 30, "Barcelona"));
+        ObjectHandle<Person> data3H = persons1.add(new Person("Luke", 30, "Barcelona"));
         assertThat(ctx1.ds().list()).containsExactly("ctx1:Darth", "ctx1:Luke");
         assertThat(ctx2.ds().list()).containsExactly("ctx2:Darth", "ctx2:Yoda", "ctx2:Luke");
 

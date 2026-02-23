@@ -1,12 +1,10 @@
 package org.drools.core.rete;
 
-import org.drools.api.data.DataHandle;
+import org.drools.api.data.ObjectHandle;
 import org.drools.core.Context;
 import org.drools.core.Memory;
 import org.drools.core.TupleImpl;
 import org.drools.core.TupleMemory;
-import org.drools.core.function.Predicate3;
-import org.drools.core.function.Predicate4;
 import org.drools.core.function.Predicate5;
 import org.drools.core.function.Predicate6;
 import org.drools.core.function.Predicate7;
@@ -41,10 +39,10 @@ public class Join4<DS, B, C, D, E> extends NetworkNode {
     }
 
     private void leftAdd(Context<DS> ctx, TupleImpl<B> b, TupleImpl<C> c, TupleImpl<D> d, TupleImpl<E> e) {
-        Join4Memory memory = ctx.getMemory(this);
-        TupleMemory rightMemory = memory.rightMemory();
-        TupleImpl rightTp = rightMemory.getFirst4(b, c, d, e);
-        FastIterator<TupleImpl> it = rightMemory.fastIterator();
+        Join4Memory             memory      = ctx.getMemory(this);
+        TupleMemory             rightMemory = memory.rightMemory();
+        TupleImpl               rightTp     = rightMemory.getFirst4(b, c, d, e);
+        FastIterator<TupleImpl> it          = rightMemory.fastIterator();
         switch (rightSize) {
             case 1:
                 while ((rightTp = it.next(rightTp)) != null) {
@@ -71,7 +69,7 @@ public class Join4<DS, B, C, D, E> extends NetworkNode {
 //        }
     }
 
-    private void join(Context<DS> ctx, DataHandle<B> b, DataHandle<C> c, DataHandle<D> d, DataHandle<E> e) {
+    private void join(Context<DS> ctx, ObjectHandle<B> b, ObjectHandle<C> c, ObjectHandle<D> d, ObjectHandle<E> e) {
         int joins = 0;
         switch(joins) {
             case 1:

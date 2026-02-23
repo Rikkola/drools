@@ -5,10 +5,14 @@ import org.drools.core.function.Predicate2;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterNode<DS, T> extends NetworkNode {
+public class FilterNode<DS, T> extends BaseNode {
     private NetworkNode                parent;
     private Predicate2<Context<DS>, T> predicate;
     private List<NetworkNode>          children;
+
+    public FilterNode(int id) {
+        super(id, 0, -1);
+    }
 
     public NetworkNode getParent() {
         return parent;
