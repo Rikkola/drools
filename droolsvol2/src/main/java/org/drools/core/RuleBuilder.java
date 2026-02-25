@@ -38,21 +38,25 @@ public class RuleBuilder<DS> {
     private String pkgName;
 
     public ParametersFirst<Void, DS> rule(String name) {
-        return new ParametersFirst();
+        return new ParametersFirst(null);
     }
 
     public <T> From1First<Void, DS, T> from(Function1<DS, DataSource<T>> f) {
-        return new From1First<>();
+        return new From1First<>(null);
     }
 
     public <T> From1First<Void, DS, T> from(DataSource<T> fromT) {
-        return new From1First<>();
+        return new From1First<>(null);
     }
 
     //public From1First<Object, Object, Object> from(Function1<T, DS> persons) {}
 
     public static class BaseRuleBuilder<END> {
         private END end;
+
+        public BaseRuleBuilder(END end) {
+            this.end = end;
+        }
 
         public Rule build() {
             return null;
@@ -94,24 +98,28 @@ public class RuleBuilder<DS> {
     public static class ParametersFirst<END, DS> extends BaseRuleBuilder<END> {
         private List<Parameter> list = new ArrayList<Parameter>();
 
+        public ParametersFirst(END end) {
+            super(end);
+        }
+
         public <T> ParametersSecond<END, DS, ArgList> param(String name, T... type) {
             return list().param(name, type.getClass().getComponentType().getName());
         }
 
         public ParametersSecond<END, DS, ArgList> list() {
-            return new ParametersSecond<>(list);
+            return new ParametersSecond<>(end(), list);
         }
 
         public ParametersSecond<END, DS, ArgMap> map() {
-            return new ParametersSecond<>(list);
+            return new ParametersSecond<>(end(), list);
         }
 
         public <B> From1First<END, DS, B> params(Class... cls) {
-            return new From1First<>();
+            return new From1First<>(end());
         }
 
         public <T> From1First<Void, DS, T> from(Function1<DS, DataSource<T>> f) {
-            return new From1First<>();
+            return new From1First<>(null);
         }
 
         public ParametersFirst ifn(Runnable fn0) {
@@ -126,7 +134,8 @@ public class RuleBuilder<DS> {
     public static class ParametersSecond<END, DS, B> extends BaseRuleBuilder<END>  {
         private List<Parameter> parameters;
 
-        public ParametersSecond(List<Parameter> list) {
+        public ParametersSecond(END end, List<Parameter> list) {
+            super(end);
             parameters = list;
         }
 
@@ -140,7 +149,7 @@ public class RuleBuilder<DS> {
         }
 
         public <C> Join2First<Void, DS, B, C> join(From1First<END, DS, C> fromC) {
-            return new Join2First<>();
+            return new Join2First<>(null);
         }
 
 //        public <A, B> OOPathBuilderA2<ParametersSecond<DS, B>, A, B> path(Function1<A,?> fn1,
@@ -153,8 +162,12 @@ public class RuleBuilder<DS> {
 
     public static class From1First<END, DS, B> extends BaseRuleBuilder<END> {
 
+        public From1First(END end) {
+            super(end);
+        }
+
         public <T extends B> From1First<END, DS, T> type(Class<T>... cls) {
-            return (From1First<END, DS, T>)null;
+            return new From1First<>(end());
         }
 
         public From1First<END, DS, B> filter(Predicate2<Context<DS>, B> prd2) {
@@ -162,7 +175,7 @@ public class RuleBuilder<DS> {
         }
 
         public <C> Join2First<END, DS, B, C> join(From1First<?, DS, C> fromC) {
-            return null;
+            return new Join2First<>(end());
         }
 
         public <C> Join2First<END, DS, B, C> not(From1First<Void, DS, C> fromC) {
@@ -211,6 +224,10 @@ public class RuleBuilder<DS> {
 
     public static class Join2First<END, DS, B, C> extends Join2Second<END, DS, B, C>  {
 
+        public Join2First(END end) {
+            super(end);
+        }
+
         public Join2First<END, DS, B, C> filter(Predicate3<Context<DS>, B, C> predicate3) {
             return this;
         }
@@ -221,17 +238,21 @@ public class RuleBuilder<DS> {
     }
 
     public static class Join2Second<END, DS, B, C>  extends BaseRuleBuilder<END>  {
+        public Join2Second(END end) {
+            super(end);
+        }
+
         public <D> Join2Second<END, DS, B, C> not(From1First<END, DS, D> fromD) {
             return this;
         }
 
         public Not2<Join2Second<END, DS, B, C>, DS, B, C> not() {
-            Not2<Join2Second<END, DS, B, C>, DS, B, C> not = new Not2<>();
+               Not2<Join2Second<END, DS, B, C>, DS, B, C> not = new Not2<>(this);
             return not;
         }
 
         public <D> Join3First<END, DS, B, C, D> join(From1First<Void, DS, D> fromD) {
-            return null;
+            return new Join3First<>(end());
         }
 
         public <D, E> Join4First<END, DS, B, C, D, E> join(Join2First<?, DS, D, E> joinDE) {
@@ -267,10 +288,6 @@ public class RuleBuilder<DS> {
         <PB> Path2<Join3First<END, DS, B, C, Tuple2<B, PB>>,Tuple2<C, PB>, C, PB> path2() {
             return new Path2<>(null, null, null);
         }
-
-        public END end() {
-            return null;
-        }
     }
 
 //    public static class Group2First<END, DS, B, C>  extends BaseRuleBuilder   {
@@ -282,12 +299,15 @@ public class RuleBuilder<DS> {
 //    }
 
     public static class Not2<END, DS, B, C>  extends Group2<END, DS, B, C>   {
-
+        public Not2(END end) {
+            super(end);
+        }
     }
 
     public static class Group2<END, DS, B, C> extends Join2Second<END, DS, B, C> {
-        public END end() {
-            return null;
+
+        public Group2(END end) {
+            super(end);
         }
 
 //        public Group2<END, DS, B, C> filter(Predicate3<Context<DS>, B, C> predicate3) {
@@ -339,6 +359,10 @@ public class RuleBuilder<DS> {
     }
 
     public static class Join3First <END, DS, B, C, D> extends Join3Second<END, DS, B, C, D> {
+        public Join3First(END end) {
+            super(end);
+        }
+
         public Join3First<END, DS, B, C, D> filter(Predicate4<Context<DS>, B, C, D> predicate4) {
             return this;
         }
@@ -350,8 +374,12 @@ public class RuleBuilder<DS> {
 
     public static class Join3Second<END, DS, B, C, D> extends BaseRuleBuilder<END>  {
 
+        public Join3Second(END end) {
+            super(end);
+        }
+
         public <E> Join4First<END, DS, B, C, D, E> join(From1First<Void, DS, E> fromE) {
-            return null;
+            return new Join4First<>(end());
         }
 
 //        public <E, F> Join5First<END, DS, B, C, D, E, F> join(Join2First<?, DS, D, E> joinDE) {
@@ -386,12 +414,20 @@ public class RuleBuilder<DS> {
     }
 
     public static class Join4First<END, DS, B, C, D, E> extends Join4Second<END, DS, B, C, D, E> {
+        public Join4First(END end) {
+            super(end);
+        }
+
         public Join4First<END, DS, B, C, D, E> filter(Predicate5<Context<DS>, B, C, D, E> predicate5) {
             return this;
         }
     }
 
     public static class Join4Second<END, DS, B, C, D, E> extends BaseRuleBuilder<END> {
+        public Join4Second(END end) {
+            super(end);
+        }
+
         <PB, PC, PD, PE, PF> Path6<Join2First<END, DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
             return new Path6<>(null, null, null);
         }
@@ -415,8 +451,5 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class Terminal extends BaseRuleBuilder  {
-
-    }
 
 }

@@ -1,6 +1,13 @@
 package org.drools.core;
 
+import org.drools.core.RuleBaseModifier.ChangeSet;
 import org.drools.core.RuleBuilder.BaseRuleBuilder;
+import org.kie.api.definition.rule.Rule;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class RuleBase<DS> {
 
@@ -8,42 +15,10 @@ public class RuleBase<DS> {
 
     }
 
-    public ChangeSetSelector<DS> modify() {
-        return new ChangeSetSelector();
+    public ChangeSet<DS> modify() {
+        return null;
     }
 
-    public class ChangeSetSelector<DS> {
-        public ChangeSet<DS> selectPackage(String packageName) {
-            return new ChangeSet(packageName);
-        }
-    }
 
-    public class ChangeSet<DS> {
-
-        public ChangeSet(String packageName) {
-
-        }
-
-        public ChangeSet<DS> selectPackage(String packageName) {
-            return null;
-        }
-
-        public ChangeSet<DS> selectUnit(String unitName) {
-            return null;
-        }
-
-        public ChangeSet<DS> add(BaseRuleBuilder rule) {
-            return this;
-        }
-
-        public ChangeSet<DS> remove(String rule) {
-            return this;
-        }
-
-        public void apply() {
-
-        }
-
-    }
 
 }

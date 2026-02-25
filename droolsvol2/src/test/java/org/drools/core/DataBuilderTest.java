@@ -23,13 +23,6 @@ public class DataBuilderTest {
 
     }
 
-    public void test2() {
-        //DataBuilder.stream("persons")
-        List<String> list = new ArrayList<>();
-        //list.stream().
-
-    }
-
     public record Person(String name, int age) {
 
     }

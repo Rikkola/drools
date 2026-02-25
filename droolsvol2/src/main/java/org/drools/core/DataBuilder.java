@@ -29,23 +29,28 @@ public class DataBuilder {
     public static class LiteralFilterBuilder<A> {
 
         public LiteralFilterBuilder<A> filter(Predicate1<A> predicate) {
-            return null;
+            return this;
         }
 
         public <R> LiteralFilterBuilder2<A> index(Function1<A, R> f) {
-            return null;
+            return new LiteralFilterBuilder2<>(this);
         }
 
         public <R> LiteralFilterBuilder2<A> index(String name, Function1<A, R> f) {
-            return null;
+            return new LiteralFilterBuilder2<>(this);
         }
 
     }
 
     public static class LiteralFilterBuilder2<A> {
+        private LiteralFilterBuilder<A> returnObject;
+
+        public LiteralFilterBuilder2(LiteralFilterBuilder<A> returnObject) {
+            this.returnObject = returnObject;
+        }
 
         public LiteralFilterBuilder<A> filter(Predicate1<A> predicate) {
-            return null;
+            return returnObject;
         }
     }
 }
