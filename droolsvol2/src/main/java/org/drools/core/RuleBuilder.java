@@ -1,6 +1,12 @@
 package org.drools.core;
 
 import org.drools.api.data.DataSource;
+import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.core.RuleExtensionPoint.RuleExtensionPoint2;
+import org.drools.core.RuleExtensionPoint.RuleExtensionPoint3;
+import org.drools.core.RuleExtensionPoint.RuleExtensionPoint4;
+import org.drools.core.RuleExtensionPoint.RuleExtensionPoint5;
+import org.drools.core.RuleExtensionPoint.RuleExtensionPoint6;
 import org.drools.core.RuleOOPathBuilder.Path2;
 import org.drools.core.RuleOOPathBuilder.Path3;
 import org.drools.core.RuleOOPathBuilder.Path4;
@@ -22,6 +28,9 @@ import org.drools.core.function.BaseTuple.Tuple5;
 import org.drools.core.function.BaseTuple.Tuple4;
 import org.drools.core.function.BaseTuple.Tuple3;
 import org.drools.core.function.BaseTuple.Tuple2;
+import org.drools.core.function.Predicate6;
+import org.drools.core.rete.Join1;
+import org.drools.core.rete.Join2;
 import org.kie.api.definition.rule.Rule;
 
 import java.util.ArrayList;
@@ -35,9 +44,14 @@ public class RuleBuilder<DS> {
 
     }
 
-    private String pkgName;
+    private String packageName;
+    private Rule rule;
+    private List<Parameter> listParams;
+    private List<Parameter> mapParams;
+    private Class params;
 
-    public ParametersFirst<Void, DS> rule(String name) {
+    public ParametersFirst<Void, DS> rule(String ruleName) {
+        rule = new RuleImpl(ruleName);
         return new ParametersFirst(null);
     }
 
@@ -95,9 +109,7 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class ParametersFirst<END, DS> extends BaseRuleBuilder<END> {
-        private List<Parameter> list = new ArrayList<Parameter>();
-
+    public class ParametersFirst<END, DS> extends BaseRuleBuilder<END> {
         public ParametersFirst(END end) {
             super(end);
         }
@@ -107,14 +119,17 @@ public class RuleBuilder<DS> {
         }
 
         public ParametersSecond<END, DS, ArgList> list() {
-            return new ParametersSecond<>(end(), list);
+            listParams = new ArrayList<>();
+            return new ParametersSecond<>(end(), listParams);
         }
 
         public ParametersSecond<END, DS, ArgMap> map() {
-            return new ParametersSecond<>(end(), list);
+            mapParams = new ArrayList<>();
+            return new ParametersSecond<>(end(), mapParams);
         }
 
         public <B> From1First<END, DS, B> params(Class... cls) {
+            params = cls.getClass().getComponentType();
             return new From1First<>(end());
         }
 
@@ -129,9 +144,25 @@ public class RuleBuilder<DS> {
         public void fn(Consumer1<Context<DS>> fn1) {
 
         }
+
+        public <B> From1First<END, DS, B> extendsRule(RuleExtensionPoint2<DS, B> extension2) {
+            return null;
+        }
+
+        public <B, C> Join2First<END, DS, B, C> extendsRule(RuleExtensionPoint3<DS, B, C> extension3) {
+            return null;
+        }
+
+        public <B, C, D> Join3First<END, DS, B, C, D> extendsRule(RuleExtensionPoint4<DS, B, C, D> extension4) {
+            return null;
+        }
+
+        public <B, C, D, E> Join4First<END, DS, B, C, D, E> extendsRule(RuleExtensionPoint5<DS, B, C, D, E> extension4) {
+            return null;
+        }
     }
 
-    public static class ParametersSecond<END, DS, B> extends BaseRuleBuilder<END>  {
+    public class ParametersSecond<END, DS, B> extends BaseRuleBuilder<END>  {
         private List<Parameter> parameters;
 
         public ParametersSecond(END end, List<Parameter> list) {
@@ -160,10 +191,14 @@ public class RuleBuilder<DS> {
 //        }
     }
 
-    public static class From1First<END, DS, B> extends BaseRuleBuilder<END> {
+    public class From1First<END, DS, B> extends BaseRuleBuilder<END> {
 
         public From1First(END end) {
             super(end);
+        }
+
+        public RuleExtensionPoint2<DS, B> extensionPoint() {
+            return new RuleExtensionPoint2<>(rule);
         }
 
         public <T extends B> From1First<END, DS, T> type(Class<T>... cls) {
@@ -222,7 +257,7 @@ public class RuleBuilder<DS> {
     }
 
 
-    public static class Join2First<END, DS, B, C> extends Join2Second<END, DS, B, C>  {
+    public class Join2First<END, DS, B, C> extends Join2Second<END, DS, B, C>  {
 
         public Join2First(END end) {
             super(end);
@@ -237,9 +272,13 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class Join2Second<END, DS, B, C>  extends BaseRuleBuilder<END>  {
+    public class Join2Second<END, DS, B, C>  extends BaseRuleBuilder<END>  {
         public Join2Second(END end) {
             super(end);
+        }
+
+        public RuleExtensionPoint3<DS, B, C> extensionPoint() {
+            return new RuleExtensionPoint3<>(rule);
         }
 
         public <D> Join2Second<END, DS, B, C> not(From1First<END, DS, D> fromD) {
@@ -298,13 +337,13 @@ public class RuleBuilder<DS> {
 //        }
 //    }
 
-    public static class Not2<END, DS, B, C>  extends Group2<END, DS, B, C>   {
+    public class Not2<END, DS, B, C>  extends Group2<END, DS, B, C>   {
         public Not2(END end) {
             super(end);
         }
     }
 
-    public static class Group2<END, DS, B, C> extends Join2Second<END, DS, B, C> {
+    public class Group2<END, DS, B, C> extends Join2Second<END, DS, B, C> {
 
         public Group2(END end) {
             super(end);
@@ -358,7 +397,7 @@ public class RuleBuilder<DS> {
 //        }
     }
 
-    public static class Join3First <END, DS, B, C, D> extends Join3Second<END, DS, B, C, D> {
+    public class Join3First <END, DS, B, C, D> extends Join3Second<END, DS, B, C, D> {
         public Join3First(END end) {
             super(end);
         }
@@ -372,10 +411,14 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class Join3Second<END, DS, B, C, D> extends BaseRuleBuilder<END>  {
+    public class Join3Second<END, DS, B, C, D> extends BaseRuleBuilder<END>  {
 
         public Join3Second(END end) {
             super(end);
+        }
+
+        public RuleExtensionPoint4<DS, B, C, D> extensionPoint() {
+            return new RuleExtensionPoint4<>(rule);
         }
 
         public <E> Join4First<END, DS, B, C, D, E> join(From1First<Void, DS, E> fromE) {
@@ -413,7 +456,7 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class Join4First<END, DS, B, C, D, E> extends Join4Second<END, DS, B, C, D, E> {
+    public class Join4First<END, DS, B, C, D, E> extends Join4Second<END, DS, B, C, D, E> {
         public Join4First(END end) {
             super(end);
         }
@@ -423,9 +466,17 @@ public class RuleBuilder<DS> {
         }
     }
 
-    public static class Join4Second<END, DS, B, C, D, E> extends BaseRuleBuilder<END> {
+    public class Join4Second<END, DS, B, C, D, E> extends BaseRuleBuilder<END> {
         public Join4Second(END end) {
             super(end);
+        }
+
+        public RuleExtensionPoint5<DS, B, C, D, E> extensionPoint() {
+            return new RuleExtensionPoint5<>(rule);
+        }
+
+        public <F> Join5First<END, DS, B, C, D, E, F> join(From1First<Void, DS, F> fromF) {
+            return new Join5First<>(end());
         }
 
         <PB, PC, PD, PE, PF> Path6<Join2First<END, DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
@@ -448,6 +499,27 @@ public class RuleBuilder<DS> {
 
         <PB> Path2<Join2First<END, DS, B, Tuple2<B, PB>>,Tuple2<B, PB>, B, PB> path2() {
             return new Path2<>(null, null, null);
+        }
+    }
+
+
+    public class Join5First<END, DS, B, C, D, E, F> extends Join5Second<END, DS, B, C, D, E, F> {
+        public Join5First(END end) {
+            super(end);
+        }
+
+        public Join5First<END, DS, B, C, D, E, F> filter(Predicate6<Context<DS>, B, C, D, E, F> predicate6) {
+            return this;
+        }
+    }
+
+    public class Join5Second<END, DS, B, C, D, E, F> extends BaseRuleBuilder<END> {
+        public Join5Second(END end) {
+            super(end);
+        }
+
+        public RuleExtensionPoint6<DS, B, C, D, E, F> extensionPoint() {
+            return new RuleExtensionPoint6<>(rule);
         }
     }
 

@@ -12,6 +12,24 @@ import java.util.Map;
 
 public class RuleBuilderTest {
 
+
+    public void test3JOINS() {
+        record DS(DataStore<Person> persons,
+                  DataStore<OOPathTest.Library> libraries) {};
+
+        RuleBuilder<DS> builder = new RuleBuilder<>();
+
+        record P3(String p3_1, String p3_2, String p3_3) {
+            public static final P3 V = new P3(null,null,null);
+        };
+
+        builder.rule("rule1").<P3>params()
+               .join(builder.from(DS::persons))
+               .join(builder.from(DS::persons))
+               .join(builder.from(DS::persons));
+               //.join(builder.from(DS::persons))
+    }
+
     public void test1() {
         record DS(DataStore<Person> persons,
                   DataStore<OOPathTest.Library> libraries) {};
