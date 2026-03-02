@@ -22,10 +22,46 @@ public class RuleBuilderTest {
     public void test3JOINS() {
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
-        builder.rule("rule1").<P3>params()
-               .join(builder.from(DS::persons))
+        builder.rule("rule1")
+               .from(builder.from(DS::persons))
                .join(builder.from(DS::persons))
                .join(builder.from(DS::persons));
+
+        builder.rule("rule1")
+               .from(DS::persons)
+               .join(DS::persons)
+               .join(DS::persons);
+
+        builder.rule("rule1")
+               .from(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50)
+               .join(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50)
+               .join(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50);
+
+        builder.rule("rule1")
+               .from(DS::persons).filter((ctx, p) -> p.age() > 50)
+               .join(DS::persons).filter((ctx, p) -> p.age() > 50)
+               .join(DS::persons).filter((ctx, p) -> p.age() > 50);
+
+        builder.rule("rule1")
+               .from(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50)
+               .join(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50)
+                                               .filter((ctx, p1, p2) -> p1.age() > p2.age())
+               .join(builder.from(DS::persons)).filter((ctx, p) -> p.age() > 50)
+                                               .filter((ctx, p1, p2, p3) -> p1.age() > p3.age());
+
+        builder.rule("rule1")
+               .from(DS::persons).filter((ctx, p) -> p.age() > 50)
+               .join(DS::persons).filter((ctx, p) -> p.age() > 50)
+               .filter((ctx, p1, p2) -> p1.age() > p2.age())
+               .join(DS::persons).filter((ctx, p) -> p.age() > 50)
+               .filter((ctx, p1, p2, p3) -> p1.age() > p3.age());
+
+        builder.rule("rule1")
+               .from(builder.from(DS::persons).filter((ctx, p) -> p.age() > 50))
+               .join(builder.from(DS::persons).filter((ctx, p) -> p.age() > 50))
+               .filter((ctx, p1, p2) -> p1.age() > p2.age())
+               .join(builder.from(DS::persons).filter((ctx, p) -> p.age() > 50))
+               .filter((ctx, p1, p2, p3) -> p1.age() > p3.age());
     }
 
     @Test

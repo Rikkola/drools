@@ -135,6 +135,10 @@ public class RuleBuilder<DS> {
             return new From1First<>(null);
         }
 
+        public <T> From1First<Void, DS, T> from(From1First<?, DS, T> f) {
+            return new From1First<>(null);
+        }
+
         public ParametersFirst ifn(Runnable fn0) {
             return this;
         }
@@ -177,7 +181,12 @@ public class RuleBuilder<DS> {
             return this;
         }
 
+        //Function1<DS, DataSource<F>> fromF
         public <C> Join2First<Void, DS, B, C> join(From1First<END, DS, C> fromC) {
+            return new Join2First<>(null);
+        }
+
+        public <C> Join2First<Void, DS, B, C> join(Function1<DS, DataSource<C>> fromC) {
             return new Join2First<>(null);
         }
 
@@ -211,9 +220,18 @@ public class RuleBuilder<DS> {
             return new Join2First<>(end());
         }
 
+        public <C> Join2First<END, DS, B, C> join(Function1<DS, DataSource<C>> fromC) {
+            return new Join2First<>(end());
+        }
+
         public <C> Join2First<END, DS, B, C> not(From1First<Void, DS, C> fromC) {
             return null;
         }
+
+        public <C> Join2First<END, DS, B, C> not(Function1<DS, DataSource<C>> fromC) {
+            return null;
+        }
+
 
         public <C, D> Join3First<END, DS, B, C, D> join(Join2Second<Void, DS, C, D> fromCD) {
             return null;
@@ -261,6 +279,10 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
+        public Join2First<END, DS, B, C> filter(Predicate2<Context<DS>, C> predicate2) {
+            return this;
+        }
+
         public Join2First<END, DS, B, C> filter(Predicate3<Context<DS>, B, C> predicate3) {
             return this;
         }
@@ -293,7 +315,7 @@ public class RuleBuilder<DS> {
             return new RuleExtendsPoint3<>(rule);
         }
 
-        public <D> Join2Second<END, DS, B, C> not(From1First<END, DS, D> fromD) {
+        public <D> Join2Second<END, DS, B, C> not(Function1<DS, DataSource<C>> fromC) {
             return this;
         }
 
@@ -302,7 +324,12 @@ public class RuleBuilder<DS> {
             return not;
         }
 
+
         public <D> Join3First<END, DS, B, C, D> join(From1First<Void, DS, D> fromD) {
+            return new Join3First<>(end());
+        }
+
+        public <D> Join3First<END, DS, B, C, D> join(Function1<DS, DataSource<D>> fromD) {
             return new Join3First<>(end());
         }
 
@@ -414,6 +441,10 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
+        public Join3First<END, DS, B, C, D> filter(Predicate2<Context<DS>, D> predicate2) {
+            return this;
+        }
+
         public Join3First<END, DS, B, C, D> filter(Predicate4<Context<DS>, B, C, D> predicate4) {
             return this;
         }
@@ -447,7 +478,12 @@ public class RuleBuilder<DS> {
             return new RuleExtendsPoint4<>(rule);
         }
 
+
         public <E> Join4First<END, DS, B, C, D, E> join(From1First<Void, DS, E> fromE) {
+            return new Join4First<>(end());
+        }
+
+        public <E> Join4First<END, DS, B, C, D, E> join(Function1<DS, DataSource<E>> fromE) {
             return new Join4First<>(end());
         }
 
@@ -487,6 +523,10 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
+        public Join4First<END, DS, B, C, D, E> filter(Predicate2<Context<DS>,E> predicate2) {
+            return this;
+        }
+
         public Join4First<END, DS, B, C, D, E> filter(Predicate5<Context<DS>, B, C, D, E> predicate5) {
             return this;
         }
@@ -519,6 +559,10 @@ public class RuleBuilder<DS> {
             return new Join5First<>(end());
         }
 
+        public <F> Join5First<END, DS, B, C, D, E, F> join(Function1<DS, DataSource<F>> fromF) {
+            return new Join5First<>(end());
+        }
+
         <PB, PC, PD, PE, PF> Path6<Join2First<END, DS, B, Tuple6<B, PB, PC, PD, PE, PF>>, Tuple6<B, PB, PC, PD, PE, PF>, B, PB, PC,PD, PE, PF> path6() {
             return new Path6<>(null, null, null);
         }
@@ -546,6 +590,10 @@ public class RuleBuilder<DS> {
     public class Join5First<END, DS, B, C, D, E, F> extends Join5Second<END, DS, B, C, D, E, F> {
         public Join5First(END end) {
             super(end);
+        }
+
+        public Join5First<END, DS, B, C, D, E, F> filter(Predicate2<Context<DS>, F> predicate2) {
+            return this;
         }
 
         public Join5First<END, DS, B, C, D, E, F> filter(Predicate6<Context<DS>, B, C, D, E, F> predicate6) {
