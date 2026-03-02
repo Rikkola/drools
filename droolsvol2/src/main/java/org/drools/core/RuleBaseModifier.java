@@ -27,6 +27,14 @@ public class RuleBaseModifier {
 
         public <DS> void apply(ChangeSetBuilder<DS> changeSetBuilder) {
             ChangeSet<DS> changeSet = changeSetBuilder.getChangeSet();
+            for(PackageChangeSet<DS> packages : changeSet.added.values()) {
+               for(UnitChangeSet<DS> units : packages.added.values()) {
+                   for(Rule rule : units.added.values()) {
+
+
+                   }
+               }
+            }
         }
     }
 
@@ -58,6 +66,14 @@ public class RuleBaseModifier {
         public ChangeSet<DS> getChangeSet() {
             return this;
         }
+
+        public Map<String, PackageChangeSet<DS>> getAdded() {
+            return added;
+        }
+
+        public Set<String> getRemoved() {
+            return removed;
+        }
     }
 
 
@@ -82,6 +98,18 @@ public class RuleBaseModifier {
             this.added.remove(unitName);
             this.removed.add(unitName);
             return this;
+        }
+
+        public String getPackageName() {
+            return packageName;
+        }
+
+        public Map<String, UnitChangeSet> getAdded() {
+            return added;
+        }
+
+        public Set<String> getRemoved() {
+            return removed;
         }
 
         @Override
@@ -119,6 +147,13 @@ public class RuleBaseModifier {
             return this;
         }
 
+        public Map<String, Rule> getAdded() {
+            return added;
+        }
+
+        public Set<String> getRemoved() {
+            return removed;
+        }
 
         @Override
         public ChangeSet<DS> getChangeSet() {

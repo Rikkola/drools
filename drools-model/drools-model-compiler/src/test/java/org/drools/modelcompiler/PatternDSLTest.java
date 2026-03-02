@@ -1011,10 +1011,10 @@ public class PatternDSLTest {
         RuleImpl rule     = ( RuleImpl) kbase.getKiePackage("defaultpkg").getRules().toArray()[0];
 
         // Ensure there is only a single root child
-        assertThat(rule.getLhs().getChildren().size()).isEqualTo(1);
+        assertThat(rule.getBody().getChildren().size()).isEqualTo(1);
 
         // The expression must be merged up into the acc pattern
-        Pattern p = (Pattern) rule.getLhs().getChildren().get(0);
+        Pattern p = (Pattern) rule.getBody().getChildren().get(0);
         assertThat(((ClassObjectType) p.getObjectType()).getClassType()).isEqualTo(Object[].class);
         LambdaConstraint l0 = (LambdaConstraint) p.getConstraints().get(0);
         assertThat(((Predicate1.Impl)l0.getEvaluator().getConstraint().getPredicate1()).getLambda()).isSameAs(p1);
@@ -1066,10 +1066,10 @@ public class PatternDSLTest {
         KieBase    kbase    = KieBaseBuilder.createKieBaseFromModel(model);
         RuleImpl   rule     = ( RuleImpl) kbase.getKiePackage("defaultpkg").getRules().toArray()[0];
         // Should only be a single child
-        assertThat(rule.getLhs().getChildren().size()).isEqualTo(1);
+        assertThat(rule.getBody().getChildren().size()).isEqualTo(1);
 
         // Check correct result type and the filter was moved up
-        Pattern    p1  = (Pattern) rule.getLhs().getChildren().get(0);
+        Pattern    p1  = (Pattern) rule.getBody().getChildren().get(0);
         assertThat(((ClassObjectType) p1.getObjectType()).getClassType()).isEqualTo(Long.class);
         LambdaConstraint l0 = (LambdaConstraint) p1.getConstraints().get(0);
         assertThat(((Predicate1.Impl)l0.getEvaluator().getConstraint().getPredicate1()).getLambda()).isSameAs(cp);

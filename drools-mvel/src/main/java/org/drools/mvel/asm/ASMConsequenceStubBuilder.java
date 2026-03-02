@@ -47,7 +47,7 @@ public class ASMConsequenceStubBuilder extends ASMConsequenceBuilder {
 
     protected byte[] createConsequenceBytecode(final RuleBuildContext ruleContext, final Map<String, Object> consequenceContext) {
         // If the LHS contains an OR we cannot use the optimized consequence invoker that traverses the tuple only once
-        if (isOr(ruleContext.getRule().getLhs())) {
+        if (isOr(ruleContext.getRule().getBody())) {
             return super.createConsequenceBytecode(ruleContext, consequenceContext);
         }
 

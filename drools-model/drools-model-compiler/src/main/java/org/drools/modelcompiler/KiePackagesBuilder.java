@@ -366,7 +366,7 @@ public class KiePackagesBuilder {
         ReadAccessor extractor = new LambdaReadAccessor(DroolsQuery.class, q -> ((DroolsQuery)q).getName());
         QueryNameConstraint constraint = new QueryNameConstraint( extractor, query.getName() );
         pattern.addConstraint( constraint );
-        queryImpl.getLhs().addChild(pattern);
+        queryImpl.getBody().addChild(pattern);
 
         Variable<?>[] args = query.getArguments();
         Declaration[] declarations = new Declaration[args.length];
@@ -432,7 +432,7 @@ public class KiePackagesBuilder {
     }
 
     private boolean ruleHasFirstLevelOr(RuleImpl rule) {
-        GroupElement lhs = rule.getLhs();
+        GroupElement lhs = rule.getBody();
         if (lhs.getType() == OR) {
             return true;
         }
@@ -447,7 +447,7 @@ public class KiePackagesBuilder {
     }
 
     private void populateLHS( RuleContext ctx, View view ) {
-        GroupElement lhs = ctx.getRule().getLhs();
+        GroupElement lhs = ctx.getRule().getBody();
         addSubConditions( ctx, lhs, view.getSubConditions());
         if (requiresLeftActivation(lhs)) {
             lhs.addChild( 0, new Pattern( ctx.getNextPatternIndex(), ClassObjectType.InitialFact_ObjectType ) );

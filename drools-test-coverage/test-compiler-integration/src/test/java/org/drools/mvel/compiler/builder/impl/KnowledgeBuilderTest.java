@@ -189,10 +189,10 @@ public class KnowledgeBuilderTest {
                                  map );
 
         final LeftTuple tuple = new MockTuple(new HashMap() );
-        tuple.setLeftTupleSink( new RuleTerminalNode(1, new MockBetaNode(), rule,rule.getLhs(), 0,new BuildContext(kBase, Collections.emptyList()) )  );
+        tuple.setLeftTupleSink( new RuleTerminalNode(1, new MockBetaNode(), rule, rule.getBody(), 0, new BuildContext(kBase, Collections.emptyList()) ));
         final InternalMatch internalMatch = new MockInternalMatch(rule,
                                                                   0,
-                                                                  rule.getLhs(),
+                                                                  rule.getBody(),
                                                                   tuple );
 
         DefaultKnowledgeHelper knowledgeHelper = new DefaultKnowledgeHelper( ((StatefulKnowledgeSessionImpl)workingMemory) );
@@ -267,10 +267,10 @@ public class KnowledgeBuilderTest {
                                  map );
 
         final LeftTuple tuple = new MockTuple(new HashMap() );
-        tuple.setLeftTupleSink( new RuleTerminalNode(1, new MockBetaNode(), newRule,newRule.getLhs(), 0, new BuildContext(kBase, Collections.emptyList()) )  );
+        tuple.setLeftTupleSink( new RuleTerminalNode(1, new MockBetaNode(), newRule, newRule.getBody(), 0, new BuildContext(kBase, Collections.emptyList()) ));
         final InternalMatch internalMatch = new MockInternalMatch(newRule,
                                                                   0,
-                                                                  newRule.getLhs(),
+                                                                  newRule.getBody(),
                                                                   tuple );
 
         final DefaultKnowledgeHelper knowledgeHelper = new DefaultKnowledgeHelper( ((StatefulKnowledgeSessionImpl)workingMemory) );
@@ -385,7 +385,7 @@ public class KnowledgeBuilderTest {
         if ( builder1.hasErrors() ) {
             fail( builder1.getErrors().toString() );
         }
-        final Pattern pattern1 = (Pattern) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern1 = (Pattern) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint returnValue1 = pattern1.getConstraints().get( 0 );
 
         final KnowledgeBuilderImpl builder2 = new KnowledgeBuilderImpl();
@@ -393,7 +393,7 @@ public class KnowledgeBuilderTest {
         createReturnValueRule( packageDescr2,
                                " x + y " );
         builder2.addPackage( packageDescr2 );
-        final Pattern pattern2 = (Pattern) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern2 = (Pattern) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint returnValue2 = pattern2.getConstraints().get( 0 );
 
         final KnowledgeBuilderImpl builder3 = new KnowledgeBuilderImpl();
@@ -401,7 +401,7 @@ public class KnowledgeBuilderTest {
         createReturnValueRule( packageDescr3,
                                " x - y " );
         builder3.addPackage( packageDescr3 );
-        final Pattern pattern3 = (Pattern) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern3 = (Pattern) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint returnValue3 = pattern3.getConstraints().get( 0 );
 
         assertThat(returnValue2).isEqualTo(returnValue1);
@@ -455,7 +455,7 @@ public class KnowledgeBuilderTest {
         if ( builder1.hasErrors() ) {
            fail( builder1.getErrors().toString() );
         }
-        final Pattern pattern1 = (Pattern) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern1 = (Pattern) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint predicate1 = pattern1.getConstraints().get( 0 );
 
         final KnowledgeBuilderImpl builder2 = new KnowledgeBuilderImpl();
@@ -467,7 +467,7 @@ public class KnowledgeBuilderTest {
             fail( builder2.getErrors().toString() );
          }
         
-        final Pattern pattern2 = (Pattern) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern2 = (Pattern) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint predicate2 = pattern2.getConstraints().get( 0 );
 
         final KnowledgeBuilderImpl builder3 = new KnowledgeBuilderImpl();
@@ -478,7 +478,7 @@ public class KnowledgeBuilderTest {
         createPredicateRule( packageDescr3,
                              "eval(x!=y)" );
         builder3.addPackage( packageDescr3 );
-        final Pattern pattern3 = (Pattern) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final Pattern pattern3 = (Pattern) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getBody().getChildren().get(0);
         final Constraint predicate3 = pattern3.getConstraints().get( 0 );
 
         assertThat(predicate2).isEqualTo(predicate1);
@@ -522,7 +522,7 @@ public class KnowledgeBuilderTest {
 
         InternalKnowledgePackage pkg = builder.getPackage(packageDescr.getName());
         final RuleImpl rule = pkg.getRule( "rule-1" );
-        final EvalCondition eval = (EvalCondition) rule.getLhs().getChildren().get( 1 );
+        final EvalCondition eval = (EvalCondition) rule.getBody().getChildren().get(1);
         final CompiledInvoker invoker = (CompiledInvoker) eval.getEvalExpression();
         String s = invoker.getMethodBytecode();
     }
@@ -534,21 +534,21 @@ public class KnowledgeBuilderTest {
         createEvalRule( packageDescr1,
                         "1==1" );
         builder1.addPackage( packageDescr1 );
-        final EvalCondition eval1 = (EvalCondition) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final EvalCondition eval1 = (EvalCondition) ((RuleImpl)builder1.getPackage("package1").getRules().iterator().next()).getBody().getChildren().get(0);
 
         final KnowledgeBuilderImpl builder2 = new KnowledgeBuilderImpl();
         final PackageDescr packageDescr2 = new PackageDescr( "package2" );
         createEvalRule( packageDescr2,
                         "1==1" );
         builder2.addPackage( packageDescr2 );
-        final EvalCondition eval2 = (EvalCondition) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final EvalCondition eval2 = (EvalCondition) ((RuleImpl)builder2.getPackage("package2").getRules().iterator().next()).getBody().getChildren().get(0);
 
         final KnowledgeBuilderImpl builder3 = new KnowledgeBuilderImpl();
         final PackageDescr packageDescr3 = new PackageDescr( "package3" );
         createEvalRule( packageDescr3,
                         "1==3" );
         builder3.addPackage( packageDescr3 );
-        final EvalCondition eval3 = (EvalCondition) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getLhs().getChildren().get( 0 );
+        final EvalCondition eval3 = (EvalCondition) ((RuleImpl)builder3.getPackage("package3").getRules().iterator().next()).getBody().getChildren().get(0);
 
         assertThat(eval2).isEqualTo(eval1);
         assertThat(eval1.equals(eval3)).isFalse();
@@ -563,7 +563,7 @@ public class KnowledgeBuilderTest {
                                       "update(stilton);" );
         assertThat(builder.getErrors().getErrors()).hasSize(0);
 
-        final GroupElement lhs = rule.getLhs();
+        final GroupElement lhs = rule.getBody();
         assertThat(lhs.getChildren()).hasSize(1);
 
         final GroupElement or = (GroupElement) lhs.getChildren().get( 0 );
@@ -579,7 +579,7 @@ public class KnowledgeBuilderTest {
                                       "update(stilton);" );
         assertThat(builder.getErrors().getErrors()).hasSize(0);
 
-        final GroupElement lhs = rule.getLhs();
+        final GroupElement lhs = rule.getBody();
         assertThat(lhs.getChildren()).hasSize(1);
 
         final GroupElement and = (GroupElement) lhs.getChildren().get( 0 );
@@ -604,7 +604,7 @@ public class KnowledgeBuilderTest {
                            "" );
         assertThat(builder.getErrors().getErrors().length).isEqualTo(0);
 
-        final GroupElement lhs = rule.getLhs();
+        final GroupElement lhs = rule.getBody();
         assertThat(lhs.getChildren()).hasSize(1);
 
         final GroupElement not = (GroupElement) lhs.getChildren().get( 0 );
@@ -629,7 +629,7 @@ public class KnowledgeBuilderTest {
                            "" );
         assertThat(builder.getErrors().getErrors().length).isEqualTo(0);
 
-        final GroupElement lhs = rule.getLhs();
+        final GroupElement lhs = rule.getBody();
         assertThat(lhs.getChildren()).hasSize(1);
 
         final GroupElement exists = (GroupElement) lhs.getChildren().get( 0 );
@@ -1232,7 +1232,7 @@ public class KnowledgeBuilderTest {
         final RuleImpl rule = pkg.getRule( "rule-1" );
         assertThat(rule).isNotNull();
 
-        final Pattern pattern = (Pattern) rule.getLhs().getChildren().get( 0 );
+        final Pattern pattern = (Pattern) rule.getBody().getChildren().get(0);
         assertThat(((ClassObjectType) pattern.getObjectType()).getClassType().getName()).isEqualTo(StockTick.class.getName());
         final Behavior window = pattern.getBehaviors().get(0);
         assertThat(window.getType()).isEqualTo(Behavior.BehaviorType.TIME_WINDOW);

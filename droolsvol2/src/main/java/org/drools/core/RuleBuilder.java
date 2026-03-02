@@ -2,11 +2,11 @@ package org.drools.core;
 
 import org.drools.api.data.DataSource;
 import org.drools.base.definitions.rule.impl.RuleImpl;
-import org.drools.core.RuleExtensionPoint.RuleExtensionPoint2;
-import org.drools.core.RuleExtensionPoint.RuleExtensionPoint3;
-import org.drools.core.RuleExtensionPoint.RuleExtensionPoint4;
-import org.drools.core.RuleExtensionPoint.RuleExtensionPoint5;
-import org.drools.core.RuleExtensionPoint.RuleExtensionPoint6;
+import org.drools.core.RuleExtendsPoint.RuleExtendsPoint2;
+import org.drools.core.RuleExtendsPoint.RuleExtendsPoint3;
+import org.drools.core.RuleExtendsPoint.RuleExtendsPoint4;
+import org.drools.core.RuleExtendsPoint.RuleExtendsPoint5;
+import org.drools.core.RuleExtendsPoint.RuleExtensionPoint6;
 import org.drools.core.RuleOOPathBuilder.Path2;
 import org.drools.core.RuleOOPathBuilder.Path3;
 import org.drools.core.RuleOOPathBuilder.Path4;
@@ -29,8 +29,6 @@ import org.drools.core.function.BaseTuple.Tuple4;
 import org.drools.core.function.BaseTuple.Tuple3;
 import org.drools.core.function.BaseTuple.Tuple2;
 import org.drools.core.function.Predicate6;
-import org.drools.core.rete.Join1;
-import org.drools.core.rete.Join2;
 import org.kie.api.definition.rule.Rule;
 
 import java.util.ArrayList;
@@ -145,19 +143,19 @@ public class RuleBuilder<DS> {
 
         }
 
-        public <B> From1First<END, DS, B> extendsRule(RuleExtensionPoint2<DS, B> extension2) {
+        public <B> From1First<END, DS, B> extendsRule(RuleExtendsPoint2<DS, B> extension2) {
             return null;
         }
 
-        public <B, C> Join2First<END, DS, B, C> extendsRule(RuleExtensionPoint3<DS, B, C> extension3) {
+        public <B, C> Join2First<END, DS, B, C> extendsRule(RuleExtendsPoint3<DS, B, C> extension3) {
             return null;
         }
 
-        public <B, C, D> Join3First<END, DS, B, C, D> extendsRule(RuleExtensionPoint4<DS, B, C, D> extension4) {
+        public <B, C, D> Join3First<END, DS, B, C, D> extendsRule(RuleExtendsPoint4<DS, B, C, D> extension4) {
             return null;
         }
 
-        public <B, C, D, E> Join4First<END, DS, B, C, D, E> extendsRule(RuleExtensionPoint5<DS, B, C, D, E> extension4) {
+        public <B, C, D, E> Join4First<END, DS, B, C, D, E> extendsRule(RuleExtendsPoint5<DS, B, C, D, E> extension4) {
             return null;
         }
     }
@@ -197,8 +195,8 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
-        public RuleExtensionPoint2<DS, B> extensionPoint() {
-            return new RuleExtensionPoint2<>(rule);
+        public RuleExtendsPoint2<DS, B> extensionPoint() {
+            return new RuleExtendsPoint2<>(rule);
         }
 
         public <T extends B> From1First<END, DS, T> type(Class<T>... cls) {
@@ -270,6 +268,20 @@ public class RuleBuilder<DS> {
         public Join2First<END, DS, B, C> index() {
             return this;
         }
+
+        public <V1, V2> Join2First<END, DS, B, C> filter(Variable<V1> v1, Variable<V2> v2,
+                                                         Predicate3<Context<DS>, V1, V2> predicate3) {
+            return this;
+        }
+
+        public <V1, V2, V3> Join2First<END, DS, B, C> filter(Variable<V1> v1, Variable<V2> v2, Variable<V2> v3,
+                                                             Predicate4<Context<DS>, V1, V2, V3> predicate4) {
+            return this;
+        }
+
+        public Join2First<END, DS, B, C> var(Variable var) {
+            return this;
+        }
     }
 
     public class Join2Second<END, DS, B, C>  extends BaseRuleBuilder<END>  {
@@ -277,8 +289,8 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
-        public RuleExtensionPoint3<DS, B, C> extensionPoint() {
-            return new RuleExtensionPoint3<>(rule);
+        public RuleExtendsPoint3<DS, B, C> extensionPoint() {
+            return new RuleExtendsPoint3<>(rule);
         }
 
         public <D> Join2Second<END, DS, B, C> not(From1First<END, DS, D> fromD) {
@@ -409,6 +421,20 @@ public class RuleBuilder<DS> {
         public Join3First<END, DS, B, C, D> ifn(Consumer4<Context<DS>, B, C, D> fn4) {
             return this;
         }
+
+        public <V1, V2> Join3First<END, DS, B, C, D> filter(Variable<V1> v1, Variable<V2> v2,
+                                                            Predicate3<Context<DS>, V1, V2> predicate3) {
+            return this;
+        }
+
+        public <V1, V2, V3> Join3First<END, DS, B, C, D> filter(Variable<V1> v1, Variable<V2> v2, Variable<V2> v3,
+                                                                Predicate4<Context<DS>, V1, V2, V3> predicate4) {
+            return this;
+        }
+
+        public Join3First<END, DS, B, C, D> var(Variable var) {
+            return this;
+        }
     }
 
     public class Join3Second<END, DS, B, C, D> extends BaseRuleBuilder<END>  {
@@ -417,8 +443,8 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
-        public RuleExtensionPoint4<DS, B, C, D> extensionPoint() {
-            return new RuleExtensionPoint4<>(rule);
+        public RuleExtendsPoint4<DS, B, C, D> extensionPoint() {
+            return new RuleExtendsPoint4<>(rule);
         }
 
         public <E> Join4First<END, DS, B, C, D, E> join(From1First<Void, DS, E> fromE) {
@@ -464,6 +490,20 @@ public class RuleBuilder<DS> {
         public Join4First<END, DS, B, C, D, E> filter(Predicate5<Context<DS>, B, C, D, E> predicate5) {
             return this;
         }
+
+        public <V1, V2> Join4First<END, DS, B, C, D, E> filter(Variable<V1> v1, Variable<V2> v2,
+                                                               Predicate3<Context<DS>, V1, V2> predicate3) {
+            return this;
+        }
+
+        public <V1, V2, V3> Join4First<END, DS, B, C, D, E> filter(Variable<V1> v1, Variable<V2> v2, Variable<V2> v3,
+                                                                   Predicate4<Context<DS>, V1, V2, V3> predicate4) {
+            return this;
+        }
+
+        public Join4First<END, DS, B, C, D, E> var(Variable var) {
+            return this;
+        }
     }
 
     public class Join4Second<END, DS, B, C, D, E> extends BaseRuleBuilder<END> {
@@ -471,8 +511,8 @@ public class RuleBuilder<DS> {
             super(end);
         }
 
-        public RuleExtensionPoint5<DS, B, C, D, E> extensionPoint() {
-            return new RuleExtensionPoint5<>(rule);
+        public RuleExtendsPoint5<DS, B, C, D, E> extensionPoint() {
+            return new RuleExtendsPoint5<>(rule);
         }
 
         public <F> Join5First<END, DS, B, C, D, E, F> join(From1First<Void, DS, F> fromF) {
@@ -509,6 +549,20 @@ public class RuleBuilder<DS> {
         }
 
         public Join5First<END, DS, B, C, D, E, F> filter(Predicate6<Context<DS>, B, C, D, E, F> predicate6) {
+            return this;
+        }
+
+        public <V1, V2> Join5First<END, DS, B, C, D, E, F> filter(Variable<V1> v1, Variable<V2> v2,
+                                                                  Predicate3<Context<DS>, V1, V2> predicate3) {
+            return this;
+        }
+
+        public <V1, V2, V3> Join5First<END, DS, B, C, D, E, F> filter(Variable<V1> v1, Variable<V2> v2, Variable<V2> v3,
+                                                                      Predicate4<Context<DS>, V1, V2, V3> predicate4) {
+            return this;
+        }
+
+        public Join5First<END, DS, B, C, D, E, F> var(Variable var) {
             return this;
         }
     }

@@ -369,7 +369,7 @@ public class JavaDialectRuntimeData implements DialectRuntimeData, Externalizabl
 
             // check for compiled code and remove if present.
             if (remove( consequenceName )) {
-                removeClasses( rule.getLhs() );
+                removeClasses( rule.getBody());
 
                 // Now remove the rule class - the name is a subset of the consequence name
                 String sufix = StringUtils.ucFirst( rule.getConsequence().getName() ) + "ConsequenceInvoker";

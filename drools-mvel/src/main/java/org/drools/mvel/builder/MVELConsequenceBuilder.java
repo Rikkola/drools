@@ -132,7 +132,7 @@ public class MVELConsequenceBuilder
     public void build(final RuleBuildContext context, String consequenceName) {
 
         // pushing consequence LHS into the stack for variable resolution
-        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getLhs() );
+        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getBody());
 
         try {
             MVELDialect dialect = (MVELDialect) context.getDialect( "mvel" );

@@ -94,7 +94,7 @@ public class RuleImpl implements Externalizable,
     private Map<String, Declaration> declarations;
     private Map<String, String[]>    requiredDeclarations = new HashMap<>();
 
-    private GroupElement lhsRoot;
+    private GroupElement body;
 
     private String                   dialect;
 
@@ -150,7 +150,7 @@ public class RuleImpl implements Externalizable,
      */
     public RuleImpl(String name) {
         this.name = name;
-        this.lhsRoot = GroupElementFactory.newAndInstance();
+        this.body = GroupElementFactory.newAndInstance();
         setSemanticallyValid(true);
         setActivationListener( "agenda" );
     }
@@ -162,7 +162,7 @@ public class RuleImpl implements Externalizable,
         out.writeObject( salience );
         out.writeBoolean( dirty );
         out.writeObject( declarations );
-        out.writeObject( lhsRoot );
+        out.writeObject(body);
         out.writeObject( dialect );
         out.writeObject( agendaGroup );
         out.writeObject( metaAttributes );
@@ -202,8 +202,8 @@ public class RuleImpl implements Externalizable,
 
         dirty = in.readBoolean();
         declarations = (Map<String, Declaration>) in.readObject();
-        lhsRoot = (GroupElement) in.readObject();
-        dialect = (String) in.readObject();
+        body         = (GroupElement) in.readObject();
+        dialect      = (String) in.readObject();
         agendaGroup = (String) in.readObject();
         metaAttributes = (Map<String, Object>) in.readObject();
         requiredDeclarations = (Map<String, String[]>) in.readObject();
@@ -542,7 +542,7 @@ public class RuleImpl implements Externalizable,
      */
     public void addPattern(final RuleElement element) {
         this.dirty = true;
-        this.lhsRoot.addChild( element );
+        this.body.addChild(element);
     }
 
     /**
@@ -551,19 +551,19 @@ public class RuleImpl implements Externalizable,
      *
      * @return The <code>List</code> of <code>Conditions</code>.
      */
-    public GroupElement getLhs() {
-        return this.lhsRoot;
+    public GroupElement getBody() {
+        return this.body;
     }
 
     public void setLhs(final GroupElement lhsRoot) {
         this.dirty = true;
-        this.lhsRoot = lhsRoot;
+        this.body  = lhsRoot;
     }
 
     private GroupElement getExtendedLhs(RuleImpl rule,
                                         GroupElement fromChild) {
         //combine rules LHS with Parent "Extends"
-        final GroupElement lhs = rule.lhsRoot.cloneOnlyGroup();
+        final GroupElement lhs = rule.body.cloneOnlyGroup();
         //use the children passed from prior child rules, and combine with current LHS (at the end)
         if ( null != fromChild ) {
             //Have GroupElement from a child rule, so combine it

@@ -92,7 +92,7 @@ public class AnnotationsOnPatternTest {
 
         final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("annotations-test", kieBaseTestConfiguration, drl);
 
-        final Pattern p = ((Pattern) ((RuleImpl ) kbase.getRule("org.drools.test", "Foo")).getLhs().getChildren().get(0));
+        final Pattern p = ((Pattern) ((RuleImpl ) kbase.getRule("org.drools.test", "Foo")).getBody().getChildren().get(0));
         final AnnotationDefinition adef = p.getAnnotations().get(Outer.class.getName().replace("$", "."));
 
         assertThat(adef.getPropertyValue("klass")).isEqualTo(String.class);
@@ -116,7 +116,7 @@ public class AnnotationsOnPatternTest {
 
         final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("annotations-test", kieBaseTestConfiguration, drl);
 
-        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getLhs().getChildren().get(0));
+        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getBody().getChildren().get(0));
         final Map<String, AnnotationDefinition> defs = p.getAnnotations();
         assertThat(defs.size()).isEqualTo(1);
 
@@ -146,7 +146,7 @@ public class AnnotationsOnPatternTest {
 
         final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("annotations-test", kieBaseTestConfiguration, drl);
 
-        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getLhs().getChildren().get(0));
+        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getBody().getChildren().get(0));
         final Map<String, AnnotationDefinition> defs = p.getAnnotations();
         assertThat(defs.size()).isEqualTo(1);
 
@@ -196,7 +196,7 @@ public class AnnotationsOnPatternTest {
 
         final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("annotations-test", kieBaseTestConfiguration, drl);
 
-        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getLhs().getChildren().get(0));
+        final Pattern p = ((Pattern) ((RuleImpl) kbase.getRule("org.drools.test", "Foo")).getBody().getChildren().get(0));
         final Map<String, AnnotationDefinition> defs = p.getAnnotations();
         assertThat(defs.size()).isEqualTo(1);
 
@@ -234,7 +234,7 @@ public class AnnotationsOnPatternTest {
 
         final RuleImpl rule = (RuleImpl) kbase.getRule(packageName, "test collect with annotation");
 
-        final List<? extends RuleElement> nested = ((Pattern) rule.getLhs().getChildren().get(0)).getSource().getNestedElements();
+        final List<? extends RuleElement> nested = ((Pattern) rule.getBody().getChildren().get(0)).getSource().getNestedElements();
 
         assertThat(nested.size()).isEqualTo(1);
 

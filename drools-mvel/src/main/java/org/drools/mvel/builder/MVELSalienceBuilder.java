@@ -42,7 +42,7 @@ public class MVELSalienceBuilder
     public void build(RuleBuildContext context) {
         boolean typesafe = context.isTypesafe();
         // pushing consequence LHS into the stack for variable resolution
-        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getLhs() );
+        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getBody());
 
         try {
             // This builder is re-usable in other dialects, so specify by name            

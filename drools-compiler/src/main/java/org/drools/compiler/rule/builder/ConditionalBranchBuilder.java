@@ -67,7 +67,7 @@ public class ConditionalBranchBuilder implements RuleConditionBuilder {
         if (lastPattern == null) {
             RuleImpl parent = context.getRule().getParent();
             if (parent != null) {
-                lastPattern = getLastPattern(parent.getLhs().getChildren());
+                lastPattern = getLastPattern(parent.getBody().getChildren());
             }
         }
         return lastPattern;

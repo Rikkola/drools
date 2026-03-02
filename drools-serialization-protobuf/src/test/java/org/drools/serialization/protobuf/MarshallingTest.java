@@ -2003,7 +2003,7 @@ public class MarshallingTest extends CommonTestMethodBase {
         BuildContext buildContext = new BuildContext( knowledgeBase, Collections.emptyList() );
         //simple rule that fires after 10 seconds
         final RuleImpl rule = new RuleImpl( "test-rule" );
-        new RuleTerminalNode(1, new MockTupleSource(2, buildContext), rule, rule.getLhs(), 0, buildContext );
+        new RuleTerminalNode(1, new MockTupleSource(2, buildContext), rule, rule.getBody(), 0, buildContext );
 
         final List<String> fired = new ArrayList<String>();
 

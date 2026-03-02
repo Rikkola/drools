@@ -12,35 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class OOPathTest {
-    record Library(String name, List<Room> rooms) {
-        public String toString() {
-            return "Library[name=" + name +"]";
-        }
-    }
-
-    record Room(String name, List<Shelf> shelves) {
-        public String toString() {
-            return "Room[name=" + name +"]";
-        }
-    }
-
-    record Shelf(String name, List<Book> books) {
-        public String toString() {
-            return "Shelf[name=" + name +"]";
-        }
-    }
-
-    record Book(String title, List<Page> pages) {
-        public String toString() {
-            return "Book[name=" + title +"]";
-        }
-    }
-
-    record Page(int number, String content) {
-        public String toString() {
-            return "Page[number=" + number +"]";
-        }
-    }
 
     @Test
     public void test() {
@@ -126,7 +97,7 @@ public class OOPathTest {
 
     public void createBook(Library library, Room room, Shelf shelf) {
         for (int i = 0; i < 2; i++) {
-            Book b = new Book(library.name() + "_" + room.name() + "_" + shelf.name + "_b" + i, new ArrayList<>());
+            Book b = new Book(library.name() + "_" + room.name() + "_" + shelf.name() + "_b" + i, new ArrayList<>());
             shelf.books().add(b);
             createPages(library, room, shelf, b);
         }

@@ -90,7 +90,7 @@ public class RuleBuilderTest {
         assertThat(rule.getDeclarations().size()).as("There should be 2 rule level declarations").isEqualTo(2);
 
         // second GE should be a not
-        final GroupElement not = (GroupElement) rule.getLhs().getChildren().get( 1 );
+        final GroupElement not = (GroupElement) rule.getBody().getChildren().get(1);
         assertThat(not.isNot()).isTrue();
         // not has no outer declarations
         assertThat(not.getOuterDeclarations().isEmpty()).isTrue();
@@ -248,7 +248,7 @@ public class RuleBuilderTest {
         assertThat(kBuilder.getErrors().isEmpty()).as(kBuilder.getErrors().toString()).isTrue();
 
         final RuleImpl rule = kBuilder.getPackages()[0].getRule( "Test Rule" );
-        final GroupElement and = rule.getLhs();
+        final GroupElement and = rule.getBody();
         final Pattern pat = (Pattern) and.getChildren().get( 0 );
         if (pat.getConstraints().get(0) instanceof MVELConstraint) {
             final MVELConstraint fc = (MVELConstraint) pat.getConstraints().get( 0 );
@@ -293,7 +293,7 @@ public class RuleBuilderTest {
         assertThat(kBuilder.getErrors().isEmpty()).as(kBuilder.getErrors().toString()).isTrue();
 
         final RuleImpl rule = kBuilder.getPackages()[0].getRule( "Test Rule" );
-        final GroupElement and = rule.getLhs();
+        final GroupElement and = rule.getBody();
         final Pattern pat = (Pattern) and.getChildren().get( 0 );
         if (pat.getConstraints().get(0) instanceof MVELConstraint) {
             final MVELConstraint fc = (MVELConstraint) pat.getConstraints().get( 0 );

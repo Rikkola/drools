@@ -31,7 +31,7 @@ import org.drools.mvel.java.JavaRuleBuilderHelper;
 public abstract class AbstractASMConsequenceBuilder implements ConsequenceBuilder {
     public void build(RuleBuildContext context, String consequenceName) {
         // pushing consequence LHS into the stack for variable resolution
-        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getLhs() );
+        context.getDeclarationResolver().pushOnBuildStack( context.getRule().getBody());
 
         Map<String, Object> vars = consequenceContext(context, consequenceName);
         if (vars == null) {

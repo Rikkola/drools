@@ -529,8 +529,8 @@ public class DescrBuilderTest {
         org.kie.api.definition.rule.Rule rule = rebuiltPkg.getRules().iterator().next();
         RuleImpl r = ((RuleImpl) rule);
 
-        assertThat(r.getLhs().getChildren().size()).isEqualTo(2);
-        Iterator<RuleElement> iter = r.getLhs().getChildren().iterator();
+        assertThat(r.getBody().getChildren().size()).isEqualTo(2);
+        Iterator<RuleElement> iter = r.getBody().getChildren().iterator();
 
         RuleElement arg1 = iter.next();
         assertThat(arg1 instanceof GroupElement && ((GroupElement) arg1).getType() == GroupElement.Type.OR).isTrue();

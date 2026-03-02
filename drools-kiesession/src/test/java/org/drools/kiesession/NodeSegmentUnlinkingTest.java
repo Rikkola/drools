@@ -139,7 +139,7 @@ public class NodeSegmentUnlinkingTest {
         RuleTerminalNode rtn1 = new RuleTerminalNode( 18,
                                                       n2,
                                                       rule1,
-                                                      rule1.getLhs(),
+                                                      rule1.getBody(),
                                                       0,
                                                       buildContext );
         rtn1.attach(buildContext);
@@ -152,7 +152,7 @@ public class NodeSegmentUnlinkingTest {
         RuleTerminalNode rtn2 = new RuleTerminalNode( 19,
                                                       n6,
                                                       rule2,
-                                                      rule2.getLhs(),
+                                                      rule2.getBody(),
                                                       0,
                                                       buildContext );
         rtn2.attach(buildContext);
@@ -162,7 +162,7 @@ public class NodeSegmentUnlinkingTest {
         RuleTerminalNode rtn3 = new RuleTerminalNode( 20,
                                                       n8,
                                                       rule3,
-                                                      rule3.getLhs(),
+                                                      rule3.getBody(),
                                                       0,
                                                       buildContext );
         rtn3.attach(buildContext);

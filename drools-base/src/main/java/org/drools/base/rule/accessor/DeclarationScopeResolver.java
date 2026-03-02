@@ -90,7 +90,7 @@ public class DeclarationScopeResolver {
     }
 
     private Declaration getExtendedDeclaration(RuleImpl rule, String identifier) {
-        Declaration declaration = rule.getLhs().resolveDeclaration( identifier );
+        Declaration declaration = rule.getBody().resolveDeclaration(identifier);
         if ( declaration != null ) {
             return declaration;
         }
@@ -99,7 +99,7 @@ public class DeclarationScopeResolver {
     }
 
     private Map<String, Declaration> getAllExtendedDeclaration(RuleImpl rule, Map<String, Declaration> dec) {
-        dec.putAll( rule.getLhs().getInnerDeclarations() );
+        dec.putAll( rule.getBody().getInnerDeclarations());
         if ( null != rule.getParent() ) {
             return getAllExtendedDeclaration( rule.getParent(),
                                               dec );

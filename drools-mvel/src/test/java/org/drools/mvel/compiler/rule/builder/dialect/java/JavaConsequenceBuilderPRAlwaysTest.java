@@ -106,7 +106,7 @@ public class JavaConsequenceBuilderPRAlwaysTest {
         
         rule.addPattern( p );
         
-        context.getDeclarationResolver().pushOnBuildStack(rule.getLhs());
+        context.getDeclarationResolver().pushOnBuildStack(rule.getBody());
         
         context.getDialect().getConsequenceBuilder().build(context, RuleImpl.DEFAULT_CONSEQUENCE_NAME);
         for ( String name : namedConsequences.keySet() ) {

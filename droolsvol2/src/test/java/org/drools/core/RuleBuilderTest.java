@@ -5,40 +5,47 @@ import org.drools.core.function.Function1;
 import org.drools.core.function.Function2;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
 public class RuleBuilderTest {
+    record DS(DataStore<Person> persons,
+              DataStore<Library> libraries,
+              DataStore<Object> misc) {};
 
+    record P3(String p3_1, String p3_2, String p3_3) {
+        public static final P3 V = new P3(null,null,null);
+    };
+
+    record Path (Library library, Room room, Shelf shelf, Book book, Page page) {}
 
     public void test3JOINS() {
-        record DS(DataStore<Person> persons,
-                  DataStore<OOPathTest.Library> libraries) {};
-
         RuleBuilder<DS> builder = new RuleBuilder<>();
-
-        record P3(String p3_1, String p3_2, String p3_3) {
-            public static final P3 V = new P3(null,null,null);
-        };
 
         builder.rule("rule1").<P3>params()
                .join(builder.from(DS::persons))
                .join(builder.from(DS::persons))
                .join(builder.from(DS::persons));
-               //.join(builder.from(DS::persons))
+    }
+
+    @Test
+    public void testCompactFilter() {
+        RuleBuilder<DS> builder = new RuleBuilder<>();
+
+        Variable<Person> v1 = Variable.of("p1");
+        Variable<Person> v2 = Variable.of("p2");
+        Variable<Person> v3 = Variable.of("p3");
+        Variable<Person> v4 = Variable.of("p4");
+        builder.rule("rule1").<P3>params()
+               .join(builder.from(DS::persons)).var(v1)
+               .join(builder.from(DS::persons)).var(v2)
+               .join(builder.from(DS::persons)).var(v3)
+               .join(builder.from(DS::persons)).var(v4)
+               .filter( v1, v4, (ctx, a1, a2) -> a1.name() == a2.name());
     }
 
     public void test1() {
-        record DS(DataStore<Person> persons,
-                  DataStore<OOPathTest.Library> libraries) {};
-
         RuleBuilder<DS> builder = new RuleBuilder<>();
-
-        record P3(String p3_1, String p3_2, String p3_3) {
-            public static final P3 V = new P3(null,null,null);
-        };
 
         builder.rule("rule1")
                .fn( (ctx) -> System.out.println("hello"));
@@ -57,26 +64,26 @@ public class RuleBuilderTest {
 
         builder.rule("rule1").<P3>params()
                .join(builder.from(DS::persons).filter((ctx, b) -> b.age() > 20))
-               .filter((ctx, a, b) -> a.p3_1().length() > b.age)
+               .filter((ctx, a, b) -> a.p3_1().length() > b.age())
                .join(builder.from(DS::persons).filter(((ctx, c) -> c.age() > 20)))
                .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0)
                .fn( (ctx, a, b, c) -> System.out.println(a.p3_1));;
 
         builder.rule("rule1").param("name", String.class).param("age", int.class)
                .join(builder.from(DS::persons).filter((ctx, b) -> b.age() > 20))
-               .filter((ctx, a, b) -> ((String)a.get(0)).length() > b.age)
+               .filter((ctx, a, b) -> ((String)a.get(0)).length() > b.age())
                .join(builder.from(DS::persons).filter((ctx, c) -> c.age() > 20))
                .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0);
 
         builder.rule("rule1").map().param("name", String.class).param("age", int.class)
                .join(builder.from(DS::persons).filter((ctx, b) -> b.age() > 20))
-               .filter((ctx, a, b) -> ((String)a.get("name")).length() > b.age)
+               .filter((ctx, a, b) -> ((String)a.get("name")).length() > b.age())
                .join(builder.from(DS::persons).filter((ctx, c) -> c.age() > 20))
                .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0);
 
         builder.rule("rule1").from(DS::persons).filter((ctx, a) -> a.age() > 20)
                .join(builder.from(DS::persons).filter((ctx, b) -> b.age() > 20))
-               .filter((ctx, a, b) -> a.age() > b.age)
+               .filter((ctx, a, b) -> a.age() > b.age())
                .join(builder.from(DS::persons).filter((ctx, c) -> c.age() > 20))
                .filter((ctx, a, b, c) -> a != null && b.age() > 0 && c.age()> 0);
 
@@ -89,8 +96,6 @@ public class RuleBuilderTest {
     }
 
     public void testPath() {
-        record DS(DataStore<?> ds1) {};
-
         RuleBuilder<DS> builder = new RuleBuilder<>();
 
         DataStore<Object> ds = new PropagatingDataStore<>(0, new TypeIndexer<>());
@@ -105,12 +110,7 @@ public class RuleBuilderTest {
     }
 
     public void testPath2() {
-        record DS(DataStore<Person> persons,
-                  DataStore<OOPathTest.Library> libraries) {};
-
         RuleBuilder<DS> builder = new RuleBuilder<>();
-
-        record Path (Library library, Room room, Shelf shelf, Book book, Page page) {}
 
         builder.rule("rule1").<Library>params()
                .<Room, Shelf>path3()
@@ -136,15 +136,7 @@ public class RuleBuilderTest {
 
     @Test
     public void testNot() {
-        record DS(DataStore<Person> persons,
-                  DataStore<OOPathTest.Library> libraries,
-                  DataStore<Object> misc) {};
-
         RuleBuilder<DS> builder = new RuleBuilder<>();
-
-        record P3(String p3_1, String p3_2, String p3_3) {
-            public static final P3 V = new P3(null,null,null);
-        };
 
         builder.rule("rule1").<P3>params()
                    .join(builder.from(DS::persons).filter((ctx, b) -> b.age() > 20))
@@ -158,53 +150,20 @@ public class RuleBuilderTest {
                .end();
     }
 
-    record DS(DataStore<Person> ds1) {};
-
     @Test
     public void testDataSource() {
-        DS ds = new DS(new PropagatingDataStore<>(0, new TypeIndexer<>()));
+        DS ds = new DS(new PropagatingDataStore<>(0, new TypeIndexer<>()),
+                       (new PropagatingDataStore<>(0, new TypeIndexer<>())),
+                       (new PropagatingDataStore<>(0, new TypeIndexer<>())));
 
         ContextPojoDS pojoCtx = new ContextPojoDS(ds);
 
         ContextMapDS mapCtx = new ContextMapDS();
 
-        Function1<DS, DataStore<Person>> x = DS::ds1;
+        Function1<DS, DataStore<Person>> x = DS::persons;
 
         Function2<Map, String, DataStore<?>> y = Map<String, DataStore<?>>::get;
     }
 
 
-    public record Person(String name, int age) {
-
-    }
-
-    record Library(String name, List<OOPathTest.Room> rooms) {
-        public String toString() {
-            return "Library[name=" + name +"]";
-        }
-    }
-
-    record Room(String name, List<OOPathTest.Shelf> shelves) {
-        public String toString() {
-            return "Room[name=" + name +"]";
-        }
-    }
-
-    record Shelf(String name, List<OOPathTest.Book> books) {
-        public String toString() {
-            return "Shelf[name=" + name +"]";
-        }
-    }
-
-    record Book(String title, List<OOPathTest.Page> pages) {
-        public String toString() {
-            return "Book[name=" + title +"]";
-        }
-    }
-
-    record Page(int number, String content) {
-        public String toString() {
-            return "Page[number=" + number +"]";
-        }
-    }
 }
