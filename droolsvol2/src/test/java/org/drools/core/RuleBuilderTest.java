@@ -19,7 +19,7 @@ public class RuleBuilderTest {
 
     record Path (Library library, Room room, Shelf shelf, Book book, Page page) {}
 
-    public void test3JOINS() {
+    public void test3JoinsVariousUses() {
         RuleBuilder<Ctx> builder = new RuleBuilder<>();
 
         builder.rule("rule1")
@@ -76,8 +76,9 @@ public class RuleBuilderTest {
                .join(builder.from(Ctx::persons)).var(v1)
                .join(builder.from(Ctx::persons)).var(v2)
                .join(builder.from(Ctx::persons)).var(v3)
+
                .join(builder.from(Ctx::persons)).var(v4)
-               .filter( v1, v4, (ctx, a1, a2) -> a1.name() == a2.name());
+                                                .filter( v1, v4, (ctx, a1, a2) -> a1.name() == a2.name());
     }
 
     public void test1() {
@@ -177,10 +178,10 @@ public class RuleBuilderTest {
         builder.rule("rule1").<Params3>params()
                .join(Ctx::persons).filter((ctx, b) -> b.age() > 20)
                .not()
-               .join(builder.from(Ctx::misc)
-                                    .<Map<String, Person>>type()
-                                    .filter((ctx, p) -> p.get("xxx").age() > 20))
-               .join(Ctx::libraries)
+                   .join(builder.from(Ctx::misc)
+                                .<Map<String, Person>>type()
+                                .filter((ctx, p) -> p.get("xxx").age() > 20))
+                   .join(Ctx::libraries)
                .end()
                .fn( (a, b, c) -> System.out.println(a.ds() + b.p3_1 + c.name()))
                .end();
