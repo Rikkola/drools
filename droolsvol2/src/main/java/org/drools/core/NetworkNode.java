@@ -5,5 +5,4 @@ public interface NetworkNode {
     int getPathIndex();
     int getSize();
     int getObjectIndex();
-    int getWalkBack();
 }

@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.drools.core.TupleUtil.*;
 
 
 public class BiLinearTuplePredicateCacheTest {
@@ -29,46 +30,40 @@ public class BiLinearTuplePredicateCacheTest {
 
     @Test
     public void testDeepWalk(){
-        //TupleImpl<B> b = TupleUtil.objectTuple(new B("b1"), 1, 1);
-        TupleImpl<C> c = TupleUtil.objectTuple(new C("c1"), 2, 1, 1);
-        TupleImpl<D> d = TupleUtil.objectTuple(new D("d1"), 3, 1, 1);
-        TupleImpl<E> e = TupleUtil.objectTuple(new E("e1"), 4, 1, 1);
-        TupleImpl<F> f = TupleUtil.objectTuple(new F("f1"), 5, 3, 1);
-        TupleImpl<G> g = TupleUtil.objectTuple(new G("g1"), 6, 2, 1);
-        TupleImpl<H> h = TupleUtil.objectTuple(new H("h1"), 7, 1, 1);
-        TupleImpl<I> i = TupleUtil.objectTuple(new I("i1"), 8, 2, 1);
-        TupleImpl<J> j = TupleUtil.objectTuple(new J("j1"), 9, 2, 1);
-        TupleImpl<K> k = TupleUtil.objectTuple(new K("k1"), 10, 1, 1);
+        C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+        F f1 = new F("f1"); G g1 = new G("g1"); H h1 = new H("h1");
+        I i1 = new I("i1"); J j1 = new J("j1"); K k1 = new K("k1");
 
-        // It's only the objectIndex and size of the last tuple that matters.
-        TupleImpl<E> de = TupleUtil.joinTuple(d, e, 13, 2, 1);
+        // c is a separate left input at objectIndex 1
+        resetIndex();
+        TupleImpl cTuple = leaf(c1);
 
-        TupleImpl<H> gh = TupleUtil.joinTuple(g, h, 14, 2, 1);
-        TupleImpl<H> f2 = TupleUtil.leftTuple(f,15, 2, 1);
-        TupleImpl<H> fgh = TupleUtil.joinTuple(f2, gh, 16, 3, 2);
-
-        TupleImpl<K> jk = TupleUtil.joinTuple(j, k, 17, 2, 1);
-        TupleImpl<K> jk2 = TupleUtil.leftTuple(jk, 18, 2, 1);
-        TupleImpl<K> ijk = TupleUtil.joinTuple(i, jk2, 19, 3, 2);
-
-        TupleImpl<K> fghijk = TupleUtil.joinTuple(fgh, ijk, 20, 6, 3);
-
-        // only this one matters for this test
-        TupleImpl<K> defghijk = TupleUtil.joinTuple(de, fghijk, 21, 9, 8);
+        // d-k form the right tree, objectIndex continues from 2
+        TupleImpl de = join(leaf(d1), leaf(e1));
+        TupleImpl fgh = join(leaf(f1), join(leaf(g1), leaf(h1)));
+        TupleImpl ijk = join(leaf(i1), join(leaf(j1), leaf(k1)));
+        TupleImpl defghijk = join(de, join(fgh, ijk));
+        System.out.println("testDeepWalk - right tree:\n" + TupleTreePrinter.print(defghijk));
 
         BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(10));
 
         cache.setRight(defghijk);
 
-        assertArrayEquals(new Object[] {
-                null, null, d, e, f, g,  h, i, j, k
-        }, cache.values());
+        TupleImpl[] values = cache.values();
+        assertThat(values[2].get()).isSameAs(d1);
+        assertThat(values[3].get()).isSameAs(e1);
+        assertThat(values[4].get()).isSameAs(f1);
+        assertThat(values[5].get()).isSameAs(g1);
+        assertThat(values[6].get()).isSameAs(h1);
+        assertThat(values[7].get()).isSameAs(i1);
+        assertThat(values[8].get()).isSameAs(j1);
+        assertThat(values[9].get()).isSameAs(k1);
 
-        cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), c);
+        cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), cTuple);
 
-        assertArrayEquals(new Object[] {
-                null, c, d, e, f, g,  h, i, j, k
-        }, cache.values());
+        values = cache.values();
+        assertThat(values[1].get()).isSameAs(c1);
     }
 
     private static Predicate getPredicate(int s)  {
@@ -90,96 +85,98 @@ public class BiLinearTuplePredicateCacheTest {
 
     @Test
     public void testSetLeft() {
-        TupleImpl<B> b = TupleUtil.objectTuple(new B("b1"), 1, 1);
-        TupleImpl<C> c = TupleUtil.objectTuple(new C("c1"), 2, 1);
-        TupleImpl<D> d = TupleUtil.objectTuple(new D("d1"), 3, 1);
-        TupleImpl<E> e = TupleUtil.objectTuple(new E("e1"), 4, 1);
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
 
-        TupleImpl<C> bc  = TupleUtil.joinTuple(b, c, 10, 2, 2);
-        TupleImpl<E> de = TupleUtil.joinTuple(d, e, 11, 4, 2);
+        resetIndex();
+        TupleImpl bc = join(leaf(b1), leaf(c1));
+        TupleImpl de = join(leaf(d1), leaf(e1));
+        System.out.println("testSetLeft - left: bc, right: de\n" + TupleTreePrinter.print(bc) + TupleTreePrinter.print(de));
 
         BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
 
         cache.setLeft(bc);
 
-        assertArrayEquals(new Object[] {
-                null, b, c, null, null
-        }, cache.values());
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3]).isNull();
+        assertThat(values[4]).isNull();
 
         cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), de);
-        assertArrayEquals(new Object[] {
-                null, b, c, d, e
-        }, cache.values());
 
+        values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
     }
 
     @Test
     public void testSetRight() {
-        TupleImpl<B> b = TupleUtil.objectTuple(new B("b1"), 1, 1);
-        TupleImpl<C> c = TupleUtil.objectTuple(new C("c1"), 2, 1);
-        TupleImpl<D> d = TupleUtil.objectTuple(new D("d1"), 3, 1);
-        TupleImpl<E> e = TupleUtil.objectTuple(new E("e1"), 4, 1);
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
 
-        TupleImpl<C> bc  = TupleUtil.joinTuple(b, c, 10, 2, 2);
-        TupleImpl<E> de = TupleUtil.joinTuple(d, e, 11, 4, 2);
+        resetIndex();
+        TupleImpl bc = join(leaf(b1), leaf(c1));
+        TupleImpl de = join(leaf(d1), leaf(e1));
+        System.out.println("testSetRight - left: bc, right: de\n" + TupleTreePrinter.print(bc) + TupleTreePrinter.print(de));
 
         BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
 
         cache.setRight(de);
 
-        assertArrayEquals(new Object[] {
-                null, null, null, d, e
-        }, cache.values());
+        TupleImpl[] values = cache.values();
+        assertThat(values[1]).isNull();
+        assertThat(values[2]).isNull();
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
 
         cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), bc);
 
-        assertArrayEquals(new Object[] {
-                null, b, c,  d, e
-        }, cache.values());
-
+        values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
     }
 
     @Test
     public void testLinearExecutionCacheLeft() throws Exception {
-        // The data structures are linear, but it uses the BiLinearTuplePredicateCache to test it still works
-        List<TupleImpl<?>> objects = new ArrayList<>();
-        List<TupleImpl<?>> joins   = new ArrayList<>();
-
-        for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1, i));
+        Object[] allObjects = new Object[9];
+        for (int i = 0; i < 9; i++) {
+            allObjects[i] = TupleUtil.getAlphabet()[i + 1];
         }
 
-        joins.add(objects.get(0));
+        for (int arity = 3; arity < 10; arity++) {
+            resetIndex();
+            // Build left: linear chain of (arity-2) objects
+            TupleImpl leftChain = leaf(allObjects[0]);
+            for (int i = 1; i < arity - 2; i++) {
+                leftChain = join(leftChain, leaf(allObjects[i]));
+            }
+            // Right: single object
+            TupleImpl rightObj = leaf(allObjects[arity - 2]);
 
-        for(int i = 1; i < 9; i++) {
-            joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i, i+1, 2));
-        }
-
-        for ( int i = 3; i < 10; i++ ) {
-            Class cls = Class.forName(Predicate.class.getName() + (i));
-
+            Class cls = Class.forName(Predicate.class.getName() + arity);
             final List<String> recorder = new ArrayList<>();
-            Predicate proxy =  (Predicate) Proxy.newProxyInstance(
+            Predicate proxy = (Predicate) Proxy.newProxyInstance(
                     LinearTuplePredicateCacheTest.class.getClassLoader(),
-                    new Class[] { cls },
-                    new DynamicInvocationHandler(recorder, i));
+                    new Class[]{cls},
+                    new DynamicInvocationHandler(recorder, arity));
 
             BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
-            cache.setLeft(joins.get(i-3));
-            cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), objects.get(i-2));
+            System.out.println("testLinearExecutionCacheLeft - arity=" + arity + " left:\n" + TupleTreePrinter.print(leftChain) + "right:\n" + TupleTreePrinter.print(rightObj));
+            cache.setLeft(leftChain);
+            cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), rightObj);
 
-            Object[] args = new Object[i];
-            String s = "Predicate" + i + ".test ctx, ";
-            for ( int j = 1; j < args.length; j++ ) {
-                args[j] = Character.toString(letters[j]);
-                s = s + args[j];
-                if (j < args.length - 1) {
-                    s = s + ", ";
-                }
+            String s = "Predicate" + arity + ".test ctx, ";
+            for (int j = 1; j < arity; j++) {
+                s = s + Character.toString(letters[j]);
+                if (j < arity - 1) s = s + ", ";
             }
 
             assertThat(recorder).containsExactly(s);
-
             recorder.clear();
             cache.clear();
         }
@@ -187,46 +184,41 @@ public class BiLinearTuplePredicateCacheTest {
 
     @Test
     public void testLinearExecutionCacheRight() throws Exception {
-        // The data structures are linear, but it uses the BiLinearTuplePredicateCache to test it still works
-        List<TupleImpl<?>> objects = new ArrayList<>();
-        List<TupleImpl<?>> joins   = new ArrayList<>();
-
-        for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1, i));
+        Object[] allObjects = new Object[9];
+        for (int i = 0; i < 9; i++) {
+            allObjects[i] = TupleUtil.getAlphabet()[i + 1];
         }
 
-        joins.add(objects.get(0));
+        for (int arity = 3; arity < 10; arity++) {
+            resetIndex();
+            // Right: single object
+            TupleImpl rightObj = leaf(allObjects[arity - 3]);
+            // Left: linear chain of (arity-1) objects
+            resetIndex();
+            TupleImpl leftChain = leaf(allObjects[0]);
+            for (int i = 1; i < arity - 1; i++) {
+                leftChain = join(leftChain, leaf(allObjects[i]));
+            }
 
-        for(int i = 1; i < 9; i++) {
-            joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i, i+1, 2));
-        }
-
-        for ( int i = 3; i < 10; i++ ) {
-            Class cls = Class.forName(Predicate.class.getName() + (i));
-
+            Class cls = Class.forName(Predicate.class.getName() + arity);
             final List<String> recorder = new ArrayList<>();
-            Predicate proxy =  (Predicate) Proxy.newProxyInstance(
+            Predicate proxy = (Predicate) Proxy.newProxyInstance(
                     LinearTuplePredicateCacheTest.class.getClassLoader(),
-                    new Class[] { cls },
-                    new DynamicInvocationHandler(recorder, i));
+                    new Class[]{cls},
+                    new DynamicInvocationHandler(recorder, arity));
 
-            BiLinearTuplePredicateCache cache    = new BiLinearTuplePredicateCache(proxy);
+            BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
+            System.out.println("testLinearExecutionCacheRight - arity=" + arity + " left:\n" + TupleTreePrinter.print(leftChain) + "right:\n" + TupleTreePrinter.print(rightObj));
+            cache.setRight(rightObj);
+            cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), leftChain);
 
-            cache.setRight(objects.get(i-3));
-            cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), joins.get(i-2));
-
-            Object[] args = new Object[i];
-            String s = "Predicate" + i + ".test ctx, ";
-            for ( int j = 1; j < args.length; j++ ) {
-                args[j] = Character.toString(letters[j]);
-                s = s + args[j];
-                if (j < args.length - 1) {
-                    s = s + ", ";
-                }
+            String s = "Predicate" + arity + ".test ctx, ";
+            for (int j = 1; j < arity; j++) {
+                s = s + Character.toString(letters[j]);
+                if (j < arity - 1) s = s + ", ";
             }
 
             assertThat(recorder).containsExactly(s);
-
             recorder.clear();
             cache.clear();
         }
@@ -234,120 +226,256 @@ public class BiLinearTuplePredicateCacheTest {
 
     @Test
     public void testBiLinearExecutionCacheLeft() throws Exception {
-        // This uses a right input join tuple as left input for the tip of the setLeft and an object for the applyRight
-        // Note it will iterate from 3 to 8 arity, to test each part of the test() method invocation.
-        List<TupleImpl<?>> objects = new ArrayList<>();
-
-        for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1, i));
+        Object[] allObjects = new Object[9];
+        for (int i = 0; i < 9; i++) {
+            allObjects[i] = TupleUtil.getAlphabet()[i + 1];
         }
 
-        List<List<TupleImpl<?>>> listOfJoins = new ArrayList<>();
         for (int j = 1; j < 7; j++) {
-            List<TupleImpl<?>> joins   = new ArrayList<>();
-            joins.add(objects.get(0));
-            listOfJoins.add(joins);
-            for (int i = 1; i <= j; i++) {
-                if (i < j) {
-                    joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i, i + 1, 2));
-                } else {
-                    // this is the last one
-                    TupleImpl t = TupleUtil.joinTuple(objects.get(i), objects.get(i + 1), objects.size() + i, i + 1, 2);
-                    joins.add(TupleUtil.joinTuple(joins.get(i - 1), t, objects.size() + 2, i + 2, 2));
-                }
+            resetIndex();
+            // Build linear chain, with last step being a bi-linear join (pair on right)
+            TupleImpl chain = leaf(allObjects[0]);
+            for (int i = 1; i < j; i++) {
+                chain = join(chain, leaf(allObjects[i]));
             }
-        }
+            TupleImpl lastPair = join(leaf(allObjects[j]), leaf(allObjects[j + 1]));
+            TupleImpl leftTuple = join(chain, lastPair);
 
-        for ( int j = 0; j < listOfJoins.size(); j++ ) {
-            List<TupleImpl<?>> joins = listOfJoins.get(j);
-            for (int i = joins.size()+1; i < joins.size()+2; i++) {
-                Class cls = Class.forName(Predicate.class.getName() + (i+2));
+            // Right: single object
+            TupleImpl rightObj = leaf(allObjects[j + 2]);
 
-                final List<String> recorder = new ArrayList<>();
-                Predicate proxy = (Predicate) Proxy.newProxyInstance(
-                        LinearTuplePredicateCacheTest.class.getClassLoader(),
-                        new Class[]{cls},
-                        new DynamicInvocationHandler(recorder, i+2));
+            int arity = j + 4;
+            Class cls = Class.forName(Predicate.class.getName() + arity);
+            final List<String> recorder = new ArrayList<>();
+            Predicate proxy = (Predicate) Proxy.newProxyInstance(
+                    LinearTuplePredicateCacheTest.class.getClassLoader(),
+                    new Class[]{cls},
+                    new DynamicInvocationHandler(recorder, arity));
 
-                BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
-                cache.setLeft(joins.get(i - 2));
-                cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), objects.get(i));
+            BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
+            System.out.println("testBiLinearExecutionCacheLeft - arity=" + arity + " left:\n" + TupleTreePrinter.print(leftTuple) + "right:\n" + TupleTreePrinter.print(rightObj));
+            cache.setLeft(leftTuple);
+            cache.applyRight(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), rightObj);
 
-                Object[] args = new Object[i+2];
-                String   s    = "Predicate" + (i+2) + ".test ctx, ";
-                for (int k = 1; k < args.length; k++) {
-                    args[k] = Character.toString(letters[k]);
-                    s       = s + args[k];
-                    if (k < args.length - 1) {
-                        s = s + ", ";
-                    }
-                }
-
-                assertThat(recorder).containsExactly(s);
-
-                recorder.clear();
-                cache.clear();
+            String s = "Predicate" + arity + ".test ctx, ";
+            for (int k = 1; k < arity; k++) {
+                s = s + Character.toString(letters[k]);
+                if (k < arity - 1) s = s + ", ";
             }
+
+            assertThat(recorder).containsExactly(s);
+            recorder.clear();
+            cache.clear();
         }
     }
 
     @Test
     public void testBiLinearExecutionCacheRight() throws Exception {
-        // This uses lienar tuples for the setLeft, and a join tuple as the applyRight
-        // Note it will iterate from 3 to 8 arity, to test each part of the test() method invocation.
-        List<TupleImpl<?>> objects = new ArrayList<>();
-
-        for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1, i));
+        Object[] allObjects = new Object[9];
+        for (int i = 0; i < 9; i++) {
+            allObjects[i] = TupleUtil.getAlphabet()[i + 1];
         }
 
-        List<List<TupleImpl<?>>> listOfJoins = new ArrayList<>();
         for (int j = 1; j < 8; j++) {
-            List<TupleImpl<?>> joins   = new ArrayList<>();
-            joins.add(objects.get(0));
-            listOfJoins.add(joins);
-            for (int i = 1; i <= j; i++) {
-                if (i < j) {
-                    joins.add(TupleUtil.joinTuple(joins.get(i - 1), objects.get(i), objects.size() + i, i + 1, 2));
-                } else {
-                    // this is the last one
-                    TupleImpl t = TupleUtil.joinTuple(objects.get(i), objects.get(i + 1), objects.size() + i, i + 1, 2);
-                    joins.add(TupleUtil.joinTuple(joins.get(i - 1), t, objects.size() + 2, i + 2, 2));
-                }
+            // Left: linear chain of j objects
+            resetIndex();
+            TupleImpl leftChain = leaf(allObjects[0]);
+            for (int i = 1; i < j; i++) {
+                leftChain = join(leftChain, leaf(allObjects[i]));
             }
-        }
 
-        for ( int j = 0; j < listOfJoins.size(); j++ ) {
-            List<TupleImpl<?>> joins = listOfJoins.get(j);
-            for (int i = joins.size()+1; i < joins.size()+2; i++) {
-                Class cls = Class.forName(Predicate.class.getName() + (i+1));
-
-                final List<String> recorder = new ArrayList<>();
-                Predicate proxy = (Predicate) Proxy.newProxyInstance(
-                        LinearTuplePredicateCacheTest.class.getClassLoader(),
-                        new Class[]{cls},
-                        new DynamicInvocationHandler(recorder, i+1));
-
-                BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
-                cache.setRight(joins.get(i - 2));
-                cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), joins.get(i - 3));
-
-                Object[] args = new Object[i+1];
-                String   s    = "Predicate" + (i+1) + ".test ctx, ";
-                for (int k = 1; k < args.length; k++) {
-                    args[k] = Character.toString(letters[k]);
-                    s       = s + args[k];
-                    if (k < args.length - 1) {
-                        s = s + ", ";
-                    }
-                }
-
-                assertThat(recorder).containsExactly(s);
-
-                recorder.clear();
-                cache.clear();
+            // Right: linear chain with a pair at the end
+            resetIndex();
+            TupleImpl rightChain = leaf(allObjects[0]);
+            for (int i = 1; i < j; i++) {
+                rightChain = join(rightChain, leaf(allObjects[i]));
             }
+            TupleImpl lastPair = join(leaf(allObjects[j]), leaf(allObjects[j + 1]));
+            TupleImpl rightTuple = join(rightChain, lastPair);
+
+            int arity = j + 3;
+            Class cls = Class.forName(Predicate.class.getName() + arity);
+            final List<String> recorder = new ArrayList<>();
+            Predicate proxy = (Predicate) Proxy.newProxyInstance(
+                    LinearTuplePredicateCacheTest.class.getClassLoader(),
+                    new Class[]{cls},
+                    new DynamicInvocationHandler(recorder, arity));
+
+            BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(proxy);
+            System.out.println("testBiLinearExecutionCacheRight - arity=" + arity + " left:\n" + TupleTreePrinter.print(leftChain) + "right:\n" + TupleTreePrinter.print(rightTuple));
+            cache.setRight(rightTuple);
+            cache.applyLeft(new ContextPojoDS(new PropagatingDataStore<>(0, new TypeIndexer())), leftChain);
+
+            String s = "Predicate" + arity + ".test ctx, ";
+            for (int k = 1; k < arity; k++) {
+                s = s + Character.toString(letters[k]);
+                if (k < arity - 1) s = s + ", ";
+            }
+
+            assertThat(recorder).containsExactly(s);
+            recorder.clear();
+            cache.clear();
         }
+    }
+
+    @Test
+    public void testSymmetricTree() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+
+        resetIndex();
+        TupleImpl abcd = join(join(leaf(b1), leaf(c1)), join(leaf(d1), leaf(e1)));
+        System.out.println("testSymmetricTree:\n" + TupleTreePrinter.print(abcd));
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
+        cache.setRight(abcd);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+    }
+
+    @Test
+    public void testRightHeavyTree() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+
+        resetIndex();
+        TupleImpl tree = join(leaf(b1), join(leaf(c1), join(leaf(d1), leaf(e1))));
+        System.out.println("testRightHeavyTree:\n" + TupleTreePrinter.print(tree));
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
+        cache.setRight(tree);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+    }
+
+    @Test
+    public void testAsymmetricDeep() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+        F f1 = new F("f1");
+
+        resetIndex();
+        TupleImpl tree = join(join(join(leaf(b1), leaf(c1)), leaf(d1)), join(leaf(e1), leaf(f1)));
+        System.out.println("testAsymmetricDeep:\n" + TupleTreePrinter.print(tree));
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(6));
+        cache.setRight(tree);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+        assertThat(values[5].get()).isSameAs(f1);
+    }
+
+    // ==================== Table-driven walkTreeAndAssign tests ====================
+
+    @Test
+    public void testTableSymmetricTree() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+
+        resetIndex();
+        TupleImpl tree = join(join(leaf(b1), leaf(c1)), join(leaf(d1), leaf(e1)));
+
+        int[] table = BiLinearTuplePredicateCache.buildTable(tree);
+        System.out.println("testTableSymmetricTree table: " + java.util.Arrays.toString(table));
+        assertArrayEquals(new int[]{2, 1, 0, 2, 1, 1, 0}, table);
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
+        cache.walkTreeAndAssign(tree, table);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+    }
+
+    @Test
+    public void testTableRightHeavyTree() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+
+        resetIndex();
+        TupleImpl tree = join(leaf(b1), join(leaf(c1), join(leaf(d1), leaf(e1))));
+
+        int[] table = BiLinearTuplePredicateCache.buildTable(tree);
+        System.out.println("testTableRightHeavyTree table: " + java.util.Arrays.toString(table));
+        assertArrayEquals(new int[]{3, 1, 0, 2, 0, 2, 0}, table);
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(5));
+        cache.walkTreeAndAssign(tree, table);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+    }
+
+    @Test
+    public void testTableAsymmetricDeep() {
+        B b1 = new B("b1"); C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+        F f1 = new F("f1");
+
+        resetIndex();
+        TupleImpl tree = join(join(join(leaf(b1), leaf(c1)), leaf(d1)), join(leaf(e1), leaf(f1)));
+
+        int[] table = BiLinearTuplePredicateCache.buildTable(tree);
+        System.out.println("testTableAsymmetricDeep table: " + java.util.Arrays.toString(table));
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(6));
+        cache.walkTreeAndAssign(tree, table);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[1].get()).isSameAs(b1);
+        assertThat(values[2].get()).isSameAs(c1);
+        assertThat(values[3].get()).isSameAs(d1);
+        assertThat(values[4].get()).isSameAs(e1);
+        assertThat(values[5].get()).isSameAs(f1);
+    }
+
+    @Test
+    public void testTableDeepWalk() {
+        C c1 = new C("c1");
+        D d1 = new D("d1"); E e1 = new E("e1");
+        F f1 = new F("f1"); G g1 = new G("g1"); H h1 = new H("h1");
+        I i1 = new I("i1"); J j1 = new J("j1"); K k1 = new K("k1");
+
+        resetIndex();
+        TupleImpl cTuple = leaf(c1);
+
+        TupleImpl de = join(leaf(d1), leaf(e1));
+        TupleImpl fgh = join(leaf(f1), join(leaf(g1), leaf(h1)));
+        TupleImpl ijk = join(leaf(i1), join(leaf(j1), leaf(k1)));
+        TupleImpl defghijk = join(de, join(fgh, ijk));
+
+        int[] table = BiLinearTuplePredicateCache.buildTable(defghijk);
+        System.out.println("testTableDeepWalk table: " + java.util.Arrays.toString(table));
+
+        BiLinearTuplePredicateCache cache = new BiLinearTuplePredicateCache(getPredicate(10));
+        cache.walkTreeAndAssign(defghijk, table);
+
+        TupleImpl[] values = cache.values();
+        assertThat(values[2].get()).isSameAs(d1);
+        assertThat(values[3].get()).isSameAs(e1);
+        assertThat(values[4].get()).isSameAs(f1);
+        assertThat(values[5].get()).isSameAs(g1);
+        assertThat(values[6].get()).isSameAs(h1);
+        assertThat(values[7].get()).isSameAs(i1);
+        assertThat(values[8].get()).isSameAs(j1);
+        assertThat(values[9].get()).isSameAs(k1);
     }
 
 }

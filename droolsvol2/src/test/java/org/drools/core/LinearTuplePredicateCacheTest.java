@@ -20,7 +20,7 @@ public class LinearTuplePredicateCacheTest {
         List<TupleImpl<?>> joins = new ArrayList<>();
 
         for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1));
+            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1));
         }
 
         joins.add(objects.get(0));
@@ -65,7 +65,7 @@ public class LinearTuplePredicateCacheTest {
         List<TupleImpl<?>> joins = new ArrayList<>();
 
         for(int i = 1; i < 10; i++) {
-            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1, 1));
+            objects.add(TupleUtil.objectTuple(TupleUtil.getAlphabet()[i], i + 1));
         }
 
         joins.add(objects.get(0));

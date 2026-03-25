@@ -13,7 +13,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testOneAtStart() {
-        DummyNode                        node  = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                        node  = new DummyNode(10, 8, 8, 1);
         Pattern                          p1    = new Pattern(0, 1, 1, new ClassObjectType(String.class), "var1");
         CompactLinearTuplePredicateCache cache = new CompactLinearTuplePredicateCache(node, new Declaration[]{p1.getDeclaration()});
 
@@ -24,7 +24,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testOneAtEnd() {
-        DummyNode                   node     = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                   node     = new DummyNode(10, 8, 8, 1);
         Pattern                          p1    = new Pattern(0, 8, 8, new ClassObjectType(String.class), "var1");
         CompactLinearTuplePredicateCache cache = new CompactLinearTuplePredicateCache(node, new Declaration[]{p1.getDeclaration()});
 
@@ -35,7 +35,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testOneAtMiddle() {
-        DummyNode                   node     = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                   node     = new DummyNode(10, 8, 8, 1);
         Pattern                          p1    = new Pattern(0, 4, 4, new ClassObjectType(String.class), "var1");
         CompactLinearTuplePredicateCache cache = new CompactLinearTuplePredicateCache(node, new Declaration[]{p1.getDeclaration()});
 
@@ -46,7 +46,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testOneStartOneAnotherAtEnd() {
-        DummyNode                   node     = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                   node     = new DummyNode(10, 8, 8, 1);
         Pattern                     p1       = new Pattern(0, 1, 1, new ClassObjectType(String.class), "var1");
         Pattern                          p2    = new Pattern(0, 8, 8, new ClassObjectType(String.class), "var2");
         CompactLinearTuplePredicateCache cache = new CompactLinearTuplePredicateCache(node, new Declaration[]{p1.getDeclaration(), p2.getDeclaration()});
@@ -58,7 +58,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testOneStartOneMiddleOneAtEnd() {
-        DummyNode                   node     = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                   node     = new DummyNode(10, 8, 8, 1);
         Pattern                     p1       = new Pattern(0, 1, 1, new ClassObjectType(String.class), "var1");
         Pattern                     p2       = new Pattern(0, 4, 4, new ClassObjectType(String.class), "var2");
         Pattern                          p3    = new Pattern(0, 8, 8, new ClassObjectType(String.class), "var3");
@@ -71,7 +71,7 @@ public class CompactLinearTuplePredicateCacheTest {
 
     @Test
     public void testTwoMiddle() {
-        DummyNode                   node     = new DummyNode(10, 8, 8, 1, 1);
+        DummyNode                   node     = new DummyNode(10, 8, 8, 1);
         Pattern                     p1       = new Pattern(0, 3, 3, new ClassObjectType(String.class), "var1");
         Pattern                          p2    = new Pattern(0, 6, 6, new ClassObjectType(String.class), "var2");
         CompactLinearTuplePredicateCache cache = new CompactLinearTuplePredicateCache(node, new Declaration[]{p1.getDeclaration(), p2.getDeclaration()});

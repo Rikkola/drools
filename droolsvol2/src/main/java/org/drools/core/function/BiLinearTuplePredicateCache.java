@@ -163,6 +163,11 @@ public class BiLinearTuplePredicateCache {
 
         TupleImpl t1 = null, t2 = null, t3 = null, t4 = null, t5 = null, t6 = null, t7 = null, t8 = null, t9 = null;
         int index = 0;
+
+        // Stack of pending restore points (register indices of JoinTuples we went right from)
+        int[] restoreStack = new int[10];
+        int stackTop = 0;
+
         TupleImpl c = t0;
         while (true) {
             // Find the next handle by traversing the graph, always going right when possible.
@@ -182,8 +187,9 @@ public class BiLinearTuplePredicateCache {
                         case 9: t9 = c; break;
                         default: throw new IllegalStateException("Illegal tuple index: " + index);
                     }
+                    restoreStack[stackTop++] = index;
                     c = c.getRightParent();
-                    index++; // as it goes down the graph, it must incease the index
+                    index++; // as it goes down the graph, it must increase the index
                 } else {
                     // It does not need to go back to this node, so no need to record it in the registry nor increase the index
                     c = c.getLeftParent(); // this is for cases like eval, that has no right input
@@ -205,10 +211,10 @@ public class BiLinearTuplePredicateCache {
             }
             size--;
 
-            // walk back to the correct index to proceed from
-            index = index - c.getNetworkNode().getWalkBack();
-
             if (size > 0) {
+                // Pop the restore stack to find which register to restore from
+                index = restoreStack[--stackTop];
+
                 // always go left from the current index position
                 switch (index) {
                     case 0:
@@ -249,6 +255,107 @@ public class BiLinearTuplePredicateCache {
                 break;
             }
         }
+    }
+
+    /**
+     * Table-driven version of walkTreeAndAssign.
+     * <p>
+     * The table alternates between two operations:
+     * <ul>
+     *   <li>Even indices (0, 2, 4, …): <b>go right N times</b> (each hop follows
+     *       {@code getRightParent()}), then take the leaf.
+     *       If N == 0, take the current node (already a leaf).</li>
+     *   <li>Odd indices (1, 3, 5, …): <b>walk back and left</b> — pop from the
+     *       stack and go to the left parent.</li>
+     * </ul>
+     * Every non-leaf node in the tree is a {@code JoinTuple} (which always has
+     * a right parent), so each hop is unconditionally a right-parent traversal.
+     * Example for a balanced tree of 4 leaves [A,B,C,D]:
+     * {@code [2, 1, 0, 2, 1, 1, 0]}
+     */
+    public void walkTreeAndAssign(TupleImpl t0, int[] table) {
+        int objectIndex = t0.getNetworkNode().getObjectIndex();
+        int size = t0.getNetworkNode().getSize();
+        int startIndex = objectIndex - size;
+
+        TupleImpl[] stack = new TupleImpl[size];
+        int stackTop = 0;
+        TupleImpl c = t0;
+
+        int ip = 0;
+        while (ip < table.length) {
+            // --- go right N times, then take the leaf ---
+            int goRight = table[ip++];
+            for (int i = 0; i < goRight; i++) {
+                stack[stackTop++] = c;
+                c = c.getRightParent();
+            }
+            // take the leaf
+            switch (startIndex + size) {
+                case 1: o1 = c; break;
+                case 2: o2 = c; break;
+                case 3: o3 = c; break;
+                case 4: o4 = c; break;
+                case 5: o5 = c; break;
+                case 6: o6 = c; break;
+                case 7: o7 = c; break;
+                case 8: o8 = c; break;
+                case 9: o9 = c; break;
+                default: throw new IllegalStateException("Illegal tuple index: " + (startIndex + size));
+            }
+            size--;
+
+            if (ip >= table.length) {
+                break;
+            }
+
+            // --- walk back and left ---
+            ip++; // consume the walk-back entry
+            c = stack[--stackTop].getLeftParent();
+        }
+    }
+
+    /**
+     * Builds a precalculated table for {@link #walkTreeAndAssign(TupleImpl, int[])}.
+     * <p>
+     * The table is an alternating sequence: [goRight, walkBack, goRight, walkBack, … goRight].
+     * It always starts and ends with a goRight entry (which may be 0 if the node is already a leaf).
+     */
+    public static int[] buildTable(TupleImpl t0) {
+        int sz = t0.getNetworkNode().getSize();
+        int[] table = new int[2 * sz - 1];
+        int ip = 0;
+
+        TupleImpl[] stack = new TupleImpl[sz];
+        int[] depthStack = new int[sz];
+        int stackTop = 0;
+        int depth = 0;
+        TupleImpl c = t0;
+
+        while (true) {
+            // count hops to the next leaf
+            int hops = 0;
+            while (c.getClass() != ObjectHandleTuple.class) {
+                stack[stackTop] = c;
+                depthStack[stackTop] = depth;
+                stackTop++;
+                c = c.getRightParent();
+                depth++;
+                hops++;
+            }
+            table[ip++] = hops; // goRight entry
+
+            if (stackTop > 0) {
+                stackTop--;
+                int poppedDepth = depthStack[stackTop];
+                table[ip++] = depth - poppedDepth; // walkBack entry
+                c = stack[stackTop].getLeftParent();
+                depth = poppedDepth + 1;
+            } else {
+                break;
+            }
+        }
+        return table;
     }
 
     public void clear() {

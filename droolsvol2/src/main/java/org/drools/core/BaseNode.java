@@ -5,8 +5,6 @@ public class BaseNode implements NetworkNode {
     private int pathIndex;
     private int size;
     private int objectIndex;
-    private int walkBack;
-    private int biLinearRightOffset;
 
     public BaseNode(int id, int pathIndex, int objectIndex) {
         this.id          = id;
@@ -14,16 +12,11 @@ public class BaseNode implements NetworkNode {
         this.objectIndex = objectIndex;
     }
 
-    public BaseNode(int id, int pathIndex, int objectIndex, int size, int walkBack) {
+    public BaseNode(int id, int pathIndex, int objectIndex, int size) {
         this.id          = id;
         this.pathIndex   = pathIndex;
         this.objectIndex = objectIndex;
         this.size        = size;
-        this.walkBack    = walkBack;
-    }
-
-    public int getWalkBack() {
-        return walkBack;
     }
 
     @Override
