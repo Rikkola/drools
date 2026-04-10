@@ -164,12 +164,15 @@ rule "System Normalized"
         modify($ps) { setState(State.NORMAL) }
 end
 
-// Rule 10: Health Check
+// Rule 10: Health Check (fires once per NORMAL entry, not every tick)
 rule "Health Check"
     salience 10
+    no-loop true
     when
         $ps : PlantStatus(state == State.NORMAL)
         $t : TemperatureReading(value >= 60.0, value <= 80.0)
+        not Alert(source == "health-check")
     then
         System.out.println("  [HEALTH] System OK — temp=" + String.format("%.1f", $t.getValue()) + "°C, status=NORMAL");
+        insert(new Alert(Severity.INFO, "health-check", "System healthy — all sensors nominal"));
 end

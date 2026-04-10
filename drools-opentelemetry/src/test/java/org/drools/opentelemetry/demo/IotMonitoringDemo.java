@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +116,10 @@ public class IotMonitoringDemo {
         SensorSimulator simulator = new SensorSimulator();
 
         // Track fact handles for retraction
+        // Most sensors keep 1 reading; temperature keeps 3 for drift detection
         Map<String, FactHandle> currentReadings = new HashMap<>();
+        Deque<FactHandle> temperatureHistory = new ArrayDeque<>();
+        int TEMP_HISTORY_SIZE = 3;
 
         Tracer tracer = openTelemetry.getTracer("drools-iot-demo");
         Instant startTime = Instant.now();
@@ -141,19 +148,42 @@ public class IotMonitoringDemo {
                     List<SensorReading> readings = simulator.tick(elapsedSeconds);
 
                     // Retract previous readings, insert new ones
+                    // Temperature keeps last 3 readings for drift detection
                     for (SensorReading reading : readings) {
-                        FactHandle old = currentReadings.get(reading.getSensorId());
-                        if (old != null) {
-                            session.delete(old);
+                        if (reading instanceof org.drools.opentelemetry.demo.model.TemperatureReading) {
+                            FactHandle handle = session.insert(reading);
+                            temperatureHistory.addLast(handle);
+                            while (temperatureHistory.size() > TEMP_HISTORY_SIZE) {
+                                session.delete(temperatureHistory.removeFirst());
+                            }
+                        } else {
+                            FactHandle old = currentReadings.get(reading.getSensorId());
+                            if (old != null) {
+                                session.delete(old);
+                            }
+                            FactHandle handle = session.insert(reading);
+                            currentReadings.put(reading.getSensorId(), handle);
                         }
-                        FactHandle handle = session.insert(reading);
-                        currentReadings.put(reading.getSensorId(), handle);
                     }
 
                     // Fire rules
                     rulesFired = session.fireAllRules();
                     totalRulesFired += rulesFired;
                     tickCount++;
+
+                    // When plant returns to NORMAL, acknowledge and retract old alerts
+                    if (plantStatus.getState() == PlantStatus.State.NORMAL) {
+                        Collection<?> alerts = session.getObjects(
+                                o -> o instanceof Alert && !((Alert) o).isAcknowledged());
+                        for (Object obj : new ArrayList<>(alerts)) {
+                            Alert a = (Alert) obj;
+                            a.setAcknowledged(true);
+                            FactHandle fh = session.getFactHandle(a);
+                            if (fh != null) {
+                                session.delete(fh);
+                            }
+                        }
+                    }
 
                 } finally {
                     tickSpan.end();
