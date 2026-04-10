@@ -1,0 +1,175 @@
+package org.drools.opentelemetry.demo;
+
+import org.drools.opentelemetry.demo.model.TemperatureReading;
+import org.drools.opentelemetry.demo.model.PressureReading;
+import org.drools.opentelemetry.demo.model.VibrationReading;
+import org.drools.opentelemetry.demo.model.GasConcentrationReading;
+import org.drools.opentelemetry.demo.model.HumidityReading;
+import org.drools.opentelemetry.demo.model.Alert;
+import org.drools.opentelemetry.demo.model.Alert.Severity;
+import org.drools.opentelemetry.demo.model.PlantStatus;
+import org.drools.opentelemetry.demo.model.PlantStatus.State;
+
+// Rule 1: Threshold Warning
+rule "Threshold Warning - Temperature"
+    salience 90
+    when
+        $t : TemperatureReading(value > 80.0, value <= 90.0)
+        $ps : PlantStatus()
+        not Alert(source == "temperature", severity == Severity.WARNING, acknowledged == false)
+    then
+        System.out.println("  [WARN] Temperature warning: " + $t.getValue() + "°C");
+        insert(new Alert(Severity.WARNING, "temperature", "Temperature above warning threshold: " + String.format("%.1f", $t.getValue()) + "°C"));
+end
+
+rule "Threshold Warning - Vibration"
+    salience 90
+    when
+        $v : VibrationReading(rmsVelocity > 3.5, rmsVelocity <= 5.0)
+        not Alert(source == "vibration", severity == Severity.WARNING, acknowledged == false)
+    then
+        System.out.println("  [WARN] Vibration warning: " + $v.getRmsVelocity() + "mm/s");
+        insert(new Alert(Severity.WARNING, "vibration", "Vibration above warning threshold: " + String.format("%.2f", $v.getRmsVelocity()) + "mm/s"));
+end
+
+rule "Threshold Warning - Humidity"
+    salience 90
+    when
+        $h : HumidityReading(percentage > 80.0 || percentage < 20.0)
+        not Alert(source == "humidity", severity == Severity.WARNING, acknowledged == false)
+    then
+        System.out.println("  [WARN] Humidity warning: " + $h.getPercentage() + "%");
+        insert(new Alert(Severity.WARNING, "humidity", "Humidity out of range: " + String.format("%.1f", $h.getPercentage()) + "%"));
+end
+
+// Rule 2: Threshold Critical
+rule "Threshold Critical - Temperature"
+    salience 100
+    when
+        $t : TemperatureReading(value > 90.0)
+        $ps : PlantStatus(state != State.CRITICAL)
+        not Alert(source == "temperature", severity == Severity.CRITICAL, acknowledged == false)
+    then
+        System.out.println("  [CRIT] Temperature critical: " + $t.getValue() + "°C");
+        insert(new Alert(Severity.CRITICAL, "temperature", "Temperature CRITICAL: " + String.format("%.1f", $t.getValue()) + "°C"));
+        modify($ps) { setState(State.CRITICAL) }
+end
+
+rule "Threshold Critical - Vibration"
+    salience 100
+    when
+        $v : VibrationReading(rmsVelocity > 5.0)
+        $ps : PlantStatus(state != State.CRITICAL)
+        not Alert(source == "vibration", severity == Severity.CRITICAL, acknowledged == false)
+    then
+        System.out.println("  [CRIT] Vibration critical: " + $v.getRmsVelocity() + "mm/s");
+        insert(new Alert(Severity.CRITICAL, "vibration", "Vibration CRITICAL: " + String.format("%.2f", $v.getRmsVelocity()) + "mm/s"));
+        modify($ps) { setState(State.CRITICAL) }
+end
+
+// Rule 3: Temperature Drift Detection
+rule "Temperature Drift Detection"
+    salience 80
+    when
+        $t1 : TemperatureReading($s1 : sequenceNumber)
+        $t2 : TemperatureReading(sequenceNumber > $s1, value > $t1.value)
+        $t3 : TemperatureReading(sequenceNumber > $t2.sequenceNumber, value > $t2.value,
+                                  (value - $t1.value) > 2.0)
+        not Alert(source == "temperature-drift", acknowledged == false)
+    then
+        double delta = $t3.getValue() - $t1.getValue();
+        System.out.println("  [WARN] Temperature drift detected: delta=" + String.format("%.1f", delta) + "°C");
+        insert(new Alert(Severity.WARNING, "temperature-drift",
+            "Temperature drift detected: " + String.format("%.1f", delta) + "°C rise over 3 readings"));
+end
+
+// Rule 4: Multi-Sensor Correlation
+rule "Multi-Sensor Correlation"
+    salience 95
+    when
+        $t : TemperatureReading(value > 85.0)
+        $v : VibrationReading(rmsVelocity > 3.5)
+        not Alert(source == "multi-sensor-correlation", acknowledged == false)
+    then
+        System.out.println("  [CRIT] Multi-sensor correlation: temp=" + $t.getValue() + "°C, vibration=" + $v.getRmsVelocity() + "mm/s");
+        insert(new Alert(Severity.CRITICAL, "multi-sensor-correlation",
+            "Mechanical failure risk: temp=" + String.format("%.1f", $t.getValue()) + "°C + vibration=" + String.format("%.2f", $v.getRmsVelocity()) + "mm/s"));
+end
+
+// Rule 5: Gas Leak Detection
+rule "Gas Leak Detection"
+    salience 95
+    when
+        $g : GasConcentrationReading(ppm > 100.0)
+        $t : TemperatureReading(value > 85.0)
+        not Alert(source == "gas-leak", acknowledged == false)
+    then
+        System.out.println("  [CRIT] Gas leak detected: ppm=" + $g.getPpm() + ", temp=" + $t.getValue() + "°C");
+        insert(new Alert(Severity.CRITICAL, "gas-leak",
+            "Possible thermal gas leak: " + String.format("%.0f", $g.getPpm()) + "ppm at " + String.format("%.1f", $t.getValue()) + "°C"));
+end
+
+// Rule 6: Alert Escalation
+rule "Alert Escalation"
+    salience 70
+    when
+        $ps : PlantStatus(state != State.CRITICAL)
+        accumulate(
+            Alert(severity == Severity.CRITICAL, acknowledged == false);
+            $count : count();
+            $count >= 3
+        )
+    then
+        System.out.println("  [ESCALATION] " + $count + " critical alerts — escalating plant status");
+        modify($ps) { setState(State.CRITICAL) }
+end
+
+// Rule 7: Cooldown Suppression
+rule "Cooldown Suppression"
+    salience 110
+    when
+        $existing : Alert(acknowledged == false, $source : source, $severity : severity)
+        $duplicate : Alert(this != $existing, source == $source, severity == $severity,
+                           acknowledged == false,
+                           timestamp.isAfter($existing.timestamp))
+    then
+        System.out.println("  [COOLDOWN] Suppressing duplicate alert: " + $duplicate.getSource());
+        retract($duplicate);
+end
+
+// Rule 8: Recovery Detection
+rule "Recovery Detection"
+    salience 50
+    when
+        $ps : PlantStatus(state == State.CRITICAL, secondsSinceLastChange > 60)
+        $t : TemperatureReading(value <= 80.0)
+        $v : VibrationReading(rmsVelocity <= 3.5)
+        $g : GasConcentrationReading(ppm <= 100.0)
+    then
+        System.out.println("  [RECOVERY] All sensors returning to normal — starting recovery");
+        modify($ps) { setState(State.RECOVERING) }
+        insert(new Alert(Severity.INFO, "recovery", "System recovery detected — sensors returning to normal"));
+end
+
+// Rule 9: System Normalized
+rule "System Normalized"
+    salience 40
+    when
+        $ps : PlantStatus(state == State.RECOVERING, secondsSinceLastChange > 120)
+        $t : TemperatureReading(value >= 60.0, value <= 80.0)
+        $v : VibrationReading(rmsVelocity <= 2.0)
+        $g : GasConcentrationReading(ppm <= 50.0)
+    then
+        System.out.println("  [NORMALIZED] System fully recovered");
+        modify($ps) { setState(State.NORMAL) }
+end
+
+// Rule 10: Health Check
+rule "Health Check"
+    salience 10
+    when
+        $ps : PlantStatus(state == State.NORMAL)
+        $t : TemperatureReading(value >= 60.0, value <= 80.0)
+    then
+        System.out.println("  [HEALTH] System OK — temp=" + String.format("%.1f", $t.getValue()) + "°C, status=NORMAL");
+end
