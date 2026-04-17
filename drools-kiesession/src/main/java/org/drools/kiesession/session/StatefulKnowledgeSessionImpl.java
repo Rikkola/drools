@@ -64,7 +64,9 @@ import org.drools.core.impl.AbstractRuntime;
 import org.drools.core.impl.EnvironmentFactory;
 import org.drools.core.management.DroolsManagementAgent;
 import org.drools.core.marshalling.MarshallerReaderContext;
-import org.drools.core.phreak.PropagationEntry;
+import org.drools.base.phreak.PropagationEntry;
+import org.drools.core.phreak.actions.ExecuteQuery;
+import org.drools.core.phreak.actions.PropagationEntryWithResult;
 import org.drools.core.phreak.RuleAgendaItem;
 import org.drools.core.phreak.RuleNetworkEvaluator;
 import org.drools.core.phreak.RuleNetworkEvaluatorImpl;
@@ -84,7 +86,7 @@ import org.drools.core.rule.consequence.InternalMatch;
 import org.drools.core.runtime.process.InternalProcessRuntime;
 import org.drools.core.runtime.rule.impl.LiveQueryImpl;
 import org.drools.core.runtime.rule.impl.OpenQueryViewChangedEventListenerAdapter;
-import org.drools.core.time.TimerService;
+import org.drools.base.time.TimerService;
 import org.drools.util.bitmask.BitMask;
 import org.drools.kiesession.entrypoints.NamedEntryPointsManager;
 import org.drools.kiesession.rulebase.InternalKnowledgeBase;
@@ -176,12 +178,12 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     protected Long    id;
 
     private RuleNetworkEvaluator ruleNetworkEvaluator;
-    
+
     /** The actual memory for the <code>JoinNode</code>s. */
     private NodeMemories nodeMemories;
 
     private SegmentMemorySupport segmentMemorySupport;
-    
+
     /** Global values which are associated with this memory. */
     protected GlobalResolver globalResolver;
 
@@ -257,8 +259,8 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     private Consumer<PropagationEntry> workingMemoryActionListener;
 
     private boolean tmsEnabled;
-    
-    
+
+
 
     // ------------------------------------------------------------
     // Constructors
@@ -354,11 +356,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         this.entryPointsManager = (NamedEntryPointsManager) RuntimeComponentFactory.get().getEntryPointFactory().createEntryPointsManager(kBase, this, handleFactory);
 
         this.segmentMemorySupport = new SegmentMemorySupportImpl(nodeMemories, kBase.getSegmentPrototypeRegistry(), entryPointsManager.getDefaultEntryPoint());
-        
+
         this.sequential = conf.isSequential();
 
         this.globalResolver = RuntimeComponentFactory.get().createGlobalResolver(this, this.environment);
-        
+
         this.ruleNetworkEvaluator = new RuleNetworkEvaluatorImpl(this, nodeMemories, segmentMemorySupport);
 
         if (initInitFactHandle) {
@@ -407,7 +409,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     public RuleNetworkEvaluator getRuleNetworkEvaluator() {
         return ruleNetworkEvaluator;
     }
-    
+
     public WorkingMemoryEntryPoint getEntryPoint(String name) {
         return this.entryPointsManager.getEntryPoint(name);
     }
@@ -747,7 +749,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         }
     }
 
-    private class ExecuteCloseLiveQuery extends PropagationEntry.PropagationEntryWithResult<Void> {
+    private class ExecuteCloseLiveQuery extends PropagationEntryWithResult<ReteEvaluator, Void> {
 
         private final InternalFactHandle factHandle;
 
@@ -848,6 +850,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     @Override public SessionConfiguration getSessionConfiguration() {
         return this.config.as(SessionConfiguration.KEY);
+    }
+
+    @Override
+    public KieSessionConfiguration getKieSessionConfiguration() {
+        return config;
     }
 
     public void reset() {
@@ -1251,7 +1258,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     public void submit(AtomicAction action) {
-        agenda.addPropagation( new PropagationEntry.AbstractPropagationEntry() {
+        agenda.addPropagation( new AbstractPropagationEntry<ReteEvaluator>() {
             @Override
             public void internalExecute(ReteEvaluator reteEvaluator ) {
                 action.execute( (KieSession)reteEvaluator );
@@ -1367,11 +1374,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return nodeMemories;
     }
 
-    
+
     public SegmentMemorySupport getSegmentMemorySupport() {
         return segmentMemorySupport;
     }
-    
+
     public RuleRuntimeEventSupport getRuleRuntimeEventSupport() {
         return this.ruleRuntimeEventSupport;
     }

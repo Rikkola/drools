@@ -52,7 +52,7 @@ public class NotNode extends BetaNode {
         // Which we don't want to actually count in the case of forall node linking
         emptyBetaConstraints = joinNodeBinder.getConstraints().length == 0 || context.isEmptyForAllBetaConstraints();
     }
-    
+
 
     public boolean isEmptyBetaConstraints() {
         return emptyBetaConstraints;

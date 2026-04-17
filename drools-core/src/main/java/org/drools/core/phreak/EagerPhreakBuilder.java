@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.core.common.BaseNode;
 import org.drools.core.common.DefaultEventHandle;
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.InternalFactHandle;
@@ -75,7 +74,7 @@ import org.drools.core.reteoo.TupleFactory;
 import org.drools.core.reteoo.TupleImpl;
 import org.drools.core.reteoo.TupleMemory;
 import org.drools.core.reteoo.WindowNode;
-import org.drools.core.util.FastIterator;
+import org.drools.base.util.FastIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

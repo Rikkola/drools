@@ -64,7 +64,7 @@ import org.drools.core.reteoo.Tuple;
 import org.drools.core.rule.accessor.FactHandleFactory;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.drools.core.rule.consequence.KnowledgeHelper;
-import org.drools.core.time.TimerService;
+import org.drools.base.time.TimerService;
 import org.drools.util.bitmask.BitMask;
 import org.drools.kiesession.consequence.DefaultKnowledgeHelper;
 import org.drools.kiesession.consequence.StatefulKnowledgeSessionForRHS;
@@ -75,6 +75,7 @@ import org.kie.api.KieBase;
 import org.kie.api.runtime.Calendars;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieRuntime;
+import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.FactHandle;
@@ -105,7 +106,7 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     private final FactHandleFactory handleFactory;
 
     private final NodeMemories nodeMemories;
-    
+
     private final SegmentMemorySupport segmentMemorySupport;
 
     private final ActivationsManager activationsManager;
@@ -116,9 +117,9 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     private final GlobalResolver globalResolver = new MapGlobalResolver();
 
     private final TimerService timerService;
-    
+
     private final RuleNetworkEvaluator ruleNetworkEvaluator;
-    
+
     private Calendars calendars;
 
     private RuleUnits ruleUnits;
@@ -139,7 +140,7 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
 
         this.activationsManager = new ActivationsManagerImpl(ruleBase, this, handleFactory);
         this.entryPointsManager = RuntimeComponentFactory.get().getEntryPointFactory().createEntryPointsManager(ruleBase, this, handleFactory);
-        
+
         this.segmentMemorySupport = new SegmentMemorySupportImpl(nodeMemories, ruleBase.getSegmentPrototypeRegistry(), entryPointsManager.getDefaultEntryPoint());
         this.timerService = sessionConfiguration.createTimerService();
         this.ruleNetworkEvaluator = new RuleNetworkEvaluatorImpl(this, nodeMemories, segmentMemorySupport);
@@ -169,7 +170,7 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     public RuleNetworkEvaluator getRuleNetworkEvaluator() {
         return ruleNetworkEvaluator;
     }
-    
+
     @Override
     public ActivationsManager getActivationsManager() {
         return activationsManager;
@@ -199,7 +200,7 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     public <T extends Memory> T getNodeMemory(MemoryFactory<T> node) {
         return nodeMemories.getNodeMemory( node );
     }
-    
+
     @Override
     public SegmentMemorySupport getSegmentMemorySupport() {
         return segmentMemorySupport;
@@ -248,6 +249,11 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     @Override
     public RuleSessionConfiguration getRuleSessionConfiguration() {
         return sessionConfiguration.as(RuleSessionConfiguration.KEY);
+    }
+
+    @Override
+    public KieSessionConfiguration getKieSessionConfiguration() {
+        return sessionConfiguration;
     }
 
     @Override
@@ -378,7 +384,7 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
 	public boolean isSequential() {
 		return ruleBase.getRuleBaseConfiguration().isSequential();
 	}
-    
+
     @Override
     public KnowledgeHelper createKnowledgeHelper() {
         return new RuleUnitKnowledgeHelper((DefaultKnowledgeHelper) ReteEvaluator.super.createKnowledgeHelper(), this);

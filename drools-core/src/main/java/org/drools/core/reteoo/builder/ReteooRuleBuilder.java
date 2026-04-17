@@ -25,6 +25,7 @@ import java.util.List;
 import org.drools.base.base.ClassObjectType;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
+import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.rule.Accumulate;
 import org.drools.base.rule.AsyncReceive;
 import org.drools.base.rule.AsyncSend;
@@ -43,7 +44,7 @@ import org.drools.base.rule.QueryElement;
 import org.drools.base.rule.WindowDeclaration;
 import org.drools.base.rule.WindowReference;
 import org.drools.base.rule.constraint.XpathConstraint;
-import org.drools.base.time.impl.Timer;
+import org.drools.base.time.Timer;
 import org.drools.core.ActivationListenerFactory;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.InternalWorkingMemory;
@@ -70,6 +71,8 @@ public class ReteooRuleBuilder implements RuleBuilder {
                                new PatternBuilder() );
         this.utils.addBuilder( EvalCondition.class,
                                new EvalBuilder() );
+        this.utils.addBuilder( Sequence.class,
+                               new SequenceBuilder() );
         this.utils.addBuilder( QueryElement.class,
                                new QueryElementBuilder() );
         this.utils.addBuilder( From.class,

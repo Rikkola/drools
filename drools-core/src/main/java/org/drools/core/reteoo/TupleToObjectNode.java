@@ -19,13 +19,18 @@
 package org.drools.core.reteoo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.drools.base.base.ObjectType;
 import org.drools.base.common.NetworkNode;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
+import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.rule.Pattern;
 import org.drools.core.RuleBaseConfiguration;
+import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.Memory;
 import org.drools.core.common.PropagationContext;
@@ -102,6 +107,7 @@ public class TupleToObjectNode extends ObjectSource
         return getPathMemSpec(null);
     }
 
+
     /**
      * used during network build time, potentially during rule removal time.
      * @param removingTN
@@ -114,6 +120,7 @@ public class TupleToObjectNode extends ObjectSource
         }
         return pathMemSpec;
     }
+
 
     @Override
     public void nullPathMemSpec() {
@@ -192,6 +199,7 @@ public class TupleToObjectNode extends ObjectSource
     public void networkUpdated(UpdateContext updateContext) {
         this.tupleSource.networkUpdated(updateContext);
     }
+
 
     protected boolean doRemove(final RuleRemovalContext context,
                                final ReteooBuilder builder) {
@@ -291,6 +299,7 @@ public class TupleToObjectNode extends ObjectSource
     }
 
     public static class SubnetworkPathMemory extends PathMemory implements Memory {
+        private List<RuleImpl> rules;
 
         private ReteEvaluator reteEvaluator;
 
@@ -324,6 +333,44 @@ public class TupleToObjectNode extends ObjectSource
         @Override
         public void doUnlinkRule() {
             getTupleToObjectNode().getObjectSinkPropagator().doUnlinkSubnetwork(reteEvaluator);
+        }
+
+        private void updateRuleTerminalNodes() {
+            rules = new ArrayList<>();
+            for ( ObjectSink osink : getTupleToObjectNode().getObjectSinkPropagator().getSinks() ) {
+                for ( LeftTupleSink ltsink : ((BetaNode)osink).getSinkPropagator().getSinks() )  {
+                    findAndAddTN(ltsink, rules );
+                }
+            }
+        }
+
+        private void findAndAddTN( LeftTupleSink ltsink, List<RuleImpl> terminalNodes) {
+            if ( NodeTypeEnums.isTerminalNode(ltsink)) {
+                terminalNodes.add( ((TerminalNode)ltsink).getRule() );
+            } else if ( ltsink.getType() == NodeTypeEnums.TupleToObjectNode) {
+                for ( NetworkNode childSink : ( ltsink).getSinks() )  {
+                    findAndAddTN((LeftTupleSink)childSink, terminalNodes);
+                }
+            } else {
+                for ( LeftTupleSink childLtSink : (ltsink).getSinkPropagator().getSinks() )  {
+                    findAndAddTN(childLtSink, terminalNodes);
+                }
+            }
+        }
+
+        public List<RuleImpl> getAssociatedRules() {
+            if ( rules == null ) {
+                updateRuleTerminalNodes();
+            }
+            return rules;
+        }
+
+        public String getRuleNames() {
+            Set<String> ruleNames = new HashSet<>();
+            for (RuleImpl rule : getAssociatedRules()) {
+                ruleNames.add(rule.getName());
+            }
+            return ruleNames.toString();
         }
 
         @Override

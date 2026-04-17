@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Stack;
 
+import org.drools.base.base.ValueResolver;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
 import org.drools.core.ClockType;
@@ -143,7 +144,7 @@ public class JDKTimerServiceTest {
         }
 
         @Override
-        public ReteEvaluator getReteEvaluator() {
+        public ValueResolver getValueResolver() {
             return (ReteEvaluator) Proxy.newProxyInstance( InternalWorkingMemory.class.getClassLoader(),
                                                                    new Class[]{InternalWorkingMemory.class},
                                                                    new InvocationHandler() {

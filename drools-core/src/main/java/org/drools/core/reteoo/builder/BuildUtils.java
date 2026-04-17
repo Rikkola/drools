@@ -177,6 +177,19 @@ public class BuildUtils {
         return false;
     }
 
+    private boolean areNodesCompatibleForSharing(BuildContext context, BaseNode node) {
+        if ( node.getType() == NodeTypeEnums.TupleToObjectNode) {
+            // avoid subnetworks sharing when they belong to 2 different agenda-groups
+            String agendaGroup = context.getRule().getAgendaGroup();
+            for (Rule associatedRule : node.getAssociatedRules()) {
+                if (!agendaGroup.equals( (( RuleImpl ) associatedRule).getAgendaGroup() )) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Creates and returns a BetaConstraints object for the given list of constraints
      *

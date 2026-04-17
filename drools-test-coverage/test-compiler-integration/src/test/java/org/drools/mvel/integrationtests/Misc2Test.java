@@ -58,7 +58,7 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.reteoo.LeftInputAdapterNode;
 import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.core.reteoo.ObjectTypeNodeId;
+import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.core.reteoo.Rete;
 import org.drools.core.reteoo.SegmentMemory;
 import org.drools.base.rule.accessor.Salience;
@@ -4523,7 +4523,7 @@ public class Misc2Test {
         KieSession ksession = kbase.newKieSession();
 
         TrackingAgendaEventListener listener = new TrackingAgendaEventListener();
-        
+
         ksession.addEventListener(listener);
 
         ksession.insert( new SimpleEvent() );
@@ -4531,7 +4531,7 @@ public class Misc2Test {
 
         int matchesCreated = listener.getMatchCreated().size();
         int matchesCancelled = listener.getMatchCancelled().size();
-        
+
         assertThat(matchesCreated).isEqualTo(matchesCancelled + 1);
     }
 
@@ -8703,7 +8703,7 @@ public class Misc2Test {
      * Helpful to test thread dump when a timeout occur on the JUnit listener.
      * @throws Exception
      */
-    @Disabled("This test deliberately creates a deadlock, failing the test with a timeout.\n" + 
+    @Disabled("This test deliberately creates a deadlock, failing the test with a timeout.\n" +
             "Helpful to test thread dump when a timeout occur on the JUnit listener.\n" + 
             "See org.kie.test.util.TestStatusListener#testFailure()")
     @ParameterizedTest(name = "KieBase type={0}")

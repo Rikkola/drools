@@ -35,6 +35,7 @@ import org.drools.core.phreak.PhreakQueryTerminalNode;
 import org.drools.core.phreak.PhreakReactiveFromNode;
 import org.drools.core.phreak.PhreakRuleTerminalNode;
 import org.drools.core.phreak.PhreakTimerNode;
+import org.drools.core.reteoo.SequenceNode.PhreakSequenceNode;
 import org.drools.metric.util.MetricLogUtils;
 
 public class MetricPhreakNetworkNodeFactoryImpl implements PhreakNetworkNodeFactory {
@@ -135,6 +136,14 @@ public class MetricPhreakNetworkNodeFactoryImpl implements PhreakNetworkNodeFact
             return new PhreakTimerNodeMetric(reteEvaluator);
         } else {
             return new PhreakTimerNode(reteEvaluator);
+        }
+    }
+
+    public PhreakSequenceNode createPhreakSequenceNode() {
+        if (MetricLogUtils.getInstance().isEnabled()) {
+            return new PhreakSequenceNodeMetric();
+        } else {
+            return new PhreakSequenceNode();
         }
     }
 

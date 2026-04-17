@@ -34,10 +34,10 @@ import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.phreak.BuildtimeSegmentUtilities;
 import org.drools.core.reteoo.AsyncReceiveNode.AsyncReceiveMemory;
 import org.drools.core.reteoo.QueryElementNode.QueryElementNodeMemory;
-import org.drools.core.reteoo.TupleToObjectNode.SubnetworkPathMemory;
+import org.drools.core.reteoo.SequenceNode.SequenceNodeMemory;
 import org.drools.core.reteoo.TimerNode.TimerNodeMemory;
-import org.drools.core.util.LinkedList;
-import org.drools.core.util.DoubleLinkedEntry;
+import org.drools.base.util.LinkedList;
+import org.drools.base.util.DoubleLinkedEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,7 @@ public class SegmentMemory extends LinkedList<SegmentMemory>
     public boolean isOnlyLiaSegment() {
         return getRootNode() == getTipNode();
     }
-    
+
     public SegmentPrototype getSegmentPrototype() {
         return proto;
     }
@@ -1049,7 +1049,7 @@ public class SegmentMemory extends LinkedList<SegmentMemory>
 
         public BetaMemoryPrototype(long nodePosMaskBit, TupleToObjectNode tton) {
             this.nodePosMaskBit = nodePosMaskBit;
-            this.tton = tton;
+            this.tton           = tton;
         }
 
         @Override
@@ -1159,6 +1159,19 @@ public class SegmentMemory extends LinkedList<SegmentMemory>
         public void populateMemory(NodeMemories nodeMemories, SegmentMemorySupport segmentMemorySupport, Memory mem) {
             TimerNodeMemory tmem = (TimerNodeMemory) mem;
             tmem.setNodePosMaskBit(nodePosMaskBit);
+        }
+    }
+
+    public static class SequenceMemoryPrototype extends MemoryPrototype {
+
+        public SequenceMemoryPrototype(long nodePosMaskBit) {
+            this.nodePosMaskBit = nodePosMaskBit;
+        }
+
+        @Override
+        public void populateMemory(ReteEvaluator reteEvaluator, Memory mem) {
+            SequenceNodeMemory seqmem = (SequenceNodeMemory)  mem;
+            seqmem.setNodePosMaskBit(nodePosMaskBit);
         }
     }
 
