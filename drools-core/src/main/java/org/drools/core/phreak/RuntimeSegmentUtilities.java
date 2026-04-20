@@ -171,7 +171,7 @@ public class RuntimeSegmentUtilities {
             if (pmem != null) {
                 RuntimeSegmentUtilities.addSegmentToPathMemory(pmem, smem);
             } else {
-                pmem = reteEvaluator.getNodeMemories().getNodeMemory((MemoryFactory<? extends PathMemory>) endNode, reteEvaluator);
+                pmem = reteEvaluator.getNodeMemories().getNodeMemory((MemoryFactory<? extends PathMemory>) endNode);
                 RuntimeSegmentUtilities.addSegmentToPathMemory(pmem, smem);  // this needs to be set before init, to avoid recursion during eager segment initialisation
                 pmem.setSegmentMemory( smem.getPos(), smem );
                 initializePathMemory(reteEvaluator, endNode, pmem);
@@ -179,7 +179,7 @@ public class RuntimeSegmentUtilities {
 
             if (smem.getAllLinkedMaskTest() > 0 && smem.isSegmentLinked()) {
                 // not's can cause segments to be linked, and the rules need to be notified for evaluation
-                smem.notifyRuleLinkSegment(reteEvaluator);
+                smem.notifyRuleLinkSegment();
             }
         }
     }
@@ -193,7 +193,7 @@ public class RuntimeSegmentUtilities {
     }
 
     public static PathMemory initializePathMemory(ReteEvaluator reteEvaluator, PathEndNode pathEndNode) {
-        PathMemory pmem = reteEvaluator.getNodeMemories().getNodeMemory(pathEndNode, reteEvaluator);
+        PathMemory pmem = reteEvaluator.getNodeMemories().getNodeMemory(pathEndNode);
         initializePathMemory(reteEvaluator, pathEndNode, pmem);
         return pmem;
     }

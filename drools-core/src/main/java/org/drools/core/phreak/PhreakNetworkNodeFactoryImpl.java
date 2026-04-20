@@ -80,8 +80,8 @@ public class PhreakNetworkNodeFactoryImpl implements PhreakNetworkNodeFactory {
     }
 
     @Override
-    public PhreakSequenceNode createPhreakSequenceNode() {
-        return new PhreakSequenceNode();
+    public PhreakSequenceNode createPhreakSequenceNode(ReteEvaluator reteEvaluator) {
+        return new PhreakSequenceNode(reteEvaluator);
     }
 
     @Override

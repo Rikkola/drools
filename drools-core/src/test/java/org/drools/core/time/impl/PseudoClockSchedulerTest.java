@@ -21,10 +21,10 @@ package org.drools.core.time.impl;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import org.drools.base.time.Job;
+import org.drools.base.time.JobContext;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

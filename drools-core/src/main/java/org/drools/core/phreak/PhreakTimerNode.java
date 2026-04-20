@@ -21,6 +21,7 @@ package org.drools.core.phreak;
 import java.util.Date;
 import java.util.List;
 
+import org.drools.base.base.ValueResolver;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
 import org.drools.base.time.Timer;

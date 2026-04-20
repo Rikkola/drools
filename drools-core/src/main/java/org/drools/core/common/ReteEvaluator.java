@@ -20,8 +20,10 @@ package org.drools.core.common;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.drools.base.base.ValueResolver;
+import org.drools.base.phreak.PropagationEntry;
 import org.drools.base.rule.EntryPointId;
 import org.drools.core.RuleSessionConfiguration;
 import org.drools.core.SessionConfiguration;
@@ -30,7 +32,7 @@ import org.drools.core.event.AgendaEventSupport;
 import org.drools.core.event.RuleEventListenerSupport;
 import org.drools.core.event.RuleRuntimeEventSupport;
 import org.drools.core.impl.InternalRuleBase;
-import org.drools.core.phreak.PropagationEntry;
+import org.drools.core.phreak.RuleNetworkEvaluator;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.reteoo.RuntimeComponentFactory;
 import org.drools.core.rule.accessor.FactHandleFactory;
@@ -51,7 +53,7 @@ public interface ReteEvaluator extends ValueResolver {
     long getIdentifier();
 
     RuleNetworkEvaluator getRuleNetworkEvaluator();
-
+    
     ActivationsManager getActivationsManager();
 
     InternalRuleBase getKnowledgeBase();
@@ -69,7 +71,7 @@ public interface ReteEvaluator extends ValueResolver {
     <T extends Memory> T getNodeMemory(MemoryFactory<T> node);
 
     NodeMemories getNodeMemories();
-
+    
     SegmentMemorySupport getSegmentMemorySupport();
 
     default Object getGlobal(String identifier) {
@@ -139,4 +141,19 @@ public interface ReteEvaluator extends ValueResolver {
     int fireAllRules(int max);
     int fireAllRules(AgendaFilter agendaFilter);
     int fireAllRules(AgendaFilter agendaFilter, int max);
+
+    default void setWorkingMemoryActionListener(Consumer<PropagationEntry> listener) {
+        throw new UnsupportedOperationException();
+    }
+
+    default Consumer<PropagationEntry> getWorkingMemoryActionListener() {
+        return null;
+    }
+
+    default void onWorkingMemoryAction(PropagationEntry entry) {
+        Consumer<PropagationEntry> listener = getWorkingMemoryActionListener();
+        if (listener != null) {
+            listener.accept(entry);
+        }
+    }
 }

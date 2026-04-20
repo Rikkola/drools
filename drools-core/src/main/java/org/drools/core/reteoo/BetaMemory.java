@@ -18,12 +18,12 @@
  */
 package org.drools.core.reteoo;
 
+import org.drools.base.util.AbstractLinkedListNode;
 import org.drools.core.common.Memory;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
 import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.reteoo.TupleToObjectNode.SubnetworkPathMemory;
-import org.drools.core.util.AbstractLinkedListNode;
 
 public class BetaMemory<C> extends AbstractLinkedListNode<Memory> implements SegmentNodeMemory {
 

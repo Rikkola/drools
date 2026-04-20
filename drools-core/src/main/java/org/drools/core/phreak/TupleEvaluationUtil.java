@@ -49,7 +49,7 @@ public class TupleEvaluationUtil {
             return false;
         }
 
-        forceFlushLeftTuple( pmem, sm, reteEvaluator, createLeftTupleTupleSets(leftTuple, stagedType) );
+        reteEvaluator.getRuleNetworkEvaluator().forceFlushLeftTuple( pmem, sm, createLeftTupleTupleSets(leftTuple, stagedType) );
         forceFlushWhenSubnetwork(reteEvaluator, pmem);
         return true;
     }
@@ -104,33 +104,8 @@ public class TupleEvaluationUtil {
     public static void forceFlushPath(ReteEvaluator reteEvaluator, PathMemory outPmem) {
         SegmentMemory outSmem = outPmem.getSegmentMemories()[0];
         if (outSmem != null) {
-            forceFlushLeftTuple(outPmem, outSmem, reteEvaluator, new TupleSetsImpl());
+            reteEvaluator.getRuleNetworkEvaluator().forceFlushLeftTuple(outPmem, outSmem, new TupleSetsImpl());
         }
     }
 
-    public static void forceFlushLeftTuple(PathMemory pmem, SegmentMemory sm, ReteEvaluator reteEvaluator, TupleSets leftTupleSets) {
-        SegmentMemory[] smems = pmem.getSegmentMemories();
-
-        LeftTupleNode node;
-        Memory mem;
-        long          bit = 1;
-        if ( NodeTypeEnums.isLeftInputAdapterNode(sm.getRootNode()) && !NodeTypeEnums.isLeftInputAdapterNode(sm.getTipNode())) {
-            // The segment is the first and it has the lian shared with other nodes, the lian must be skipped, so adjust the bit and sink
-            node =  sm.getRootNode().getSinkPropagator().getFirstLeftTupleSink();
-            mem = sm.getNodeMemories()[1];
-            bit = 2; // adjust bit to point to next node
-        } else {
-            node =  sm.getRootNode();
-            mem = sm.getNodeMemories()[0];
-        }
-
-        PathMemory rtnPmem = NodeTypeEnums.isTerminalNode(pmem.getPathEndNode()) ?
-                pmem :
-                reteEvaluator.getNodeMemory((AbstractTerminalNode) pmem.getPathEndNode().getPathEndNodes()[0]);
-
-        ActivationsManager activationsManager = pmem.getActualActivationsManager( reteEvaluator );
-        RuleNetworkEvaluator.INSTANCE.outerEval(pmem, node, bit, mem, smems, sm.getPos(), leftTupleSets, activationsManager,
-                new LinkedList<>(),
-                true, rtnPmem.getOrCreateRuleAgendaItem(activationsManager).getRuleExecutor());
-    }
 }

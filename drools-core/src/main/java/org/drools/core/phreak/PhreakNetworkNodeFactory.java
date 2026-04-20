@@ -50,8 +50,6 @@ public interface PhreakNetworkNodeFactory extends KieService {
 
     PhreakSequenceNode createPhreakSequenceNode(ReteEvaluator reteEvaluator);
 
-    PhreakAsyncSendNode createPhreakAsyncSendNode();
-
     PhreakAsyncReceiveNode createPhreakAsyncReceiveNode(ReteEvaluator reteEvaluator);
 
     PhreakRuleTerminalNode createPhreakRuleTerminalNode(ReteEvaluator reteEvaluator);

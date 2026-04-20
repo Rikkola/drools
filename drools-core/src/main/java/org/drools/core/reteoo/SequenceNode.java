@@ -446,6 +446,10 @@ public class SequenceNode extends LeftTupleSource
     }
 
     public static class PhreakSequenceNode {
+        public PhreakSequenceNode(ReteEvaluator reteEvaluator) {
+           // TODO rikkola
+        }
+
         public void doNode(SequenceNode node,
                            SequenceNodeMemory memory,
                            LeftTupleSink sink,

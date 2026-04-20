@@ -30,16 +30,7 @@ import java.util.stream.Collectors;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.core.common.DefaultEventHandle;
-import org.drools.core.common.InternalAgenda;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.common.Memory;
-import org.drools.core.common.PropagationContext;
-import org.drools.core.common.PropagationContextFactory;
-import org.drools.core.common.ReteEvaluator;
-import org.drools.core.common.SuperCacheFixer;
-import org.drools.core.common.TupleSets;
+import org.drools.core.common.*;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.reteoo.AccumulateNode.AccumulateContext;
 import org.drools.core.reteoo.AccumulateNode.AccumulateMemory;

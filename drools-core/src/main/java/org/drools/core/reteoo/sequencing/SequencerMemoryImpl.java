@@ -140,7 +140,7 @@ public class SequencerMemoryImpl implements SequencerMemory {
         boolean       shouldFlush    = node.isStreamMode();
 
         if (wasEmpty) {
-            shouldFlush = smem.notifyRuleLinkSegment(valueResolver.as(ReteEvaluator.class), nodePosMaskBit)  | shouldFlush;
+            shouldFlush = smem.notifyRuleLinkSegment(nodePosMaskBit)  | shouldFlush;
         } else {
             shouldFlush = smem.linkSegmentWithoutRuleNotify(nodePosMaskBit) | shouldFlush;
         }

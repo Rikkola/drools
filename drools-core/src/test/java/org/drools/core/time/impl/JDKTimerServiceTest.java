@@ -37,10 +37,10 @@ import org.drools.core.SessionConfiguration;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.impl.RuleBaseFactory;
-import org.drools.core.phreak.PropagationEntry;
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
-import org.drools.core.time.TimerService;
+import org.drools.base.phreak.PropagationEntry;
+import org.drools.base.time.Job;
+import org.drools.base.time.JobContext;
+import org.drools.base.time.TimerService;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

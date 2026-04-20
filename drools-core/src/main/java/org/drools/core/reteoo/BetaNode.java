@@ -83,8 +83,6 @@ public abstract class BetaNode extends LeftTupleSource
 
     private boolean indexable;
 
-
-
     // ------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------
@@ -474,8 +472,8 @@ public abstract class BetaNode extends LeftTupleSource
         public void assertObject(final InternalFactHandle factHandle,
                                  final PropagationContext context,
                                  final ReteEvaluator reteEvaluator) {
-            ObjectTypeNodeId otnId    = bnNode.getRightInput().getInputOtnId();
-            TupleImpl        detached = factHandle.getLinkedTuples().detachRightTupleAfter(getPartitionId(), otnId);
+            ObjectTypeNodeId otnId = bnNode.getRightInput().getInputOtnId();
+            TupleImpl detached = factHandle.getLinkedTuples().detachRightTupleAfter(getPartitionId(), otnId);
             if (detached != null) {
                 detachedTuples.add(new DetachedTuple((DefaultFactHandle) factHandle, detached));
             }
