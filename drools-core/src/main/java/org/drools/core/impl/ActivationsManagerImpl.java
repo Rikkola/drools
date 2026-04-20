@@ -97,11 +97,6 @@ public class ActivationsManagerImpl implements ActivationsManager {
     }
 
     @Override
-    public ReteEvaluator getReteEvaluator() {
-        return reteEvaluator;
-    }
-
-    @Override
     public AgendaGroupsManager getAgendaGroupsManager() {
         return agendaGroupsManager;
     }
