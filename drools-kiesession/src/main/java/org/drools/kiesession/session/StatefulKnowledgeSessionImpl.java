@@ -23,6 +23,7 @@ import org.drools.base.beliefsystem.Mode;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.factmodel.traits.Thing;
 import org.drools.base.factmodel.traits.TraitableBean;
+import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.EntryPointId;
 import org.drools.base.rule.accessor.GlobalResolver;
@@ -732,7 +733,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     private QueryTerminalNode[] evalQuery(final String queryName, final DroolsQueryImpl queryObject, final InternalFactHandle handle, final PropagationContext pCtx, final boolean isCalledFromRHS) {
-        PropagationEntry.ExecuteQuery executeQuery = new PropagationEntry.ExecuteQuery( kBase, queryName, queryObject, handle, pCtx, isCalledFromRHS);
+        ExecuteQuery executeQuery = new ExecuteQuery( queryName, queryObject, handle, pCtx, isCalledFromRHS);
         addPropagation( executeQuery );
         return executeQuery.getResult();
     }
