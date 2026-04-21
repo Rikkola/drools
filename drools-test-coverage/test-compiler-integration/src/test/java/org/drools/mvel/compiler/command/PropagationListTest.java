@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.phreak.PropagationList;
 import org.drools.core.phreak.SynchronizedPropagationList;
