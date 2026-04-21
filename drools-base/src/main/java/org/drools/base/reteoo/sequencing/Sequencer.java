@@ -14,11 +14,11 @@ public class Sequencer {
 
     private final Sequence     sequence;
 
-    private final Sequence[] sequencences;
+    private final Sequence[] sequences;
 
     public Sequencer(Sequence sequence) {
         this.sequence = sequence;
-        this.sequencences = populateSequences(sequence, new ArrayList<>()).stream().toArray(Sequence[]::new);
+        this.sequences = populateSequences(sequence, new ArrayList<>()).stream().toArray(Sequence[]::new);
     }
 
     public static List<Sequence> populateSequences(Sequence sequence, List<Sequence> list) {
@@ -36,8 +36,8 @@ public class Sequencer {
         return list;
     }
 
-    public Sequence[] getSequencences() {
-        return sequencences;
+    public Sequence[] getSequences() {
+        return sequences;
     }
 
     public void start(SequencerMemory memory, ValueResolver valueResolver) {

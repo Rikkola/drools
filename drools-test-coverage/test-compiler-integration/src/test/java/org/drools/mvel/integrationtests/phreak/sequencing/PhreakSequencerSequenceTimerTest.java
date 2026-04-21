@@ -25,7 +25,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
-import org.drools.base.reteoo.sequencing.Sequence.TimoutController;
+import org.drools.base.reteoo.sequencing.Sequence.TimeoutController;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.core.time.impl.DurationTimer;
@@ -65,7 +65,7 @@ public class PhreakSequencerSequenceTimerTest  extends AbstractPhreakSequencerSu
 //
 //    @Test
 //    public void testSequenceTimeout() {
-//        seq0.setController(new TimoutController(new DurationTimer(1000)));
+//        seq0.setController(new TimeoutController(new DurationTimer(1000)));
 //        rule.addSequence(seq0);
 //        kbase.addPackage(pkg);
 //
@@ -82,7 +82,7 @@ public class PhreakSequencerSequenceTimerTest  extends AbstractPhreakSequencerSu
 //
 //    @Test
 //    public void testSequenceComplete() {
-//        seq0.setController(new TimoutController(new DurationTimer(1000)));
+//        seq0.setController(new TimeoutController(new DurationTimer(1000)));
 //        rule.addSequence(seq0);
 //        kbase.addPackage(pkg);
 //

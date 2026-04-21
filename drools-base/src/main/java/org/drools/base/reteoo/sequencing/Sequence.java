@@ -299,11 +299,11 @@ public class Sequence implements RuleConditionElement {
         }
     }
 
-    public static class TimoutController implements SequenceController {
+    public static class TimeoutController implements SequenceController {
         private final Timer    timer;
         private final DefaultController defaultController = DefaultController.getINSTANCE();
 
-        public TimoutController(Timer timer) {
+        public TimeoutController(Timer timer) {
             this.timer    = timer;
         }
 
@@ -333,7 +333,7 @@ public class Sequence implements RuleConditionElement {
 
         @Override
         public String toString() {
-            return "TimoutController{" +
+            return "TimeoutController{" +
                    "timer=" + timer +
                    '}';
         }
@@ -458,7 +458,7 @@ public class Sequence implements RuleConditionElement {
                 case SequenceTimerJobContext.DELAY:
 //                    if (status == SignalStatus.MATCHED) {
 //                        // transition
-//                        gate.propapate(sequencerMemory, reteEvaluator, status);
+//                        gate.propagate(sequencerMemory, reteEvaluator, status);
 //                        System.out.println("1");
 //                    } else {
 //                        // fail

@@ -57,7 +57,7 @@ public class SequencerMemoryImpl implements SequencerMemory {
         this.lt               = lt;
         this.events           = new CircularArrayList<>(Object.class, 100);
         this.sink             = sink;
-        this.sequenceMemories = new SequenceMemory[sequencer.getSequencences().length];
+        this.sequenceMemories = new SequenceMemory[sequencer.getSequences().length];
         this.node   = node;
         this.nodeMemory = nodeMemory;
     }

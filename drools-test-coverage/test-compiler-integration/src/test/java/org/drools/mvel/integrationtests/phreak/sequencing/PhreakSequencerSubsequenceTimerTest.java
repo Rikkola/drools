@@ -26,7 +26,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
-import org.drools.base.reteoo.sequencing.Sequence.TimoutController;
+import org.drools.base.reteoo.sequencing.Sequence.TimeoutController;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.core.time.impl.DurationTimer;
@@ -85,7 +85,7 @@ public class PhreakSequencerSubsequenceTimerTest extends AbstractPhreakSequencer
 //
 //    @Test
 //    public void testSubSequenceFailSeq1() {
-//        seq1.setController(new TimoutController(new DurationTimer(1000)));
+//        seq1.setController(new TimeoutController(new DurationTimer(1000)));
 //        createSession();
 //
 //        ArrayList<SequenceMemory> stack = sequencerMemory.getSequenceStack();
@@ -106,8 +106,8 @@ public class PhreakSequencerSubsequenceTimerTest extends AbstractPhreakSequencer
 //
 //    @Test
 //    public void testSubSequenceFailSeq2() {
-//        seq1.setController(new TimoutController(new DurationTimer(1000)));
-//        seq2.setController(new TimoutController(new DurationTimer(1000)));
+//        seq1.setController(new TimeoutController(new DurationTimer(1000)));
+//        seq2.setController(new TimeoutController(new DurationTimer(1000)));
 //        createSession();
 //
 //        ArrayList<SequenceMemory> stack = sequencerMemory.getSequenceStack();
@@ -137,8 +137,8 @@ public class PhreakSequencerSubsequenceTimerTest extends AbstractPhreakSequencer
 //
 //    @Test
 //    public void testSubSequenceComplete() {
-//        seq1.setController(new TimoutController(new DurationTimer(1000)));
-//        seq2.setController(new TimoutController(new DurationTimer(1000)));
+//        seq1.setController(new TimeoutController(new DurationTimer(1000)));
+//        seq2.setController(new TimeoutController(new DurationTimer(1000)));
 //        createSession();
 //
 //        ArrayList<SequenceMemory> stack = sequencerMemory.getSequenceStack();

@@ -136,12 +136,12 @@ public class LogicGate extends SignalProcessor {
             if (propagationTimer != null) {
                 propagationTimer.matched(memory, valueResolver, status);
             } else {
-                propapate(memory, valueResolver, status);
+                propagate(memory, valueResolver, status);
             }
         }
     }
 
-    public void propapate(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status) {
+    public void propagate(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status) {
         resetPrior(memory, valueResolver);
         output.consume(status, memory, valueResolver);
     }
@@ -219,7 +219,7 @@ public class LogicGate extends SignalProcessor {
         @Override
         public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
             memory.cancelJobHandle(gate.getGateIndex(), valueResolver);
-            gate.propapate(memory, valueResolver, status);
+            gate.propagate(memory, valueResolver, status);
         }
 
         @Override
@@ -247,7 +247,7 @@ public class LogicGate extends SignalProcessor {
 
         @Override
         public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
-            //gate.propapate(memory, reteEvaluator, status);
+            //gate.propagate(memory, reteEvaluator, status);
         }
 
         @Override
@@ -387,7 +387,7 @@ public class LogicGate extends SignalProcessor {
                 case LogicGateTimerJobContext.DELAY:
                     if (status == SignalStatus.MATCHED) {
                         // transition
-                        gate.propapate(sequenceMemory, valueResolver, status);
+                        gate.propagate(sequenceMemory, valueResolver, status);
                         System.out.println("1");
                     } else {
                         // fail
