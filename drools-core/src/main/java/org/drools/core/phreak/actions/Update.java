@@ -33,6 +33,10 @@ public class Update extends AbstractPropagationEntry<ReteEvaluator> implements E
         execute(handle, context, objectTypeConf, reteEvaluator);
     }
 
+    public InternalFactHandle getHandle() {
+        return handle;
+    }
+
     public static void execute(InternalFactHandle handle, PropagationContext pctx, ObjectTypeConf objectTypeConf, ReteEvaluator reteEvaluator) {
         if (objectTypeConf == null) {
             // it can be null after deserialization
