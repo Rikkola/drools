@@ -11,11 +11,15 @@ import org.drools.core.reteoo.SequenceNode.SequenceNodeMemory;
 import org.drools.metric.util.MetricLogUtils;
 
 public class PhreakSequenceNodeMetric extends PhreakSequenceNode {
+
+    public PhreakSequenceNodeMetric(ReteEvaluator reteEvaluator) {
+        super(reteEvaluator);
+    }
+
     @Override
     public void doNode(SequenceNode node,
                        SequenceNodeMemory memory,
                        LeftTupleSink sink,
-                       ReteEvaluator reteEvaluator,
                        TupleSets srcLeftTuples,
                        TupleSets trgLeftTuples,
                        TupleSets stagedLeftTuples) {
@@ -24,7 +28,7 @@ public class PhreakSequenceNodeMetric extends PhreakSequenceNode {
             MetricLogUtils.getInstance().startMetrics(node);
 
             super.doNode(node, memory,
-                         sink, reteEvaluator,
+                         sink,
                          srcLeftTuples, trgLeftTuples, stagedLeftTuples);
 
         } finally {

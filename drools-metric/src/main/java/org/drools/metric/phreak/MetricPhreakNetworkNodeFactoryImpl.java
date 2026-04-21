@@ -139,11 +139,12 @@ public class MetricPhreakNetworkNodeFactoryImpl implements PhreakNetworkNodeFact
         }
     }
 
-    public PhreakSequenceNode createPhreakSequenceNode() {
+    @Override
+    public PhreakSequenceNode createPhreakSequenceNode(ReteEvaluator reteEvaluator) {
         if (MetricLogUtils.getInstance().isEnabled()) {
-            return new PhreakSequenceNodeMetric();
+            return new PhreakSequenceNodeMetric(reteEvaluator);
         } else {
-            return new PhreakSequenceNode();
+            return new PhreakSequenceNode(reteEvaluator);
         }
     }
 

@@ -446,27 +446,28 @@ public class SequenceNode extends LeftTupleSource
     }
 
     public static class PhreakSequenceNode {
+        private final ReteEvaluator reteEvaluator;
+
         public PhreakSequenceNode(ReteEvaluator reteEvaluator) {
-           // TODO rikkola
+            this.reteEvaluator = reteEvaluator;
         }
 
         public void doNode(SequenceNode node,
                            SequenceNodeMemory memory,
                            LeftTupleSink sink,
-                           ReteEvaluator reteEvaluator,
                            TupleSets srcLeftTuples,
                            TupleSets trgLeftTuples,
                            TupleSets stagedLeftTuples) {
             if (srcLeftTuples.getDeleteFirst() != null) {
-                doLeftDeletes(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples, reteEvaluator);
+                doLeftDeletes(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples);
             }
 
             if (srcLeftTuples.getUpdateFirst() != null) {
-                doLeftUpdates(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples, reteEvaluator);
+                doLeftUpdates(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples);
             }
 
             if (srcLeftTuples.getInsertFirst() != null) {
-                doLeftInserts(node, memory, sink, srcLeftTuples, reteEvaluator);
+                doLeftInserts(node, memory, sink, srcLeftTuples);
             }
             
             srcLeftTuples.resetAll();
@@ -484,8 +485,10 @@ public class SequenceNode extends LeftTupleSource
             memory.getSegmentMemory().updateCleanNodeMask(memory.getNodePosMaskBit());
         }
 
-        private void doLeftUpdates(SequenceNode node, TupleSets srcLeftTuples, TupleSets trgLeftTuples,
-                                   TupleSets stagedLeftTuples, ReteEvaluator reteEvaluator) {
+        private void doLeftUpdates(SequenceNode node,
+                                   TupleSets srcLeftTuples,
+                                   TupleSets trgLeftTuples,
+                                   TupleSets stagedLeftTuples) { // TODO unused
             for (TupleImpl leftTuple = srcLeftTuples.getDeleteFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 
@@ -503,14 +506,15 @@ public class SequenceNode extends LeftTupleSource
         }
 
         private void doLeftDeletes(SequenceNode node,
-                                   TupleSets srcLeftTuples, TupleSets trgLeftTuples, TupleSets stagedLeftTuples,
-                                   ReteEvaluator evaluator) {
+                                   TupleSets srcLeftTuples,
+                                   TupleSets trgLeftTuples,
+                                   TupleSets stagedLeftTuples) { // TODO unused
             for (TupleImpl leftTuple = srcLeftTuples.getDeleteFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 
                 SequencerMemory sequencerMemory = (SequencerMemory) leftTuple.getContextObject();
                 SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(sequencerMemory.getSequencer().getSequence());
-                node.getSequencer().stop(sequenceMemory, evaluator);
+                node.getSequencer().stop(sequenceMemory, reteEvaluator);
                 leftTuple.getMemory().remove(leftTuple);
                 leftTuple.setContextObject(null);
 
@@ -536,8 +540,7 @@ public class SequenceNode extends LeftTupleSource
         private void doLeftInserts(SequenceNode node,
                                    SequenceNodeMemory memory,
                                    LeftTupleSink sink,
-                                   TupleSets srcLeftTuples,
-                                   ReteEvaluator evaluator) {
+                                   TupleSets srcLeftTuples) {
             for (TupleImpl leftTuple = srcLeftTuples.getInsertFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 
@@ -545,7 +548,7 @@ public class SequenceNode extends LeftTupleSource
 
                 SequencerMemory sequencerMemory = memory.node.createSequencerMemory(leftTuple, sink, memory);
                 leftTuple.setContextObject(sequencerMemory);
-                node.getSequencer().start(sequencerMemory, evaluator);
+                node.getSequencer().start(sequencerMemory, reteEvaluator);
 
                 leftTuple.clearStaged();
                 leftTuple = next;
