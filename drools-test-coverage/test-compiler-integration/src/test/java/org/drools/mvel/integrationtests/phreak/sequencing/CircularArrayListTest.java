@@ -1,7 +1,7 @@
 package org.drools.mvel.integrationtests.phreak.sequencing;
 
 import org.drools.base.util.CircularArrayList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

@@ -28,8 +28,8 @@ import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.util.CircularArrayList;
 import org.drools.mvel.integrationtests.phreak.B;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.rule.FactHandle;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class PhreakSequencerActionTest extends AbstractPhreakSequencerSubsequenc
 
     private List<Object> recorder = new ArrayList<>();
 
-    @Before
+    @BeforeEach
     public void setup() {
         initKBaseWithEmptyRule();
         recorder.clear();

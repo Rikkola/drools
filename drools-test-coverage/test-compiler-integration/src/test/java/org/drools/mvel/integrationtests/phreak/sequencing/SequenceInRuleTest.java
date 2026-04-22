@@ -22,14 +22,14 @@ import org.drools.kiesession.rulebase.SessionsAwareKnowledgeBase;
 import org.drools.mvel.integrationtests.phreak.A;
 import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.conf.CompositeBaseConfiguration;
 
 public class SequenceInRuleTest {
     SessionsAwareKnowledgeBase kbase;
-    @Before
+    @BeforeEach
     public void setup() {
         CompositeBaseConfiguration conf = (CompositeBaseConfiguration) RuleBaseFactory.newKnowledgeBaseConfiguration();
 

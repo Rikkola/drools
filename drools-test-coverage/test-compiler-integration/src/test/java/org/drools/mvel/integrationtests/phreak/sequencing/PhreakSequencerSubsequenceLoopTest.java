@@ -29,8 +29,8 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.mvel.integrationtests.phreak.B;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PhreakSequencerSubsequenceLoopTest extends AbstractPhreakSequencerSubsequenceTest {
 //
-//    @Before
+//    @BeforeEach
 //    public void setup() {
 //        initKBaseWithEmptyRule();
 //

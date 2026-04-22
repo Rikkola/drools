@@ -24,7 +24,7 @@ import org.drools.core.reteoo.SequenceNode;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.kiesession.session.StatefulKnowledgeSessionImpl;
 import org.drools.mvel.integrationtests.phreak.A;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.conf.ThreadSafeOption;
 
 import java.util.Collections;

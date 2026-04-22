@@ -30,8 +30,8 @@ import org.drools.base.rule.Pattern;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PhreakSequencerParallelTest extends AbstractPhreakSequencerSubsequenceTest {
 
-    @Before
+    @BeforeEach
     public void setup() {
         initKBaseWithEmptyRule();
 

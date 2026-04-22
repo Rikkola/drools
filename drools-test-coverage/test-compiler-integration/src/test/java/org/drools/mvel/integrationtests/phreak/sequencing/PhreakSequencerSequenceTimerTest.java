@@ -31,8 +31,8 @@ import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProce
 import org.drools.core.time.impl.DurationTimer;
 import org.drools.core.time.impl.PseudoClockScheduler;
 import org.drools.mvel.integrationtests.phreak.B;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PhreakSequencerSequenceTimerTest  extends AbstractPhreakSequencerSubsequenceTest {
 
-//    @Before
+//    @BeforeEach
 //    public void setup() {
 //        initKBaseWithEmptyRule();
 //

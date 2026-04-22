@@ -34,14 +34,14 @@ import org.drools.core.util.index.TupleList;
 import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
 import org.drools.mvel.integrationtests.phreak.D;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PhreakSequencerSignalProcessorCounterTest extends AbstractPhreakSequencerSubsequenceTest {
 
-    @Before
+    @BeforeEach
     public void setup() {
         initKBaseWithEmptyRule();
     }

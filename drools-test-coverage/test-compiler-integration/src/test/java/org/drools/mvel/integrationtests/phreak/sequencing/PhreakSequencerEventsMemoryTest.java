@@ -28,15 +28,15 @@ import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.util.CircularArrayList;
 import org.drools.mvel.integrationtests.phreak.B;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.rule.FactHandle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PhreakSequencerEventsMemoryTest extends AbstractPhreakSequencerSubsequenceTest {
 
-    @Before
+    @BeforeEach
     public void setup() {
         initKBaseWithEmptyRule();
 
