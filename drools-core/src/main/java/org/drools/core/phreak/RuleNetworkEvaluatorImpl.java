@@ -64,7 +64,9 @@ import org.drools.core.reteoo.QueryTerminalNode;
 import org.drools.core.reteoo.ReactiveFromNode;
 import org.drools.core.reteoo.RightInputAdapterNode;
 import org.drools.core.reteoo.SegmentMemory;
+import org.drools.core.reteoo.SequenceNode;
 import org.drools.core.reteoo.SequenceNode.PhreakSequenceNode;
+import org.drools.core.reteoo.SequenceNode.SequenceNodeMemory;
 import org.drools.core.reteoo.SubnetworkTuple;
 import org.drools.core.reteoo.TimerNode;
 import org.drools.core.reteoo.TimerNode.TimerNodeMemory;
@@ -433,6 +435,10 @@ public class RuleNetworkEvaluatorImpl implements RuleNetworkEvaluator {
             }
             case NodeTypeEnums.AsyncReceiveNode: {
                 pReceiveNode.doNode((AsyncReceiveNode) sc.getCurrentNode(), (AsyncReceiveMemory) sc.getCurrentNodeMemory(), sink, sc.getSourceTuples(), trgTuples);
+                break;
+            }
+            case NodeTypeEnums.SequenceNode: {
+                pSequenceNode.doNode((SequenceNode) sc.getCurrentNode(), (SequenceNodeMemory) sc.getCurrentNodeMemory(), sink, sc.getSourceTuples(), trgTuples, sc.getStagedLeftTuples());
                 break;
             }
         }
