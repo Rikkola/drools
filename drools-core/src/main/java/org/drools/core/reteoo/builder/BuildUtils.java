@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.drools.base.base.ObjectType;
 import org.drools.base.common.RuleBasePartitionId;
-import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.GroupElement;
@@ -44,7 +43,6 @@ import org.drools.core.reteoo.BetaNode;
 import org.drools.core.reteoo.EntryPointNode;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.time.TemporalDependencyMatrix;
-import org.kie.api.definition.rule.Rule;
 
 /**
  * Utility functions for reteoo build
@@ -118,10 +116,6 @@ public class BuildUtils {
             }
         }
 
-        if ( node != null && !areNodesCompatibleForSharing(context, node) ) {
-            node = null;
-        }
-
         if ( node == null ) {
             // only attach() if it is a new node
             node = candidate;
@@ -181,19 +175,6 @@ public class BuildUtils {
             return context.getRuleBase().getRuleBaseConfiguration().isShareAlphaNodes();
         }
         return false;
-    }
-
-    private boolean areNodesCompatibleForSharing(BuildContext context, BaseNode node) {
-        if ( node.getType() == NodeTypeEnums.TupleToObjectNode) {
-            // avoid subnetworks sharing when they belong to 2 different agenda-groups
-            String agendaGroup = context.getRule().getAgendaGroup();
-            for (Rule associatedRule : node.getAssociatedRules()) {
-                if (!agendaGroup.equals( (( RuleImpl ) associatedRule).getAgendaGroup() )) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
