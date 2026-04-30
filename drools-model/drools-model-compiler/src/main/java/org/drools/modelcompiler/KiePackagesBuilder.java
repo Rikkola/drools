@@ -131,6 +131,13 @@ import org.drools.model.patterns.ExistentialPatternImpl;
 import org.drools.model.patterns.GroupByPatternImpl;
 import org.drools.model.patterns.PatternImpl;
 import org.drools.model.patterns.QueryCallPattern;
+import org.drools.model.patterns.SequenceConditionImpl;
+import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
+import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
+import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.model.view.SelfPatternBiding;
 import org.drools.modelcompiler.attributes.LambdaEnabled;
 import org.drools.modelcompiler.attributes.LambdaSalience;
@@ -506,6 +513,32 @@ public class KiePackagesBuilder {
                 } else if (condition instanceof ConditionalNamedConsequenceImpl) {
                     return buildConditionalConsequence(ctx, (ConditionalNamedConsequenceImpl) condition);
                 }
+            case SEQUENCE: {
+                SequenceConditionImpl sc = (SequenceConditionImpl) condition;
+                List<Condition> steps = sc.getSubConditions();
+                int n = steps.size();
+                Pattern[] filters = new Pattern[n];
+                Step.StepFactory[] stepFactories = new Step.StepFactory[n];
+                for (int i = 0; i < n; i++) {
+                    RuleConditionElement built = buildPattern(ctx, group, (PatternImpl) steps.get(i));
+                    if (!(built instanceof Pattern)) {
+                        throw new IllegalStateException("SEQUENCE step " + i + " must be a simple alpha-constraint Pattern (B1 scope)");
+                    }
+                    filters[i] = (Pattern) built;
+                    LogicGate gate = new LogicGate(
+                            (inputMask, sourceMask) -> Gates.and(inputMask, sourceMask),
+                            0,
+                            new int[]{i},
+                            new int[]{i},
+                            0);
+                    gate.setOutput(TerminatingSignalProcessor.get());
+                    stepFactories[i] = Step.of(new LogicCircuit(gate));
+                }
+                Sequence seq = new Sequence(0, stepFactories);
+                seq.setFilters(filters);
+                ctx.getRule().addSequence(seq);
+                return null;
+            }
         }
         throw new UnsupportedOperationException();
     }

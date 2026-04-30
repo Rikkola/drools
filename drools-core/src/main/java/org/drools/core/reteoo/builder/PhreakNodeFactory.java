@@ -22,7 +22,7 @@ package org.drools.core.reteoo.builder;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -138,7 +138,9 @@ public class PhreakNodeFactory implements NodeFactory, Serializable {
         Pattern[] patterns =  seq.getFilters();
 
         // first attach the OTN sources in Rete.
-        Set<ObjectType>       objectTypeSet     = new HashSet<>();
+        // Use LinkedHashSet to preserve insertion order (first-seen per type),
+        // so objectTypeList index aligns with the first pattern index for that type.
+        Set<ObjectType>       objectTypeSet     = new LinkedHashSet<>();
         Arrays.stream(patterns).forEach(p -> objectTypeSet.add(p.getObjectType()));
         List<ObjectType> objectTypeList = new ArrayList<>(objectTypeSet);
 
