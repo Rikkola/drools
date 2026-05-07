@@ -1775,6 +1775,23 @@ public class PatternDSL extends DSL {
         }
     }
 
+    public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem {
+        private final SequenceStep[] steps;
+
+        public SequenceViewItem(SequenceStep... steps) {
+            this.steps = steps;
+        }
+
+        public SequenceStep[] getSteps() {
+            return steps;
+        }
+
+        @Override
+        public SequenceViewItem get() {
+            return this;
+        }
+    }
+
     public static abstract class PatternBindingImpl<T, A> implements PatternItem<T> {
         protected final Variable<A> boundVar;
         protected final ReactOn reactOn;
@@ -1886,6 +1903,10 @@ public class PatternDSL extends DSL {
     }
 
     // -- rule --
+
+    public static SequenceViewItem sequence(SequenceStep... steps) {
+        return new SequenceViewItem(steps);
+    }
 
     public static RuleBuilder rule( String name ) {
         return new RuleBuilder( VIEW_BUILDER, name );
