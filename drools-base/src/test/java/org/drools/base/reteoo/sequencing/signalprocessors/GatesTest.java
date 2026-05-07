@@ -65,4 +65,21 @@ public class GatesTest {
     public void nandAllMatched() {
         assertThat(Gates.nand(0b11L, 0b11L)).isFalse();
     }
+
+    // XNOR: true when either none or all expected bits are matched (all-or-none).
+
+    @Test
+    public void xnorNoneMatched() {
+        assertThat(Gates.xnor(0b00L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void xnorOneMatched() {
+        assertThat(Gates.xnor(0b01L, 0b11L)).isFalse();
+    }
+
+    @Test
+    public void xnorAllMatched() {
+        assertThat(Gates.xnor(0b11L, 0b11L)).isTrue();
+    }
 }
