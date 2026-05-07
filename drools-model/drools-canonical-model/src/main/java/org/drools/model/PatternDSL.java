@@ -93,6 +93,7 @@ import org.drools.model.view.BindViewItem1;
 import org.drools.model.view.BindViewItem2;
 import org.drools.model.view.BindViewItem3;
 import org.drools.model.view.BindViewItem4;
+import org.drools.model.view.CombinedExprViewItem;
 import org.drools.model.view.ExprViewItem;
 import org.drools.model.view.ViewItem;
 
@@ -1906,6 +1907,41 @@ public class PatternDSL extends DSL {
 
     public static SequenceViewItem sequence(SequenceStep... steps) {
         return new SequenceViewItem(steps);
+    }
+
+    public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.NOR, prependStep(first, rest));
+    }
+
+    public static CombinedExprViewItem nand(SequenceStep first, SequenceStep second, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.NAND, prependSteps(first, second, rest));
+    }
+
+    public static CombinedExprViewItem xor(SequenceStep first, SequenceStep second, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.XOR, prependSteps(first, second, rest));
+    }
+
+    public static CombinedExprViewItem xnor(SequenceStep first, SequenceStep second, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.XNOR, prependSteps(first, second, rest));
+    }
+
+    private static ViewItem[] prependStep(SequenceStep first, SequenceStep[] rest) {
+        ViewItem[] all = new ViewItem[1 + rest.length];
+        all[0] = (ViewItem) first;
+        for (int i = 0; i < rest.length; i++) {
+            all[1 + i] = (ViewItem) rest[i];
+        }
+        return all;
+    }
+
+    private static ViewItem[] prependSteps(SequenceStep first, SequenceStep second, SequenceStep[] rest) {
+        ViewItem[] all = new ViewItem[2 + rest.length];
+        all[0] = (ViewItem) first;
+        all[1] = (ViewItem) second;
+        for (int i = 0; i < rest.length; i++) {
+            all[2 + i] = (ViewItem) rest[i];
+        }
+        return all;
     }
 
     public static RuleBuilder rule( String name ) {

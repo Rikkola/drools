@@ -120,7 +120,9 @@ public class PatternDSLSequenceTest {
     @AfterEach
     public void tearDown() {
         results.clear();
-        ksession.dispose();
+        if (ksession != null) {
+            ksession.dispose();
+        }
     }
 
     private void insertAndFire(Object... facts) {
@@ -134,5 +136,45 @@ public class PatternDSLSequenceTest {
         final Model model = new ModelImpl().addRule(rule);
         final KieBase kieBase = KieBaseBuilder.createKieBaseFromModel(model);
         return kieBase.newKieSession();
+    }
+
+    @Test
+    public void norFactoryProducesNorType() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.nor(pattern(person));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.NOR);
+        assertThat(item.getExpressions()).hasSize(1);
+    }
+
+    @Test
+    public void norFactoryAcceptsMultipleArgs() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.nor(pattern(person), pattern(toy));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.NOR);
+        assertThat(item.getExpressions()).hasSize(2);
+    }
+
+    @Test
+    public void nandFactoryRequiresTwoArgs() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.nand(pattern(person), pattern(toy));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.NAND);
+        assertThat(item.getExpressions()).hasSize(2);
+    }
+
+    @Test
+    public void xorFactoryRequiresTwoArgs() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.xor(pattern(person), pattern(toy));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.XOR);
+        assertThat(item.getExpressions()).hasSize(2);
+    }
+
+    @Test
+    public void xnorFactoryRequiresTwoArgs() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.xnor(pattern(person), pattern(toy));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.XNOR);
+        assertThat(item.getExpressions()).hasSize(2);
     }
 }
