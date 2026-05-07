@@ -12,7 +12,7 @@ public class Gates {
 
     public static boolean xor(long a, long b) {
         long v = a & b;
-        return v > 0 && v != b && (v & -v) == 0;
+        return v > 0 && (v & (v - 1)) == 0;
     }
 
     public static boolean xnor(long a, long b) {

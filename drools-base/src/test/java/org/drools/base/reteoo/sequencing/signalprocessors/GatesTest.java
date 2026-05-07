@@ -26,4 +26,26 @@ public class GatesTest {
         // 2 expected inputs, both fired
         assertThat(Gates.nor(0b11L, 0b11L)).isFalse();
     }
+
+    // XOR: true when exactly one expected bit is currently matched.
+
+    @Test
+    public void xorNoneMatched() {
+        assertThat(Gates.xor(0b00L, 0b11L)).isFalse();
+    }
+
+    @Test
+    public void xorOneMatchedLow() {
+        assertThat(Gates.xor(0b01L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void xorOneMatchedHigh() {
+        assertThat(Gates.xor(0b10L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void xorAllMatched() {
+        assertThat(Gates.xor(0b11L, 0b11L)).isFalse();
+    }
 }
