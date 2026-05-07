@@ -142,7 +142,7 @@ public class PatternDSL extends DSL {
         return new ReactOn( reactOn );
     }
 
-    public interface PatternDef<T> extends ViewItem<T> {
+    public interface PatternDef<T> extends ViewItem<T>, SequenceStep {
         PatternDef<T> and();
         PatternDef<T> or();
         PatternDef<T> endAnd();
