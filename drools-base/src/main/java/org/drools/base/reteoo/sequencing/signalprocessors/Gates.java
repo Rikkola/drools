@@ -8,7 +8,7 @@ public class Gates {
 
     public static boolean nor(long a, long b) {return (a & b) == 0;}
 
-    public static boolean nand(long a, long b) {return (a & b) == 0;}
+    public static boolean nand(long a, long b) {return (a & b) != b;}
 
     public static boolean xor(long a, long b) {
         long v = a & b;

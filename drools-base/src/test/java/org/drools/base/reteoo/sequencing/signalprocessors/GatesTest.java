@@ -48,4 +48,21 @@ public class GatesTest {
     public void xorAllMatched() {
         assertThat(Gates.xor(0b11L, 0b11L)).isFalse();
     }
+
+    // NAND: true when not all expected bits are currently matched.
+
+    @Test
+    public void nandNoneMatched() {
+        assertThat(Gates.nand(0b00L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void nandOneMatched() {
+        assertThat(Gates.nand(0b01L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void nandAllMatched() {
+        assertThat(Gates.nand(0b11L, 0b11L)).isFalse();
+    }
 }
