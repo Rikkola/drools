@@ -6,7 +6,7 @@ public class Gates {
     public static boolean or(long a, long b)  {return (a & b) > 0;}
 
 
-    public static boolean nor(long a, long b) {return (a | b) == 0;}
+    public static boolean nor(long a, long b) {return (a & b) == 0;}
 
     public static boolean nand(long a, long b) {return (a & b) == 0;}
 
