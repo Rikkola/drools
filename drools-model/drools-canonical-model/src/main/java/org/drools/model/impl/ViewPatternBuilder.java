@@ -185,8 +185,8 @@ public class ViewPatternBuilder implements ViewBuilder {
 
         if (ruleItem instanceof SequenceViewItem) {
             SequenceViewItem sv = (SequenceViewItem) ruleItem;
-            List<Condition> steps = Arrays.stream(sv.getPatterns())
-                    .map(ViewPatternBuilder::ruleItem2Condition)
+            List<Condition> steps = Arrays.stream(sv.getSteps())
+                    .map(s -> ruleItem2Condition((RuleItem) s))
                     .collect(toList());
             return new SequenceConditionImpl(steps);
         }

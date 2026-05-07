@@ -1776,14 +1776,14 @@ public class PatternDSL extends DSL {
     }
 
     public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem {
-        private final PatternDef<?>[] patterns;
+        private final SequenceStep[] steps;
 
-        public SequenceViewItem(PatternDef<?>... patterns) {
-            this.patterns = patterns;
+        public SequenceViewItem(SequenceStep... steps) {
+            this.steps = steps;
         }
 
-        public PatternDef<?>[] getPatterns() {
-            return patterns;
+        public SequenceStep[] getSteps() {
+            return steps;
         }
 
         @Override
@@ -1904,8 +1904,8 @@ public class PatternDSL extends DSL {
 
     // -- rule --
 
-    public static SequenceViewItem sequence(PatternDef<?>... patterns) {
-        return new SequenceViewItem(patterns);
+    public static SequenceViewItem sequence(SequenceStep... steps) {
+        return new SequenceViewItem(steps);
     }
 
     public static RuleBuilder rule( String name ) {
