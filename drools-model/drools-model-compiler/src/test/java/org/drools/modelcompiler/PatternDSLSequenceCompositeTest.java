@@ -30,12 +30,12 @@ import static org.drools.model.PatternDSL.sequence;
 
 public class PatternDSLSequenceCompositeTest {
 
-    private final Variable<MonitoringStation>     station     = declarationOf(MonitoringStation.class);
-    private final Variable<SensorActivated>       activated   = declarationOf(SensorActivated.class);
-    private final Variable<HeartbeatOk>           heartbeat   = declarationOf(HeartbeatOk.class);
-    private final Variable<AlarmRaised>           alarm       = declarationOf(AlarmRaised.class);
-    private final Variable<CalibrationPassed>     calibration = declarationOf(CalibrationPassed.class);
-    private final Variable<OperatorAcknowledged>  ack         = declarationOf(OperatorAcknowledged.class);
+    private final Variable<MonitoringStation>     station         = declarationOf(MonitoringStation.class);
+    private final Variable<SensorActivated>       sensorActivated = declarationOf(SensorActivated.class);
+    private final Variable<HeartbeatOk>           heartbeat       = declarationOf(HeartbeatOk.class);
+    private final Variable<AlarmRaised>           alarm           = declarationOf(AlarmRaised.class);
+    private final Variable<CalibrationPassed>     calibration     = declarationOf(CalibrationPassed.class);
+    private final Variable<OperatorAcknowledged>  ack             = declarationOf(OperatorAcknowledged.class);
 
     private KieSession ksession;
 
@@ -59,7 +59,7 @@ public class PatternDSLSequenceCompositeTest {
                 rule("nor-rejected").build(
                         pattern(station),
                         sequence(
-                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 nor(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1"))),
                                 pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
@@ -82,7 +82,7 @@ public class PatternDSLSequenceCompositeTest {
                 rule("or-rule").build(
                         pattern(station),
                         sequence(
-                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 or(
                                         pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
                                         pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
@@ -111,7 +111,7 @@ public class PatternDSLSequenceCompositeTest {
                 rule("and-rule").build(
                         pattern(station),
                         sequence(
-                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 and(
                                         pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
                                         pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
@@ -142,7 +142,7 @@ public class PatternDSLSequenceCompositeTest {
                 rule("nested-rule").build(
                         pattern(station),
                         sequence(
-                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 or(
                                         pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
                                         and(
@@ -177,7 +177,7 @@ public class PatternDSLSequenceCompositeTest {
                 rule("and-partial-rule").build(
                         pattern(station),
                         sequence(
-                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 and(
                                         pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
                                         pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
