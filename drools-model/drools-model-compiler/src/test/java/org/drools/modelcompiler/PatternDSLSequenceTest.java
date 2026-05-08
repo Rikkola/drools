@@ -177,4 +177,27 @@ public class PatternDSLSequenceTest {
         assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.XNOR);
         assertThat(item.getExpressions()).hasSize(2);
     }
+
+    @Test
+    public void sequenceRejectsNorInsideSequence() {
+        org.drools.model.Rule r =
+                rule("nor-rejected").build(
+                        pattern(person),
+                        sequence(
+                                pattern(person).expr("anchor", p -> p.getName().equals("anchor")),
+                                org.drools.model.PatternDSL.nor(
+                                        pattern(toy).expr("ball", t -> t.getName().equals("ball"))
+                                ),
+                                pattern(relationship).expr("rel", x -> x.getStart().equals("go"))
+                        ),
+                        execute(() -> { })
+                );
+
+        org.drools.model.Model model = new ModelImpl().addRule(r);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> KieBaseBuilder.createKieBaseFromModel(model)
+        ).isInstanceOf(UnsupportedOperationException.class)
+         .hasMessageContaining("ADR 0001");
+    }
 }

@@ -136,6 +136,8 @@ import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGateOutputSignalProcessor;
+import org.drools.base.reteoo.sequencing.signalprocessors.SignalIndex;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.model.view.SelfPatternBiding;
@@ -517,25 +519,19 @@ public class KiePackagesBuilder {
                 SequenceConditionImpl sc = (SequenceConditionImpl) condition;
                 List<Condition> steps = sc.getSubConditions();
                 int n = steps.size();
-                Pattern[] filters = new Pattern[n];
+                List<Pattern> filters = new ArrayList<>();
                 Step.StepFactory[] stepFactories = new Step.StepFactory[n];
+                int[] gateCounter = new int[]{0};
+
                 for (int i = 0; i < n; i++) {
-                    RuleConditionElement built = buildPattern(ctx, group, (PatternImpl) steps.get(i));
-                    if (!(built instanceof Pattern)) {
-                        throw new IllegalStateException("SEQUENCE step " + i + " must be a simple alpha-constraint Pattern (B1 scope)");
-                    }
-                    filters[i] = (Pattern) built;
-                    LogicGate gate = new LogicGate(
-                            (inputMask, sourceMask) -> Gates.and(inputMask, sourceMask),
-                            0,
-                            new int[]{i},
-                            new int[]{i},
-                            0);
-                    gate.setOutput(TerminatingSignalProcessor.get());
-                    stepFactories[i] = Step.of(new LogicCircuit(gate));
+                    List<LogicGate> stepGates = new ArrayList<>();
+                    LogicGate root = buildStepGate(ctx, group, steps.get(i), filters, stepGates, gateCounter);
+                    root.setOutput(TerminatingSignalProcessor.get());
+                    stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
                 }
+
                 Sequence seq = new Sequence(0, stepFactories);
-                seq.setFilters(filters);
+                seq.setFilters(filters.toArray(new Pattern[0]));
                 ctx.getRule().addSequence(seq);
                 return null;
             }
@@ -580,6 +576,66 @@ public class KiePackagesBuilder {
         transformedForall.addChild( new GroupElement( GroupElement.Type.NOT ).addChild( conditionToElement( ctx, group, forallPattern ) ) );
 
         return transformedForall;
+    }
+
+    private static final String DEFERRED_GATE_ERROR =
+            "sequence(...) does not yet support condition type %s. Absence-based " +
+            "gates (nor, nand, xor, xnor, not) and other composites are deferred " +
+            "— see ADR 0001 (nor-step-runtime-boundary).";
+
+    private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
+                                    Condition node, List<Pattern> filters,
+                                    List<LogicGate> stepGates, int[] gateCounter) {
+        Condition.Type type = node.getType();
+
+        if (type == Condition.Type.PATTERN) {
+            int idx = filters.size();
+            RuleConditionElement built = buildPattern(ctx, group, (PatternImpl) node);
+            if (!(built instanceof Pattern)) {
+                throw new IllegalStateException(
+                        "SEQUENCE leaf must compile to a simple Pattern, got " + built);
+            }
+            filters.add((Pattern) built);
+            LogicGate leaf = new LogicGate(
+                    Gates::and,
+                    gateCounter[0]++,
+                    new int[]{idx},
+                    new int[]{idx},
+                    0);
+            stepGates.add(leaf);
+            return leaf;
+        }
+
+        LogicCircuit.LongBiPredicate pred = predicateFor(type);
+        List<Condition> children = node.getSubConditions();
+        if (children.isEmpty()) {
+            throw new IllegalStateException(
+                    "SEQUENCE composite node has no children: " + type);
+        }
+        LogicGate[] inputs = new LogicGate[children.size()];
+        for (int i = 0; i < children.size(); i++) {
+            inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter);
+        }
+        LogicGate parent = new LogicGate(
+                pred,
+                gateCounter[0]++,
+                new int[0],
+                new int[0],
+                inputs.length);
+        parent.setInputGates(inputs);
+        for (int k = 0; k < inputs.length; k++) {
+            inputs[k].setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(parent, k + 1)));
+        }
+        stepGates.add(parent);
+        return parent;
+    }
+
+    private static LogicCircuit.LongBiPredicate predicateFor(Condition.Type t) {
+        switch (t) {
+            default:
+                throw new UnsupportedOperationException(
+                        String.format(DEFERRED_GATE_ERROR, t));
+        }
     }
 
     private RuleConditionElement buildAccumulate( RuleContext ctx, GroupElement group, AccumulatePattern accumulatePattern ) {
