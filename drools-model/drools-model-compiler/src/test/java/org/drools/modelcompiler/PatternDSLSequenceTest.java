@@ -7,6 +7,8 @@ import org.drools.model.Model;
 import org.drools.model.Rule;
 import org.drools.model.Variable;
 import org.drools.model.impl.ModelImpl;
+import org.drools.modelcompiler.domain.Adult;
+import org.drools.modelcompiler.domain.Man;
 import org.drools.modelcompiler.domain.Person;
 import org.drools.modelcompiler.domain.Relationship;
 import org.drools.modelcompiler.domain.Toy;
@@ -199,5 +201,36 @@ public class PatternDSLSequenceTest {
                 () -> KieBaseBuilder.createKieBaseFromModel(model)
         ).isInstanceOf(UnsupportedOperationException.class)
          .hasMessageContaining("ADR 0001");
+    }
+
+    @Test
+    public void sequenceFiresWithOrOfTwo() {
+        // Step 1 is or(toy/ball, man/Toni). Either child is enough to advance.
+        final java.util.List<String> orResults = new java.util.ArrayList<>();
+        final org.drools.model.Variable<Adult> adultVar = declarationOf(Adult.class);
+        final org.drools.model.Variable<Man> manVar = declarationOf(Man.class);
+
+        org.drools.model.Rule orRule =
+                rule("or-rule").build(
+                        pattern(person),
+                        sequence(
+                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                org.drools.model.PatternDSL.or(
+                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
+                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                ),
+                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                        ),
+                        execute(() -> orResults.add("fired"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(orRule)).newKieSession();
+
+        insertAndFire(new Person("trigger"));
+        insertAndFire(new Adult("anchor", 30));     // step 0 anchor
+        insertAndFire(new Toy("ball"));             // OR child #1 fires → step advances
+        insertAndFire(new Relationship("go", "done"));
+
+        assertThat(orResults).containsExactly("fired");
     }
 }

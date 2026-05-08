@@ -96,6 +96,7 @@ import org.drools.model.view.BindViewItem4;
 import org.drools.model.view.CombinedExprViewItem;
 import org.drools.model.view.ExprViewItem;
 import org.drools.model.view.ViewItem;
+import org.drools.model.view.ViewItemBuilder;
 
 
 import static java.util.UUID.randomUUID;
@@ -1907,6 +1908,23 @@ public class PatternDSL extends DSL {
 
     public static SequenceViewItem sequence(SequenceStep... steps) {
         return new SequenceViewItem(steps);
+    }
+
+    public static CombinedExprViewItem or(ViewItemBuilder<?> first, ViewItemBuilder<?>... rest) {
+        return new CombinedExprViewItem(Condition.Type.OR, viewItems(first, rest));
+    }
+
+    public static CombinedExprViewItem and(ViewItemBuilder<?> first, ViewItemBuilder<?>... rest) {
+        return new CombinedExprViewItem(Condition.Type.AND, viewItems(first, rest));
+    }
+
+    private static ViewItem[] viewItems(ViewItemBuilder<?> first, ViewItemBuilder<?>[] rest) {
+        ViewItem[] all = new ViewItem[1 + rest.length];
+        all[0] = first.get();
+        for (int i = 0; i < rest.length; i++) {
+            all[1 + i] = rest[i].get();
+        }
+        return all;
     }
 
     public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
