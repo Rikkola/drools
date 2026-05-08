@@ -7,12 +7,12 @@ import org.drools.model.Model;
 import org.drools.model.Rule;
 import org.drools.model.Variable;
 import org.drools.model.impl.ModelImpl;
-import org.drools.modelcompiler.domain.Adult;
-import org.drools.modelcompiler.domain.Child;
-import org.drools.modelcompiler.domain.Man;
-import org.drools.modelcompiler.domain.Person;
-import org.drools.modelcompiler.domain.Relationship;
-import org.drools.modelcompiler.domain.Toy;
+import org.drools.modelcompiler.domain.SensorEvents.AlarmRaised;
+import org.drools.modelcompiler.domain.SensorEvents.CalibrationPassed;
+import org.drools.modelcompiler.domain.SensorEvents.HeartbeatOk;
+import org.drools.modelcompiler.domain.SensorEvents.MonitoringStation;
+import org.drools.modelcompiler.domain.SensorEvents.OperatorAcknowledged;
+import org.drools.modelcompiler.domain.SensorEvents.SensorActivated;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
@@ -30,12 +30,12 @@ import static org.drools.model.PatternDSL.sequence;
 
 public class PatternDSLSequenceCompositeTest {
 
-    private final Variable<Person>       person       = declarationOf(Person.class);
-    private final Variable<Adult>        adultVar     = declarationOf(Adult.class);
-    private final Variable<Child>        childVar     = declarationOf(Child.class);
-    private final Variable<Man>          manVar       = declarationOf(Man.class);
-    private final Variable<Toy>          toy          = declarationOf(Toy.class);
-    private final Variable<Relationship> relationship = declarationOf(Relationship.class);
+    private final Variable<MonitoringStation>     station     = declarationOf(MonitoringStation.class);
+    private final Variable<SensorActivated>       activated   = declarationOf(SensorActivated.class);
+    private final Variable<HeartbeatOk>           heartbeat   = declarationOf(HeartbeatOk.class);
+    private final Variable<AlarmRaised>           alarm       = declarationOf(AlarmRaised.class);
+    private final Variable<CalibrationPassed>     calibration = declarationOf(CalibrationPassed.class);
+    private final Variable<OperatorAcknowledged>  ack         = declarationOf(OperatorAcknowledged.class);
 
     private KieSession ksession;
 
@@ -57,11 +57,11 @@ public class PatternDSLSequenceCompositeTest {
     public void sequenceRejectsNorInsideSequence() {
         Rule r =
                 rule("nor-rejected").build(
-                        pattern(person),
+                        pattern(station),
                         sequence(
-                                pattern(person).expr("anchor", p -> p.getName().equals("anchor")),
-                                nor(pattern(toy).expr("ball", t -> t.getName().equals("ball"))),
-                                pattern(relationship).expr("rel", x -> x.getStart().equals("go"))
+                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                nor(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1"))),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
                         execute(() -> { })
                 );
@@ -75,127 +75,125 @@ public class PatternDSLSequenceCompositeTest {
 
     @Test
     public void sequenceFiresWithOrOfTwo() {
-        // Step 1 is or(toy/ball, man/Toni). Either child is enough to advance.
-        final List<String> orResults = new ArrayList<>();
+        // Step 1 is or(heartbeat, alarm). Either signal is enough to advance.
+        final List<String> results = new ArrayList<>();
 
         Rule orRule =
                 rule("or-rule").build(
-                        pattern(person),
+                        pattern(station),
                         sequence(
-                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 or(
-                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
-                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
                                 ),
-                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
-                        execute(() -> orResults.add("fired"))
+                        execute(() -> results.add("acknowledged"))
                 );
 
         ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(orRule)).newKieSession();
 
-        insertAndFire(new Person("trigger"));
-        insertAndFire(new Adult("anchor", 30));     // step 0 anchor
-        insertAndFire(new Toy("ball"));             // OR child #1 fires → step advances
-        insertAndFire(new Relationship("go", "done"));
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));            // OR child #1 fires → step advances
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
-        assertThat(orResults).containsExactly("fired");
+        assertThat(results).containsExactly("acknowledged");
     }
 
     @Test
     public void sequenceFiresWithAndOfTwo() {
-        // Step 1 is and(toy/ball, man/Toni). Both children must match before step advances.
-        final List<String> andResults = new ArrayList<>();
+        // Step 1 is and(heartbeat, alarm). Both signals must arrive before step advances.
+        final List<String> results = new ArrayList<>();
 
         Rule andRule =
                 rule("and-rule").build(
-                        pattern(person),
+                        pattern(station),
                         sequence(
-                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 and(
-                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
-                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
                                 ),
-                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
-                        execute(() -> andResults.add("fired"))
+                        execute(() -> results.add("acknowledged"))
                 );
 
         ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(andRule)).newKieSession();
 
-        insertAndFire(new Person("trigger"));
-        insertAndFire(new Adult("anchor", 30));
-        insertAndFire(new Toy("ball"));            // AND child #1 fires → step still waiting
-        insertAndFire(new Man("Toni", 44));        // AND child #2 fires → step advances
-        insertAndFire(new Relationship("go", "done"));
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));               // AND child #1 fires → step still waiting
+        insertAndFire(new AlarmRaised("sensor-1", "high"));       // AND child #2 fires → step advances
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
-        assertThat(andResults).containsExactly("fired");
+        assertThat(results).containsExactly("acknowledged");
     }
 
     @Test
     public void sequenceFiresWithNestedAndInsideOr() {
-        // Step 1 is or(toy/ball, and(child/rope, man/Toni)).
-        // Either branch suffices: a single ball, or rope + Toni together.
-        // Note: Child substituted for a second Toy to keep all sequence patterns
-        // of distinct object types (sequencer constraint).
-        final List<String> nestedResults = new ArrayList<>();
+        // Step 1 is or(heartbeat, and(calibration, alarm)).
+        // Either branch suffices: a heartbeat alone, or calibration + alarm together.
+        final List<String> results = new ArrayList<>();
 
         Rule nestedRule =
                 rule("nested-rule").build(
-                        pattern(person),
+                        pattern(station),
                         sequence(
-                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 or(
-                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
                                         and(
-                                                pattern(childVar).expr("rope", c -> c.getName().equals("rope")),
-                                                pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                                pattern(calibration).expr("calibrated", c -> c.getSensorId().equals("sensor-1")),
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
                                         )
                                 ),
-                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
-                        execute(() -> nestedResults.add("fired"))
+                        execute(() -> results.add("acknowledged"))
                 );
 
         ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(nestedRule)).newKieSession();
 
-        insertAndFire(new Person("trigger"));
-        insertAndFire(new Adult("anchor", 30));
-        // The AND branch matches: rope + Toni together, no ball needed.
-        insertAndFire(new Child("rope", 8));
-        insertAndFire(new Man("Toni", 44));
-        insertAndFire(new Relationship("go", "done"));
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        // The AND branch matches: calibration + alarm together, no heartbeat needed.
+        insertAndFire(new CalibrationPassed("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-1", "high"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
-        assertThat(nestedResults).containsExactly("fired");
+        assertThat(results).containsExactly("acknowledged");
     }
 
     @Test
     public void sequenceDoesNotFireWhenAndPartial() {
         // Same shape as sequenceFiresWithAndOfTwo, but only one of the AND children fires.
         // AND requires every child matched; one match is not enough; step never advances.
-        final List<String> andResults = new ArrayList<>();
+        final List<String> results = new ArrayList<>();
 
         Rule andRule =
                 rule("and-partial-rule").build(
-                        pattern(person),
+                        pattern(station),
                         sequence(
-                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                pattern(activated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 and(
-                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
-                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
                                 ),
-                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
-                        execute(() -> andResults.add("fired"))
+                        execute(() -> results.add("acknowledged"))
                 );
 
         ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(andRule)).newKieSession();
 
-        insertAndFire(new Person("trigger"));
-        insertAndFire(new Adult("anchor", 30));
-        insertAndFire(new Toy("ball"));            // AND child #1 fires; child #2 never does.
-        insertAndFire(new Relationship("go", "done"));   // Step 1 still active; relationship is ignored.
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));               // AND child #1 fires; child #2 never does.
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));   // Step 1 still active; ack is ignored.
 
-        assertThat(andResults).isEmpty();
+        assertThat(results).isEmpty();
     }
 }
