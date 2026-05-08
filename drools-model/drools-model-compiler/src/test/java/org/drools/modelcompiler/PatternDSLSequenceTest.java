@@ -306,4 +306,36 @@ public class PatternDSLSequenceTest {
 
         assertThat(nestedResults).containsExactly("fired");
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenAndPartial() {
+        // Same shape as sequenceFiresWithAndOfTwo, but only one of the AND children fires.
+        // AND requires every child matched; one match is not enough; step never advances.
+        final java.util.List<String> andResults = new java.util.ArrayList<>();
+        final org.drools.model.Variable<Adult> adultVar = declarationOf(Adult.class);
+        final org.drools.model.Variable<Man> manVar = declarationOf(Man.class);
+
+        org.drools.model.Rule andRule =
+                rule("and-partial-rule").build(
+                        pattern(person),
+                        sequence(
+                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                org.drools.model.PatternDSL.and(
+                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
+                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                ),
+                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                        ),
+                        execute(() -> andResults.add("fired"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(andRule)).newKieSession();
+
+        insertAndFire(new Person("trigger"));
+        insertAndFire(new Adult("anchor", 30));
+        insertAndFire(new Toy("ball"));            // AND child #1 fires; child #2 never does.
+        insertAndFire(new Relationship("go", "done"));   // Step 1 still active; relationship is ignored.
+
+        assertThat(andResults).isEmpty();
+    }
 }
