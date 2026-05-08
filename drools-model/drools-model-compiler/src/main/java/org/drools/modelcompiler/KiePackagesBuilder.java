@@ -632,6 +632,7 @@ public class KiePackagesBuilder {
 
     private static LogicCircuit.LongBiPredicate predicateFor(Condition.Type t) {
         switch (t) {
+            case AND: return Gates::and;
             case OR:  return Gates::or;
             default:
                 throw new UnsupportedOperationException(
