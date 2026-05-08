@@ -233,4 +233,36 @@ public class PatternDSLSequenceTest {
 
         assertThat(orResults).containsExactly("fired");
     }
+
+    @Test
+    public void sequenceFiresWithAndOfTwo() {
+        // Step 1 is and(toy/ball, man/Toni). Both children must match before step advances.
+        final java.util.List<String> andResults = new java.util.ArrayList<>();
+        final org.drools.model.Variable<Adult> adultVar = declarationOf(Adult.class);
+        final org.drools.model.Variable<Man> manVar = declarationOf(Man.class);
+
+        org.drools.model.Rule andRule =
+                rule("and-rule").build(
+                        pattern(person),
+                        sequence(
+                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                org.drools.model.PatternDSL.and(
+                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
+                                        pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                ),
+                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                        ),
+                        execute(() -> andResults.add("fired"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(andRule)).newKieSession();
+
+        insertAndFire(new Person("trigger"));
+        insertAndFire(new Adult("anchor", 30));
+        insertAndFire(new Toy("ball"));            // AND child #1 fires → step still waiting
+        insertAndFire(new Man("Toni", 44));        // AND child #2 fires → step advances
+        insertAndFire(new Relationship("go", "done"));
+
+        assertThat(andResults).containsExactly("fired");
+    }
 }
