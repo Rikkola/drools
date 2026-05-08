@@ -8,6 +8,7 @@ import org.drools.model.Rule;
 import org.drools.model.Variable;
 import org.drools.model.impl.ModelImpl;
 import org.drools.modelcompiler.domain.Adult;
+import org.drools.modelcompiler.domain.Child;
 import org.drools.modelcompiler.domain.Man;
 import org.drools.modelcompiler.domain.Person;
 import org.drools.modelcompiler.domain.Relationship;
@@ -264,5 +265,45 @@ public class PatternDSLSequenceTest {
         insertAndFire(new Relationship("go", "done"));
 
         assertThat(andResults).containsExactly("fired");
+    }
+
+    @Test
+    public void sequenceFiresWithNestedAndInsideOr() {
+        // Step 1 is or(toy/ball, and(child/rope, man/Toni)).
+        // Either branch suffices: a single ball, or rope + Toni together.
+        // Note: Child substituted for a second Toy to keep all sequence patterns
+        // of distinct object types (sequencer constraint).
+        final java.util.List<String> nestedResults = new java.util.ArrayList<>();
+        final org.drools.model.Variable<Adult> adultVar = declarationOf(Adult.class);
+        final org.drools.model.Variable<Child> childVar = declarationOf(Child.class);
+        final org.drools.model.Variable<Man> manVar = declarationOf(Man.class);
+
+        org.drools.model.Rule nestedRule =
+                rule("nested-rule").build(
+                        pattern(person),
+                        sequence(
+                                pattern(adultVar).expr("anchor", a -> a.getName().equals("anchor")),
+                                org.drools.model.PatternDSL.or(
+                                        pattern(toy).expr("ball", t -> t.getName().equals("ball")),
+                                        org.drools.model.PatternDSL.and(
+                                                pattern(childVar).expr("rope", c -> c.getName().equals("rope")),
+                                                pattern(manVar).expr("toni", m -> m.getName().equals("Toni"))
+                                        )
+                                ),
+                                pattern(relationship).expr("rel", r -> r.getStart().equals("go"))
+                        ),
+                        execute(() -> nestedResults.add("fired"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(nestedRule)).newKieSession();
+
+        insertAndFire(new Person("trigger"));
+        insertAndFire(new Adult("anchor", 30));
+        // The AND branch matches: rope + Toni together, no ball needed.
+        insertAndFire(new Child("rope", 8));
+        insertAndFire(new Man("Toni", 44));
+        insertAndFire(new Relationship("go", "done"));
+
+        assertThat(nestedResults).containsExactly("fired");
     }
 }
