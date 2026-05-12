@@ -19,6 +19,8 @@ public class LogicGate extends SignalProcessor {
 
     private final int gateIndex;
 
+    private final boolean vacuousMatch;
+
     private LogicGate[] inputGates = EMPTY_INPUT_GATES;
 
     private final int[] filterIndexes;
@@ -34,6 +36,15 @@ public class LogicGate extends SignalProcessor {
     private PropagationTimer propagationTimer;
 
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
+        this(predicate, gateIndex, filterIndexes, signalAdapterIndexes, nbrOfInputGates, false);
+    }
+
+    public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates, boolean vacuousMatch) {
+        if (vacuousMatch && (filterIndexes.length + nbrOfInputGates) == 0) {
+            throw new IllegalArgumentException(
+                    "vacuousMatch requires at least one input (filter or input gate)");
+        }
+
         this.predicate = predicate;
 
         this.filterIndexes        = filterIndexes;
@@ -43,7 +54,8 @@ public class LogicGate extends SignalProcessor {
             allMatched = allMatched | (1L << i);
         }
 
-        this.gateIndex = gateIndex;
+        this.gateIndex    = gateIndex;
+        this.vacuousMatch = vacuousMatch;
     }
 
     public int getGateIndex() {
