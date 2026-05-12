@@ -186,6 +186,11 @@ public class LogicGate extends SignalProcessor {
         if (propagationTimer != null) {
             propagationTimer.activated(memory, valueResolver);
         }
+
+        if (vacuousMatch && predicate.test(0L, allMatched)) {
+            memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
+            propagate(memory, valueResolver, SignalStatus.MATCHED);
+        }
     }
 
     public void deactivate(SequenceMemory memory, ValueResolver valueResolver) {
