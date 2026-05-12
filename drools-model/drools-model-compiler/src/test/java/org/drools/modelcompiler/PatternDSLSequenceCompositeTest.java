@@ -54,7 +54,7 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceRejectsNorInsideSequence() {
+    public void sequenceRejectsBareNorAsStep() {
         Rule r =
                 rule("nor-rejected").build(
                         pattern(station),
@@ -70,6 +70,7 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support nor(...) as a top-level step")
                 .hasMessageContaining("ADR 0001");
     }
 

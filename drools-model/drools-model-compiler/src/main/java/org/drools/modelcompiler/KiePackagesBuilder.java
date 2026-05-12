@@ -524,8 +524,15 @@ public class KiePackagesBuilder {
                 int[] gateCounter = new int[]{0};
 
                 for (int i = 0; i < n; i++) {
+                    Condition stepCondition = steps.get(i);
+                    if (stepCondition.getType() == Condition.Type.NOR) {
+                        throw new UnsupportedOperationException(
+                                "sequence(...) does not support nor(...) as a top-level step. " +
+                                "Wrap it inside and(...) with a positive sibling, e.g. " +
+                                "and(nor(absentChild), positiveTrigger). See ADR 0001.");
+                    }
                     List<LogicGate> stepGates = new ArrayList<>();
-                    LogicGate root = buildStepGate(ctx, group, steps.get(i), filters, stepGates, gateCounter);
+                    LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter);
                     root.setOutput(TerminatingSignalProcessor.get());
                     stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
                 }
