@@ -137,11 +137,10 @@ public class LogicGate extends SignalProcessor {
         boolean matched = predicate.test(currentMatched, allMatched);
 
         if (matched) {
-            status = SignalStatus.MATCHED;//repetition.newMatch();
+            status = SignalStatus.MATCHED;
+        } else if (vacuousMatch) {
+            status = SignalStatus.UNMATCHED;
         }
-//            else {
-//                status = SignalStatus.UNMATCHED;
-//            }
 
         memory.setLogicGateSignalStatus(gateIndex, status);
         if (priorStatus != status) {
