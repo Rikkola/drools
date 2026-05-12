@@ -256,4 +256,36 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void sequenceFiresEvenWhenAlarmArrivesAfterAck() {
+        // Documents the gap-spanning limitation: the runtime has no mechanism
+        // to roll back step advancement, so an alarm arriving AFTER ack (which
+        // closes the NOR window inside the AND) cannot veto. If a future
+        // change adds CEP-style watermark semantics, this test must flip to
+        // assertThat(results).isEmpty(). See ADR 0001.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("alarm-after-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nor(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));   // step advances here
+        insertAndFire(new AlarmRaised("sensor-1", "high"));             // too late — NOR not listening
+
+        assertThat(results).containsExactly("acknowledged");
+    }
 }
