@@ -628,7 +628,8 @@ public class KiePackagesBuilder {
                 gateCounter[0]++,
                 new int[0],
                 new int[0],
-                inputs.length);
+                inputs.length,
+                vacuousMatchFor(type));
         parent.setInputGates(inputs);
         for (int k = 0; k < inputs.length; k++) {
             inputs[k].setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(parent, k + 1)));
@@ -641,10 +642,15 @@ public class KiePackagesBuilder {
         switch (t) {
             case AND: return Gates::and;
             case OR:  return Gates::or;
+            case NOR: return Gates::nor;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));
         }
+    }
+
+    private static boolean vacuousMatchFor(Condition.Type t) {
+        return t == Condition.Type.NOR;
     }
 
     private RuleConditionElement buildAccumulate( RuleContext ctx, GroupElement group, AccumulatePattern accumulatePattern ) {

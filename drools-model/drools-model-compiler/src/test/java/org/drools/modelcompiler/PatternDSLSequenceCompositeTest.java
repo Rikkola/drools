@@ -197,4 +197,32 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void sequenceFiresWhenNoAlarmBeforeAck() {
+        // Step 1 is and(nor(alarm), ack). The NOR child is vacuously matched
+        // at activation; ack arriving with no preceding alarm satisfies the AND.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("no-alarm-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nor(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
 }
