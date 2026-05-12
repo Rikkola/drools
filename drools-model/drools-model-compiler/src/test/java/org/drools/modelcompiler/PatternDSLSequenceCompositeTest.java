@@ -225,4 +225,35 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenAlarmRaisedBeforeAck() {
+        // Step 1 is and(nor(alarm), ack). An alarm arriving in the gap
+        // flips the NOR child to UNMATCHED via status rollback; the AND
+        // never reaches MATCHED; the step never advances; the rule does
+        // not fire.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("alarm-vetoes-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nor(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-1", "high"));   // veto
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
 }
