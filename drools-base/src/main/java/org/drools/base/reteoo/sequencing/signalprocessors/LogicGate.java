@@ -189,10 +189,9 @@ public class LogicGate extends SignalProcessor {
         if (vacuousMatch && predicate.test(0L, allMatched)) {
             memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
             propagate(memory, valueResolver, SignalStatus.MATCHED);
-            // Re-establish MATCHED after propagate's resetPrior nulled it.
-            // This prevents spurious null→MATCHED re-transitions on the first
-            // child arrival for multi-input vacuous gates (e.g. NAND), which
-            // would otherwise wipe the accumulated child-arrival memory.
+            // propagate() calls resetPrior(), which nulls this gate's status.
+            // Re-set to MATCHED so the first child arrival sees MATCHED→MATCHED
+            // (no re-transition) and accumulated child-arrival memory is preserved.
             memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
         }
     }

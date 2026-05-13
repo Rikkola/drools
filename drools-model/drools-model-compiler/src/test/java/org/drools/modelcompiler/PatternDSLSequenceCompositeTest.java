@@ -345,14 +345,14 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceFiresWhenNoEventsBeforeAckNand() {
+    public void sequenceFiresWhenNeitherEventArrivesBeforeAck() {
         // and(nand(heartbeat, alarm), ack) — neither event inserted →
         // NAND is vacuously matched at activation, ack closes the AND,
         // rule fires.
         final List<String> results = new ArrayList<>();
 
         Rule rule =
-                rule("no-events-before-ack-nand").build(
+                rule("neither-event-before-ack").build(
                         pattern(station),
                         sequence(
                                 pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
@@ -377,7 +377,7 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceFiresWhenOneEventBeforeAckNand() {
+    public void sequenceFiresWhenOnlyOneEventArrivesBeforeAck() {
         // and(nand(heartbeat, alarm), ack) — only the heartbeat arrives
         // before ack → NAND stays matched (not all children fired) → AND
         // fires when ack arrives. Proves NAND's rollback triggers only
@@ -385,7 +385,7 @@ public class PatternDSLSequenceCompositeTest {
         final List<String> results = new ArrayList<>();
 
         Rule rule =
-                rule("one-event-before-ack-nand").build(
+                rule("only-one-event-before-ack").build(
                         pattern(station),
                         sequence(
                                 pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
@@ -411,14 +411,14 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceDoesNotFireWhenBothEventsBeforeAckNand() {
+    public void sequenceDoesNotFireWhenBothEventsArriveBeforeAck() {
         // and(nand(heartbeat, alarm), ack) — both NAND children arrive
         // before ack → NAND rolls back to UNMATCHED → AND vetoes → step
         // does not advance → rule does not fire.
         final List<String> results = new ArrayList<>();
 
         Rule rule =
-                rule("both-events-before-ack-nand").build(
+                rule("both-events-before-ack").build(
                         pattern(station),
                         sequence(
                                 pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
