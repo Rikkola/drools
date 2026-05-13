@@ -71,7 +71,28 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("does not support nor(...) as a top-level step")
+                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("ADR 0001");
+    }
+
+    @Test
+    public void sequenceRejectsBareNotAsStep() {
+        Rule r =
+                rule("not-rejected").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                not(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1"))),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> { })
+                );
+
+        Model model = new ModelImpl().addRule(r);
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support absence-based steps at the top level")
                 .hasMessageContaining("ADR 0001");
     }
 

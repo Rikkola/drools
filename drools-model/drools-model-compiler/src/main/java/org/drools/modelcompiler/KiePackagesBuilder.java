@@ -527,9 +527,10 @@ public class KiePackagesBuilder {
                     Condition stepCondition = steps.get(i);
                     if (stepCondition.getType() == Condition.Type.NOR) {
                         throw new UnsupportedOperationException(
-                                "sequence(...) does not support nor(...) as a top-level step. " +
-                                "Wrap it inside and(...) with a positive sibling, e.g. " +
-                                "and(nor(absentChild), positiveTrigger). See ADR 0001.");
+                                "sequence(...) does not support absence-based steps at the top level. " +
+                                "Wrap inside and(...) with a positive sibling, e.g. " +
+                                "and(nor(absentChild), positiveTrigger) or and(not(absent), positiveTrigger). " +
+                                "See ADR 0001.");
                     }
                     List<LogicGate> stepGates = new ArrayList<>();
                     LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter);
