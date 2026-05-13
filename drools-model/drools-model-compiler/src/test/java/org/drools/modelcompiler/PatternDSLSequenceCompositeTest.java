@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.and;
+import static org.drools.model.PatternDSL.nand;
 import static org.drools.model.PatternDSL.nor;
 import static org.drools.model.PatternDSL.not;
 import static org.drools.model.PatternDSL.or;
@@ -341,5 +342,129 @@ public class PatternDSLSequenceCompositeTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void sequenceFiresWhenNoEventsBeforeAckNand() {
+        // and(nand(heartbeat, alarm), ack) — neither event inserted →
+        // NAND is vacuously matched at activation, ack closes the AND,
+        // rule fires.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("no-events-before-ack-nand").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nand(
+                                                pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void sequenceFiresWhenOneEventBeforeAckNand() {
+        // and(nand(heartbeat, alarm), ack) — only the heartbeat arrives
+        // before ack → NAND stays matched (not all children fired) → AND
+        // fires when ack arrives. Proves NAND's rollback triggers only
+        // when EVERY child has fired, not on any child.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("one-event-before-ack-nand").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nand(
+                                                pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));                       // one NAND child fires, NAND still matched
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void sequenceDoesNotFireWhenBothEventsBeforeAckNand() {
+        // and(nand(heartbeat, alarm), ack) — both NAND children arrive
+        // before ack → NAND rolls back to UNMATCHED → AND vetoes → step
+        // does not advance → rule does not fire.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("both-events-before-ack-nand").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        nand(
+                                                pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));                       // first NAND child fires
+        insertAndFire(new AlarmRaised("sensor-1", "high"));               // second NAND child fires → veto
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void sequenceRejectsBareNandAsStep() {
+        Rule r =
+                rule("nand-rejected").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                nand(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> { })
+                );
+
+        Model model = new ModelImpl().addRule(r);
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("ADR 0001");
     }
 }

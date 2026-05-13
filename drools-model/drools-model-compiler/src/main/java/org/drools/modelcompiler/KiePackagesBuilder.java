@@ -525,11 +525,13 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition stepCondition = steps.get(i);
-                    if (stepCondition.getType() == Condition.Type.NOR) {
+                    if (vacuousMatchFor(stepCondition.getType())) {
                         throw new UnsupportedOperationException(
                                 "sequence(...) does not support absence-based steps at the top level. " +
                                 "Wrap inside and(...) with a positive sibling, e.g. " +
-                                "and(nor(absentChild), positiveTrigger) or and(not(absent), positiveTrigger). " +
+                                "and(nor(absentChild), positiveTrigger), " +
+                                "and(not(absent), positiveTrigger), " +
+                                "or and(nand(absent1, absent2), positiveTrigger). " +
                                 "See ADR 0001.");
                     }
                     List<LogicGate> stepGates = new ArrayList<>();
@@ -641,9 +643,10 @@ public class KiePackagesBuilder {
 
     private static LogicCircuit.LongBiPredicate predicateFor(Condition.Type t) {
         switch (t) {
-            case AND: return Gates::and;
-            case OR:  return Gates::or;
-            case NOR: return Gates::nor;
+            case AND:  return Gates::and;
+            case OR:   return Gates::or;
+            case NOR:  return Gates::nor;
+            case NAND: return Gates::nand;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));
@@ -652,8 +655,9 @@ public class KiePackagesBuilder {
 
     private static boolean vacuousMatchFor(Condition.Type t) {
         switch (t) {
-            case NOR: return true;
-            default:  return false;
+            case NOR:  return true;
+            case NAND: return true;
+            default:   return false;
         }
     }
 
