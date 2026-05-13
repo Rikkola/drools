@@ -651,7 +651,10 @@ public class KiePackagesBuilder {
     }
 
     private static boolean vacuousMatchFor(Condition.Type t) {
-        return t == Condition.Type.NOR;
+        switch (t) {
+            case NOR: return true;
+            default:  return false;
+        }
     }
 
     private RuleConditionElement buildAccumulate( RuleContext ctx, GroupElement group, AccumulatePattern accumulatePattern ) {
