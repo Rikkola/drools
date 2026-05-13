@@ -178,4 +178,12 @@ public class PatternDSLSequenceTest {
         assertThat(item.getExpressions()).hasSize(2);
     }
 
+    @Test
+    public void notFactoryProducesNorTypeWithOneChild() {
+        org.drools.model.view.CombinedExprViewItem item =
+                org.drools.model.PatternDSL.not(pattern(person));
+        assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.NOR);
+        assertThat(item.getExpressions()).hasSize(1);
+    }
+
 }

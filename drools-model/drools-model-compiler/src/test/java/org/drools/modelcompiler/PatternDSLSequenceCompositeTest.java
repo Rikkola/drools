@@ -23,6 +23,7 @@ import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.and;
 import static org.drools.model.PatternDSL.nor;
+import static org.drools.model.PatternDSL.not;
 import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
@@ -287,5 +288,37 @@ public class PatternDSLSequenceCompositeTest {
         insertAndFire(new AlarmRaised("sensor-1", "high"));             // too late — NOR not listening
 
         assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void sequenceDoesNotFireWhenAlarmRaisedBeforeAckUsingNot() {
+        // Mirrors sequenceDoesNotFireWhenAlarmRaisedBeforeAck but uses
+        // not(alarm) instead of nor(alarm). Proves PatternDSL.not(...)
+        // aliases to single-child nor(...) at the runtime layer, not just
+        // the AST layer. The veto chain (vacuousMatch eval-at-activation
+        // + status rollback) is exercised end-to-end.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("alarm-vetoes-ack-using-not").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        not(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-1", "high"));   // veto
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
     }
 }
