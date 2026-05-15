@@ -165,8 +165,6 @@ public class LogicGate extends SignalProcessor {
             gate.reset(memory, valueResolver);
         }
 
-        memory.resetLogicGateMemory(gateIndex, valueResolver);
-
         for (ConditionalSignalCounter counter : inputSignalCounters) {
             counter.reset(memory, valueResolver);
         }
@@ -174,6 +172,7 @@ public class LogicGate extends SignalProcessor {
 
     public void reset(SequenceMemory memory, ValueResolver valueResolver) {
         resetPrior(memory, valueResolver);
+        memory.resetLogicGateMemory(gateIndex, valueResolver);
         output.reset(memory, valueResolver);
     }
 
@@ -192,10 +191,6 @@ public class LogicGate extends SignalProcessor {
         if (vacuousMatchAtActivation && predicate.test(0L, allMatched)) {
             memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
             propagate(memory, valueResolver, SignalStatus.MATCHED);
-            // propagate() calls resetPrior(), which nulls this gate's status.
-            // Re-set to MATCHED so the first child arrival sees MATCHED→MATCHED
-            // (no re-transition) and accumulated child-arrival memory is preserved.
-            memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
         }
     }
 
