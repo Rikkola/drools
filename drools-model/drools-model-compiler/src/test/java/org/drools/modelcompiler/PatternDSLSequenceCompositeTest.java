@@ -506,4 +506,39 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenNoAlarmsBeforeAck() {
+        // and(xor(alarmA, alarmB, alarmC), ack) — no alarms arrive before ack.
+        // XOR is predicate-false at zero (xor(0, allMatched) = false) and
+        // vacuousMatchAtActivation=false, so XOR stays UNMATCHED → AND never
+        // reaches all-bits-set → rule does not fire. Mirror-inverts NAND's
+        // sequenceFiresWhenNoAlarmsBeforeAck.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xor-no-alarms-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
 }
