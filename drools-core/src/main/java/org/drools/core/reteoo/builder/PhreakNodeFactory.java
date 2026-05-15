@@ -167,9 +167,13 @@ public class PhreakNodeFactory implements NodeFactory, Serializable {
 
 
         // Create all the dynamic filters, these are added on demand to the stack.
+        // filterIndex is the pattern position in seq.getFilters() (0..patterns.length-1).
+        // otnIndex is the AlphaAdapter index for the pattern's object type (0..objectTypeList.size()-1).
+        // These differ when multiple patterns share the same object type.
         DynamicFilterProto[] filters = new DynamicFilterProto[patterns.length];
         for ( int i = 0; i < patterns.length; i++ ) {
-            filters[i] = new DynamicFilterProto((AlphaNodeFieldConstraint) patterns[i].getConstraints().get(0), i);
+            int otnIndex = objectTypeList.indexOf(patterns[i].getObjectType());
+            filters[i] = new DynamicFilterProto((AlphaNodeFieldConstraint) patterns[i].getConstraints().get(0), i, otnIndex);
         }
 
         node.setDynamicFilters( filters);

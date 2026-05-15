@@ -5,10 +5,12 @@ import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 public class DynamicFilterProto {
     private AlphaNodeFieldConstraint constraint;
     private int                      filterIndex;
+    private int                      otnIndex;
 
-    public DynamicFilterProto(AlphaNodeFieldConstraint constraint, int filterIndex) {
+    public DynamicFilterProto(AlphaNodeFieldConstraint constraint, int filterIndex, int otnIndex) {
         this.constraint  = constraint;
         this.filterIndex = filterIndex;
+        this.otnIndex    = otnIndex;
     }
 
     public AlphaNodeFieldConstraint getConstraint() {
@@ -17,5 +19,9 @@ public class DynamicFilterProto {
 
     public int getFilterIndex() {
         return filterIndex;
+    }
+
+    public int getOtnIndex() {
+        return otnIndex;
     }
 }

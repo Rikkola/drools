@@ -142,8 +142,8 @@ public class SequenceNode extends LeftTupleSource
     }
 
     public SequenceNodeMemory createMemory(final RuleBaseConfiguration config, ReteEvaluator reteEvaluator) {
-        LinkedList<DynamicFilter>[] filters = new LinkedList[alphaAdapters.length];
-        SequenceNodeMemory          memory  = new SequenceNodeMemory(this, filters, new DynamicFilter[filters.length]);
+        LinkedList<DynamicFilter>[] activeFilters = new LinkedList[alphaAdapters.length];
+        SequenceNodeMemory          memory        = new SequenceNodeMemory(this, activeFilters, new DynamicFilter[dynamicFilters.length]);
         return memory;
     }
 
@@ -243,14 +243,14 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public void addActiveFilter(DynamicFilter filter) {
-            if (this.activeFilters[filter.getActiveFilterIndex()] == null) {
-                this.activeFilters[filter.getActiveFilterIndex()] = new LinkedList<>();
+            if (this.activeFilters[filter.getOtnIndex()] == null) {
+                this.activeFilters[filter.getOtnIndex()] = new LinkedList<>();
             }
-            this.activeFilters[filter.getActiveFilterIndex()].add(filter);
+            this.activeFilters[filter.getOtnIndex()].add(filter);
         }
 
         public void removeActiveFilter(DynamicFilter filter) {
-            this.activeFilters[filter.getActiveFilterIndex()].remove(filter);
+            this.activeFilters[filter.getOtnIndex()].remove(filter);
         }
 
         public LinkedList<DynamicFilter>[] getActiveFilters() {

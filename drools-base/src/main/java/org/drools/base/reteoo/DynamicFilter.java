@@ -10,10 +10,12 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
     private AlphaNodeFieldConstraint  constraint;
     private LinkedList<SignalAdapter> signalAdapters;
     private int                       activeFilterIndex;
+    private int                       otnIndex;
 
     public DynamicFilter(DynamicFilterProto proto) {
         this.constraint        = proto.getConstraint();
         this.activeFilterIndex = proto.getFilterIndex();
+        this.otnIndex          = proto.getOtnIndex();
         this.signalAdapters    = new LinkedList<>();
     }
 
@@ -23,6 +25,10 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
 
     public int getActiveFilterIndex() {
         return activeFilterIndex;
+    }
+
+    public int getOtnIndex() {
+        return otnIndex;
     }
 
     public void addSignalAdapter(SignalAdapter signalAdapter) {
