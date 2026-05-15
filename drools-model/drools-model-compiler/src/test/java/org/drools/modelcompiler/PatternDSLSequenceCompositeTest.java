@@ -317,8 +317,8 @@ public class PatternDSLSequenceCompositeTest {
         // Mirrors sequenceDoesNotFireWhenAlarmRaisedBeforeAck but uses
         // not(alarm) instead of nor(alarm). Proves PatternDSL.not(...)
         // aliases to single-child nor(...) at the runtime layer, not just
-        // the AST layer. The veto chain (vacuousMatch eval-at-activation
-        // + status rollback) is exercised end-to-end.
+        // the AST layer. The veto chain (vacuousMatchAtActivation /
+        // statusCanRevert split) is exercised end-to-end.
         final List<String> results = new ArrayList<>();
 
         Rule rule =

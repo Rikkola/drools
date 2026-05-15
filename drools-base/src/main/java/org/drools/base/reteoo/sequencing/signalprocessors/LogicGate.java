@@ -19,7 +19,9 @@ public class LogicGate extends SignalProcessor {
 
     private final int gateIndex;
 
-    private final boolean vacuousMatch;
+    private final boolean vacuousMatchAtActivation;
+
+    private final boolean statusCanRevert;
 
     private LogicGate[] inputGates = EMPTY_INPUT_GATES;
 
@@ -36,13 +38,13 @@ public class LogicGate extends SignalProcessor {
     private PropagationTimer propagationTimer;
 
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
-        this(predicate, gateIndex, filterIndexes, signalAdapterIndexes, nbrOfInputGates, false);
+        this(predicate, gateIndex, filterIndexes, signalAdapterIndexes, nbrOfInputGates, false, false);
     }
 
-    public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates, boolean vacuousMatch) {
-        if (vacuousMatch && (filterIndexes.length + nbrOfInputGates) == 0) {
+    public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates, boolean vacuousMatchAtActivation, boolean statusCanRevert) {
+        if (vacuousMatchAtActivation && (filterIndexes.length + nbrOfInputGates) == 0) {
             throw new IllegalArgumentException(
-                    "vacuousMatch requires at least one input (filter or input gate)");
+                    "vacuousMatchAtActivation requires at least one input (filter or input gate)");
         }
 
         this.predicate = predicate;
@@ -54,8 +56,9 @@ public class LogicGate extends SignalProcessor {
             allMatched = allMatched | (1L << i);
         }
 
-        this.gateIndex    = gateIndex;
-        this.vacuousMatch = vacuousMatch;
+        this.gateIndex                = gateIndex;
+        this.vacuousMatchAtActivation = vacuousMatchAtActivation;
+        this.statusCanRevert          = statusCanRevert;
     }
 
     public int getGateIndex() {
@@ -138,7 +141,7 @@ public class LogicGate extends SignalProcessor {
 
         if (matched) {
             status = SignalStatus.MATCHED;
-        } else if (vacuousMatch) {
+        } else if (statusCanRevert) {
             status = SignalStatus.UNMATCHED;
         }
 
@@ -186,7 +189,7 @@ public class LogicGate extends SignalProcessor {
             propagationTimer.activated(memory, valueResolver);
         }
 
-        if (vacuousMatch && predicate.test(0L, allMatched)) {
+        if (vacuousMatchAtActivation && predicate.test(0L, allMatched)) {
             memory.setLogicGateSignalStatus(gateIndex, SignalStatus.MATCHED);
             propagate(memory, valueResolver, SignalStatus.MATCHED);
             // propagate() calls resetPrior(), which nulls this gate's status.

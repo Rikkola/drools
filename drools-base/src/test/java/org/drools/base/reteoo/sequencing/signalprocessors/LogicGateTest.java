@@ -8,23 +8,28 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 public class LogicGateTest {
 
     @Test
-    public void vacuousMatchConstructorRejectsZeroInput() {
+    public void vacuousMatchAtActivationConstructorRejectsZeroInput() {
         assertThatThrownBy(() ->
-                new LogicGate(Gates::nor, 0,
-                              new int[0], new int[0],
-                              0,
-                              true))
+                new LogicGate(
+                        Gates::and,
+                        0,
+                        new int[0],
+                        new int[0],
+                        0,
+                        true,    // vacuousMatchAtActivation
+                        true))   // statusCanRevert
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("vacuousMatch");
+                .hasMessageContaining("vacuousMatchAtActivation");
     }
 
     @Test
-    public void vacuousMatchConstructorAcceptsOneFilter() {
+    public void vacuousMatchAtActivationConstructorAcceptsOneFilter() {
         assertThatCode(() ->
                 new LogicGate(Gates::nor, 0,
                               new int[]{0}, new int[]{0},
                               0,
-                              true))
+                              true,    // vacuousMatchAtActivation
+                              true))   // statusCanRevert
                 .doesNotThrowAnyException();
     }
 

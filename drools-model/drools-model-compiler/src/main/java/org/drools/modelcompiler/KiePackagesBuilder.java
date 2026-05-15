@@ -525,7 +525,7 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition stepCondition = steps.get(i);
-                    if (vacuousMatchFor(stepCondition.getType())) {
+                    if (statusCanRevertFor(stepCondition.getType())) {
                         throw new UnsupportedOperationException(
                                 "sequence(...) does not support absence-based steps at the top level. " +
                                 "Wrap inside and(...) with a positive sibling, e.g. " +
@@ -632,7 +632,8 @@ public class KiePackagesBuilder {
                 new int[0],
                 new int[0],
                 inputs.length,
-                vacuousMatchFor(type));
+                vacuousMatchAtActivationFor(type),
+                statusCanRevertFor(type));
         parent.setInputGates(inputs);
         for (int k = 0; k < inputs.length; k++) {
             inputs[k].setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(parent, k + 1)));
@@ -653,11 +654,23 @@ public class KiePackagesBuilder {
         }
     }
 
-    private static boolean vacuousMatchFor(Condition.Type t) {
+    private static boolean vacuousMatchAtActivationFor(Condition.Type t) {
         switch (t) {
-            case NOR:  return true;
-            case NAND: return true;
-            default:   return false;
+            case NOR:
+            case NAND:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean statusCanRevertFor(Condition.Type t) {
+        switch (t) {
+            case NOR:
+            case NAND:
+                return true;
+            default:
+                return false;
         }
     }
 
