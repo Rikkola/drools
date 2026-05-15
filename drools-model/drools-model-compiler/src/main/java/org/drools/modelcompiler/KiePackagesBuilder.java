@@ -531,7 +531,8 @@ public class KiePackagesBuilder {
                                 "Wrap inside and(...) with a positive sibling, e.g. " +
                                 "and(nor(absentChild), positiveTrigger), " +
                                 "and(not(absent), positiveTrigger), " +
-                                "or and(nand(absent1, absent2), positiveTrigger). " +
+                                "and(nand(absent1, absent2), positiveTrigger), " +
+                                "or and(xor(absent1, absent2, absent3), positiveTrigger). " +
                                 "See ADR 0001.");
                     }
                     List<LogicGate> stepGates = new ArrayList<>();
@@ -589,9 +590,8 @@ public class KiePackagesBuilder {
     }
 
     private static final String DEFERRED_GATE_ERROR =
-            "sequence(...) does not yet support condition type %s. Absence-based " +
-            "gates (nor, nand, xor, xnor, not) and other composites are deferred " +
-            "— see ADR 0001 (nor-step-runtime-boundary).";
+            "sequence(...) does not yet support condition type %s — see ADR 0001 " +
+            "(nor-step-runtime-boundary).";
 
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
                                     Condition node, List<Pattern> filters,
@@ -648,6 +648,7 @@ public class KiePackagesBuilder {
             case OR:   return Gates::or;
             case NOR:  return Gates::nor;
             case NAND: return Gates::nand;
+            case XOR:  return Gates::xor;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));
@@ -668,6 +669,7 @@ public class KiePackagesBuilder {
         switch (t) {
             case NOR:
             case NAND:
+            case XOR:
                 return true;
             default:
                 return false;

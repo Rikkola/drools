@@ -27,6 +27,7 @@ import static org.drools.model.PatternDSL.nor;
 import static org.drools.model.PatternDSL.not;
 import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
+import static org.drools.model.PatternDSL.xor;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
 
@@ -36,6 +37,9 @@ public class PatternDSLSequenceCompositeTest {
     private final Variable<SensorActivated>       sensorActivated = declarationOf(SensorActivated.class);
     private final Variable<HeartbeatOk>           heartbeat       = declarationOf(HeartbeatOk.class);
     private final Variable<AlarmRaised>           alarm           = declarationOf(AlarmRaised.class);
+    private final Variable<AlarmRaised>           alarmA          = declarationOf(AlarmRaised.class);
+    private final Variable<AlarmRaised>           alarmB          = declarationOf(AlarmRaised.class);
+    private final Variable<AlarmRaised>           alarmC          = declarationOf(AlarmRaised.class);
     private final Variable<CalibrationPassed>     calibration     = declarationOf(CalibrationPassed.class);
     private final Variable<OperatorAcknowledged>  ack             = declarationOf(OperatorAcknowledged.class);
 
@@ -466,5 +470,40 @@ public class PatternDSLSequenceCompositeTest {
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("does not support absence-based steps at the top level")
                 .hasMessageContaining("ADR 0001");
+    }
+
+    @Test
+    public void sequenceFiresWhenExactlyOneAlarmBeforeAck() {
+        // and(xor(alarmA, alarmB, alarmC), ack) — exactly one of three alarms
+        // arrives before ack → XOR matched (one bit set in a&allMatched) → AND
+        // fires when ack arrives. Drives XOR wiring through predicateFor and
+        // statusCanRevertFor.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xor-one-alarm-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-A", "high"));               // exactly one XOR child fires → MATCHED
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
     }
 }
