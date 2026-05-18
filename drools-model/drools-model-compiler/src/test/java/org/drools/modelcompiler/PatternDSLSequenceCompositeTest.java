@@ -473,6 +473,31 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
+    public void sequenceRejectsBareXorAsStep() {
+        Rule r =
+                rule("xor-rejected").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                xor(
+                                        pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                        pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                        pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> { })
+                );
+
+        Model model = new ModelImpl().addRule(r);
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("ADR 0001");
+    }
+
+    @Test
     public void sequenceFiresWhenExactlyOneAlarmBeforeAck() {
         // and(xor(alarmA, alarmB, alarmC), ack) — exactly one of three alarms
         // arrives before ack → XOR matched (one bit set in a&allMatched) → AND
