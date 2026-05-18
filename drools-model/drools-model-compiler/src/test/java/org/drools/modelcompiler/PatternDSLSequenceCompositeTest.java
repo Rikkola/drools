@@ -27,9 +27,9 @@ import static org.drools.model.PatternDSL.nor;
 import static org.drools.model.PatternDSL.not;
 import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
-import static org.drools.model.PatternDSL.xor;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
+import static org.drools.model.PatternDSL.xor;
 
 public class PatternDSLSequenceCompositeTest {
 
@@ -76,7 +76,7 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("does not support self-reverting steps at the top level")
                 .hasMessageContaining("ADR 0001");
     }
 
@@ -97,7 +97,7 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("does not support self-reverting steps at the top level")
                 .hasMessageContaining("ADR 0001");
     }
 
@@ -468,7 +468,7 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("does not support self-reverting steps at the top level")
                 .hasMessageContaining("ADR 0001");
     }
 
@@ -493,7 +493,7 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("does not support absence-based steps at the top level")
+                .hasMessageContaining("does not support self-reverting steps at the top level")
                 .hasMessageContaining("ADR 0001");
     }
 
