@@ -578,4 +578,41 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenAllThreeAlarmsBeforeAck() {
+        // and(xor(alarmA, alarmB, alarmC), ack) — all three alarms arrive
+        // before ack. XOR matches on the first, reverts on the second, stays
+        // UNMATCHED on the third (three bits set, predicate false, prior
+        // already UNMATCHED so no propagate). AND bit 1 stays cleared.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xor-three-alarms-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-A", "high"));               // XOR → MATCHED
+        insertAndFire(new AlarmRaised("sensor-B", "high"));               // XOR → UNMATCHED (rollback)
+        insertAndFire(new AlarmRaised("sensor-C", "high"));               // XOR → UNMATCHED (stays)
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
 }
