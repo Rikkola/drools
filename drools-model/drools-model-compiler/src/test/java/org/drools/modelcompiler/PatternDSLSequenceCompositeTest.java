@@ -714,4 +714,43 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenTwoAlarmsBeforeAckXnor() {
+        // and(xnor(alarmA, alarmB, alarmC), ack) — two alarms before ack.
+        // After Task 2, XNOR rolls back to UNMATCHED on the first alarm.
+        // alarmB arrives next: predicate.test(0b011, 0b111) =
+        // (0b011 != 0 && 0b011 != 0b111) = false → status stays UNMATCHED
+        // (no transition, no re-propagate). Rule does not fire.
+        // Pins all-or-none vs even-count: a naive "no odd bits" XNOR
+        // (NXOR) would match on popcount=2 and flip this test.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xnor-two-alarms-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xnor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-A", "high"));
+        insertAndFire(new AlarmRaised("sensor-B", "high"));               // two alarms — even count, but XNOR stays UNMATCHED
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
 }
