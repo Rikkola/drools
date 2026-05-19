@@ -674,6 +674,7 @@ public class KiePackagesBuilder {
             case NOR:
             case NAND:
             case XOR:
+            case XNOR:
                 return true;
             default:
                 return false;

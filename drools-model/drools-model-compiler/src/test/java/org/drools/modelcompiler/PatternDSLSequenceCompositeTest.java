@@ -677,4 +677,41 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void sequenceDoesNotFireWhenOneAlarmBeforeAck() {
+        // and(xnor(alarmA, alarmB, alarmC), ack) — one alarm before ack.
+        // XNOR starts MATCHED (vacuous-true), then alarmA arrives:
+        // predicate.test(0b001, 0b111) = (0b001 != 0 && 0b001 != 0b111)
+        // = false. statusCanRevert=true → MATCHED → UNMATCHED → AND bit 1
+        // clears → AND never reaches all-bits-set → rule does not fire.
+        // Drives statusCanRevertFor(XNOR)=true.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xnor-one-alarm-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xnor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-A", "high"));               // one alarm — XNOR should roll back to UNMATCHED
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).isEmpty();
+    }
 }
