@@ -528,13 +528,14 @@ public class KiePackagesBuilder {
                     if (statusCanRevertFor(stepCondition.getType())) {
                         throw new UnsupportedOperationException(
                                 "sequence(...) does not support self-reverting steps at the top level " +
-                                "(nor, nand, not, xor — their UNMATCHED rollback would propagate through " +
+                                "(nor, nand, not, xor, xnor — their UNMATCHED rollback would propagate through " +
                                 "the step's terminator and call sequence.next() a second time). " +
                                 "Wrap inside and(...) with a positive sibling that gates the advance, e.g. " +
                                 "and(nor(absentChild), positiveTrigger), " +
                                 "and(not(absent), positiveTrigger), " +
                                 "and(nand(absent1, absent2), positiveTrigger), " +
-                                "or and(xor(absent1, absent2, absent3), positiveTrigger). " +
+                                "and(xor(absent1, absent2, absent3), positiveTrigger), " +
+                                "or and(xnor(absent1, absent2), positiveTrigger). " +
                                 "See ADR 0001.");
                     }
                     List<LogicGate> stepGates = new ArrayList<>();
@@ -592,7 +593,7 @@ public class KiePackagesBuilder {
     }
 
     private static final String DEFERRED_GATE_ERROR =
-            "sequence(...) does not yet support condition type %s — see ADR 0001 " +
+            "sequence(...) does not support condition type %s — see ADR 0001 " +
             "(nor-step-runtime-boundary).";
 
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,

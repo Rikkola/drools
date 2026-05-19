@@ -794,4 +794,28 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void sequenceRejectsBareXnorAsStep() {
+        Rule r =
+                rule("xnor-rejected").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                xnor(
+                                        pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                        pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> { })
+                );
+
+        Model model = new ModelImpl().addRule(r);
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(model))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support self-reverting steps at the top level")
+                .hasMessageContaining("ADR 0001");
+    }
 }
