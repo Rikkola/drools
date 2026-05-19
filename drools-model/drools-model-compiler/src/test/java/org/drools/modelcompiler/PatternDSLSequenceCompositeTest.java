@@ -753,4 +753,45 @@ public class PatternDSLSequenceCompositeTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void sequenceFiresWhenAllThreeAlarmsBeforeAck() {
+        // and(xnor(alarmA, alarmB, alarmC), ack) — all three alarms before
+        // ack. After two alarms XNOR is UNMATCHED (Task 3). alarmC arrives:
+        // predicate.test(0b111, 0b111) = (0b111 != 0 && 0b111 == 0b111)
+        // = true. statusCanRevert=true → UNMATCHED → MATCHED → AND bit 1
+        // set → AND reaches 0b11 on ack → rule fires.
+        // Pins the "all" half of all-or-none. Distinguishes XNOR from NAND:
+        // NAND stays vetoed on all-bits-set (predicate a != b is false);
+        // XNOR re-matches.
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xnor-all-three-alarms-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xnor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-A", "high"));
+        insertAndFire(new AlarmRaised("sensor-B", "high"));
+        insertAndFire(new AlarmRaised("sensor-C", "high"));               // all three — XNOR re-matches on all-bits-set
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
 }
