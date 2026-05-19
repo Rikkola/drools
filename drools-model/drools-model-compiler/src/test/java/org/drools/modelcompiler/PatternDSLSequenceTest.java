@@ -179,9 +179,9 @@ public class PatternDSLSequenceTest {
     }
 
     @Test
-    public void notFactoryProducesNorTypeWithOneChild() {
+    public void neverFactoryProducesNorTypeWithOneChild() {
         org.drools.model.view.CombinedExprViewItem item =
-                org.drools.model.PatternDSL.not(pattern(person));
+                org.drools.model.PatternDSL.never(pattern(person));
         assertThat(item.getType()).isEqualTo(org.drools.model.Condition.Type.NOR);
         assertThat(item.getExpressions()).hasSize(1);
     }

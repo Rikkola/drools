@@ -1927,7 +1927,7 @@ public class PatternDSL extends DSL {
         return all;
     }
 
-    public static CombinedExprViewItem not(SequenceStep child) {
+    public static CombinedExprViewItem never(SequenceStep child) {
         return new CombinedExprViewItem(Condition.Type.NOR, new ViewItem[] { (ViewItem) child });
     }
 

@@ -24,7 +24,7 @@ import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.and;
 import static org.drools.model.PatternDSL.nand;
 import static org.drools.model.PatternDSL.nor;
-import static org.drools.model.PatternDSL.not;
+import static org.drools.model.PatternDSL.never;
 import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
@@ -81,13 +81,13 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceRejectsBareNotAsStep() {
+    public void sequenceRejectsBareNeverAsStep() {
         Rule r =
-                rule("not-rejected").build(
+                rule("never-rejected").build(
                         pattern(station),
                         sequence(
                                 pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
-                                not(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1"))),
+                                never(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1"))),
                                 pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                         ),
                         execute(() -> { })
@@ -317,21 +317,21 @@ public class PatternDSLSequenceCompositeTest {
     }
 
     @Test
-    public void sequenceDoesNotFireWhenAlarmRaisedBeforeAckUsingNot() {
+    public void sequenceDoesNotFireWhenAlarmRaisedBeforeAckUsingNever() {
         // Mirrors sequenceDoesNotFireWhenAlarmRaisedBeforeAck but uses
-        // not(alarm) instead of nor(alarm). Proves PatternDSL.not(...)
+        // never(alarm) instead of nor(alarm). Proves PatternDSL.never(...)
         // aliases to single-child nor(...) at the runtime layer, not just
         // the AST layer. The veto chain (vacuousMatchAtActivation /
         // statusCanRevert split) is exercised end-to-end.
         final List<String> results = new ArrayList<>();
 
         Rule rule =
-                rule("alarm-vetoes-ack-using-not").build(
+                rule("alarm-vetoes-ack-using-never").build(
                         pattern(station),
                         sequence(
                                 pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
                                 and(
-                                        not(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
+                                        never(pattern(alarm).expr("alarm", al -> al.getSeverity().equals("high"))),
                                         pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
                                 )
                         ),
