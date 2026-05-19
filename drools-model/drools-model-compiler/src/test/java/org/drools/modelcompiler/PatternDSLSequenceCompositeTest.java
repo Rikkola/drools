@@ -29,6 +29,7 @@ import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
+import static org.drools.model.PatternDSL.xnor;
 import static org.drools.model.PatternDSL.xor;
 
 public class PatternDSLSequenceCompositeTest {
@@ -639,5 +640,41 @@ public class PatternDSLSequenceCompositeTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void sequenceFiresWhenNoAlarmsBeforeAck() {
+        // and(xnor(alarmA, alarmB, alarmC), ack) — no alarms before ack.
+        // XNOR is vacuousMatchAtActivation=true (predicate.test(0, allMatched)
+        // = (0 == 0) → true), so XNOR is MATCHED at activation and AND fires
+        // once ack arrives. Drives XNOR wiring through predicateFor and
+        // vacuousMatchAtActivationFor. Distinguishes XNOR from XOR
+        // (XOR is predicate-false at zero and would not fire here).
+        final List<String> results = new ArrayList<>();
+
+        Rule rule =
+                rule("xnor-no-alarms-before-ack").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                and(
+                                        xnor(
+                                                pattern(alarmA).expr("a", al -> al.getSensorId().equals("sensor-A")),
+                                                pattern(alarmB).expr("b", al -> al.getSensorId().equals("sensor-B")),
+                                                pattern(alarmC).expr("c", al -> al.getSensorId().equals("sensor-C"))
+                                        ),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));     // no alarms, just ack
+
+        assertThat(results).containsExactly("acknowledged");
     }
 }

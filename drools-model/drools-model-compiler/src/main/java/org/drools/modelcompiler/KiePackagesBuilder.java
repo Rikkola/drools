@@ -651,6 +651,7 @@ public class KiePackagesBuilder {
             case NOR:  return Gates::nor;
             case NAND: return Gates::nand;
             case XOR:  return Gates::xor;
+            case XNOR: return Gates::xnor;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));
@@ -661,6 +662,7 @@ public class KiePackagesBuilder {
         switch (t) {
             case NOR:
             case NAND:
+            case XNOR:
                 return true;
             default:
                 return false;
