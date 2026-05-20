@@ -528,11 +528,11 @@ public class KiePackagesBuilder {
                     if (statusCanRevertFor(stepCondition.getType())) {
                         throw new UnsupportedOperationException(
                                 "sequence(...) does not support self-reverting steps at the top level " +
-                                "(nor, nand, not, xor, xnor — their UNMATCHED rollback would propagate through " +
+                                "(nor, nand, never, xor, xnor — their UNMATCHED rollback would propagate through " +
                                 "the step's terminator and call sequence.next() a second time). " +
                                 "Wrap inside and(...) with a positive sibling that gates the advance, e.g. " +
                                 "and(nor(absentChild), positiveTrigger), " +
-                                "and(not(absent), positiveTrigger), " +
+                                "and(never(absent), positiveTrigger), " +
                                 "and(nand(absent1, absent2), positiveTrigger), " +
                                 "and(xor(absent1, absent2, absent3), positiveTrigger), " +
                                 "or and(xnor(absent1, absent2), positiveTrigger). " +
