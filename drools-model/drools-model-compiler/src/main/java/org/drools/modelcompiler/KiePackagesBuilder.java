@@ -533,6 +533,7 @@ public class KiePackagesBuilder {
                         TimedConditionImpl tc = (TimedConditionImpl) stepCondition;
                         timeoutMillis = tc.getTimeoutMillis();
                         stepCondition = tc.getInner();
+                        // catches any nesting depth — we intentionally unwrap only one layer
                         if (stepCondition instanceof TimedConditionImpl) {
                             throw new UnsupportedOperationException(
                                     "within(...) does not support nesting another within(...) on the same step; " +

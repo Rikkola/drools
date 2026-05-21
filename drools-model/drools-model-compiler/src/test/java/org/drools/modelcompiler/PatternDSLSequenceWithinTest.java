@@ -19,6 +19,8 @@
 package org.drools.modelcompiler;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.drools.model.Rule;
@@ -96,7 +98,7 @@ public class PatternDSLSequenceWithinTest {
 
     @Test
     public void sequenceAdvancesWhenStepMatchesBeforeDeadline() {
-        final java.util.List<String> results = new java.util.ArrayList<>();
+        final List<String> results = new ArrayList<>();
 
         Rule r = rule("within-met").build(
                 pattern(station),
