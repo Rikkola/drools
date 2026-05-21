@@ -20,14 +20,16 @@ package org.drools.modelcompiler;
 
 import java.time.Duration;
 
+import org.drools.model.Variable;
+import org.drools.model.view.TimedExprViewItem;
+import org.drools.modelcompiler.domain.SensorEvents.OperatorAcknowledged;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.within;
-import org.drools.model.Variable;
-import org.drools.modelcompiler.domain.SensorEvents.OperatorAcknowledged;
 
 public class PatternDSLSequenceWithinTest {
 
@@ -52,5 +54,11 @@ public class PatternDSLSequenceWithinTest {
         assertThatThrownBy(() -> within(Duration.ofSeconds(-1), pattern(ack)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("positive timeout");
+    }
+
+    @Test
+    public void withinWrapsStepWithTimeout() {
+        TimedExprViewItem<?> timed = within(Duration.ofSeconds(5), pattern(ack));
+        assertThat(timed.getTimeoutMillis()).isEqualTo(5000L);
     }
 }

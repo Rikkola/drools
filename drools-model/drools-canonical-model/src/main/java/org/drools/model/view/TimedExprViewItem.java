@@ -19,10 +19,9 @@
 package org.drools.model.view;
 
 import org.drools.model.Condition;
-import org.drools.model.SequenceStep;
 import org.drools.model.Variable;
 
-public class TimedExprViewItem<T> extends AbstractExprViewItem<T> implements SequenceStep {
+public class TimedExprViewItem<T> extends AbstractExprViewItem<T> implements org.drools.model.SequenceStep {
 
     private final long timeoutMillis;
     private final ViewItem step;
@@ -47,6 +46,9 @@ public class TimedExprViewItem<T> extends AbstractExprViewItem<T> implements Seq
         return step.getVariables();
     }
 
+    // Transparent: the timeout is orthogonal to gate kind. The SEQUENCE walker
+    // unwraps the timed step before inspecting its type, so this simply reports
+    // the wrapped step's type rather than a distinct timed type.
     @Override
     public Condition.Type getType() {
         return step instanceof ExprViewItem ? ((ExprViewItem<?>) step).getType() : Condition.Type.PATTERN;
