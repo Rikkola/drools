@@ -18,6 +18,7 @@
  */
 package org.drools.model;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -95,6 +96,7 @@ import org.drools.model.view.BindViewItem3;
 import org.drools.model.view.BindViewItem4;
 import org.drools.model.view.CombinedExprViewItem;
 import org.drools.model.view.ExprViewItem;
+import org.drools.model.view.TimedExprViewItem;
 import org.drools.model.view.ViewItem;
 import org.drools.model.view.ViewItemBuilder;
 
@@ -1929,6 +1931,17 @@ public class PatternDSL extends DSL {
 
     public static CombinedExprViewItem never(SequenceStep child) {
         return new CombinedExprViewItem(Condition.Type.NOR, new ViewItem[] { (ViewItem) child });
+    }
+
+    public static TimedExprViewItem within(Duration timeout, SequenceStep step) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException(
+                    "within(...) requires a positive timeout, got: " + timeout);
+        }
+        if (step == null) {
+            throw new IllegalArgumentException("within(...) requires a non-null step");
+        }
+        return new TimedExprViewItem(timeout.toMillis(), (ViewItem) step);
     }
 
     public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
