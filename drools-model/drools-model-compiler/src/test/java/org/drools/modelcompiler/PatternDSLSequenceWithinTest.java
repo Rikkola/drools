@@ -27,6 +27,7 @@ import org.drools.model.Rule;
 import org.drools.model.Variable;
 import org.drools.model.impl.ModelImpl;
 import org.drools.model.view.TimedExprViewItem;
+import org.drools.modelcompiler.domain.SensorEvents.HeartbeatOk;
 import org.drools.modelcompiler.domain.SensorEvents.MonitoringStation;
 import org.drools.modelcompiler.domain.SensorEvents.OperatorAcknowledged;
 import org.drools.modelcompiler.domain.SensorEvents.SensorActivated;
@@ -43,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
+import static org.drools.model.PatternDSL.never;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
@@ -50,6 +52,7 @@ import static org.drools.model.PatternDSL.within;
 
 public class PatternDSLSequenceWithinTest {
 
+    private final Variable<HeartbeatOk>          heartbeat       = declarationOf(HeartbeatOk.class);
     private final Variable<OperatorAcknowledged> ack             = declarationOf(OperatorAcknowledged.class);
     private final Variable<MonitoringStation>    station         = declarationOf(MonitoringStation.class);
     private final Variable<SensorActivated>      sensorActivated = declarationOf(SensorActivated.class);
@@ -151,5 +154,42 @@ public class PatternDSLSequenceWithinTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
 
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void withinRejectsSelfRevertingInnerStep() {
+        Rule r = rule("within-never-rejected").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(30),
+                                never(pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")))),
+                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                ),
+                execute(() -> { })
+        );
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support self-reverting steps at the top level")
+                .hasMessageContaining("ADR 0001");
+    }
+
+    @Test
+    public void withinRejectsNestedWithin() {
+        Rule r = rule("within-nested-rejected").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(30),
+                                within(Duration.ofSeconds(10),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))))
+                ),
+                execute(() -> { })
+        );
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("one timeout per step");
     }
 }
