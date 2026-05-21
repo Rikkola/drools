@@ -213,7 +213,6 @@ public class LogicGate extends SignalProcessor {
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.TIMEOUT, trigger, valueResolver, gate, memory);
             JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
-            System.out.println("handle created");
         }
 
         @Override
@@ -276,7 +275,6 @@ public class LogicGate extends SignalProcessor {
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.DELAY, trigger, valueResolver, gate, memory);
             JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
-            System.out.println("delayed match");
         }
 
         @Override
@@ -297,7 +295,6 @@ public class LogicGate extends SignalProcessor {
         public void execute(JobContext ctx) {
             LogicGateTimerJobContext timerJobCtx   = (LogicGateTimerJobContext) ctx;
             ValueResolver       resolver = timerJobCtx.getValueResolver();
-            System.out.println("add propagation");
             resolver.addPropagation( new LogicGateTimerAction(timerJobCtx ));
         }
     }
@@ -381,18 +378,15 @@ public class LogicGate extends SignalProcessor {
             SignalStatus status = sequenceMemory.getLogicGateSignalStatus(gate.getGateIndex());
 
             sequenceMemory.clearJobHandle(gate.getGateIndex(), valueResolver); // clear rather than cancel, as it's actually firing
-            System.out.println("execute");
 
             switch (jobCtx.getActionType()) {
                 case LogicGateTimerJobContext.DELAY:
                     if (status == SignalStatus.MATCHED) {
                         // transition
                         gate.propagate(sequenceMemory, valueResolver, status);
-                        System.out.println("1");
                     } else {
                         // fail
                         sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
-                        System.out.println("2");
                     }
                     break;
                 case LogicGateTimerJobContext.TIMEOUT:
@@ -400,7 +394,6 @@ public class LogicGate extends SignalProcessor {
                     if (status != SignalStatus.MATCHED) {
                         // fail
                         sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
-                        System.out.println("3");
                     }
                     break;
             }
