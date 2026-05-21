@@ -123,4 +123,33 @@ public class PatternDSLSequenceWithinTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void sequenceAbortsWhenDeadlineExpires() {
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("within-expired").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(30),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice")))
+                ),
+                execute(() -> results.add("acknowledged"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
+        conf.setOption(ClockTypeOption.get("pseudo"));
+        ksession = kbase.newKieSession(conf, null);
+        SessionPseudoClock clock = ksession.getSessionClock();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // within-step activates, timer scheduled
+        clock.advanceTime(31, TimeUnit.SECONDS);             // blow past the 30s deadline
+        ksession.fireAllRules();                             // process the timeout job → sequencer stops
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
+
+        assertThat(results).isEmpty();
+    }
 }
