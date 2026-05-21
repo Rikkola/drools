@@ -132,7 +132,10 @@ import org.drools.model.patterns.GroupByPatternImpl;
 import org.drools.model.patterns.PatternImpl;
 import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
+import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.TimeoutTimer;
+import org.drools.core.time.impl.DurationTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
@@ -525,6 +528,17 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition stepCondition = steps.get(i);
+                    Long timeoutMillis = null;
+                    if (stepCondition instanceof TimedConditionImpl) {
+                        TimedConditionImpl tc = (TimedConditionImpl) stepCondition;
+                        timeoutMillis = tc.getTimeoutMillis();
+                        stepCondition = tc.getInner();
+                        if (stepCondition instanceof TimedConditionImpl) {
+                            throw new UnsupportedOperationException(
+                                    "within(...) does not support nesting another within(...) on the same step; " +
+                                    "one timeout per step.");
+                        }
+                    }
                     if (statusCanRevertFor(stepCondition.getType())) {
                         throw new UnsupportedOperationException(
                                 "sequence(...) does not support self-reverting steps at the top level " +
@@ -541,6 +555,9 @@ public class KiePackagesBuilder {
                     List<LogicGate> stepGates = new ArrayList<>();
                     LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter);
                     root.setOutput(TerminatingSignalProcessor.get());
+                    if (timeoutMillis != null) {
+                        root.setPropagationTimer(new TimeoutTimer(root, new DurationTimer(timeoutMillis)));
+                    }
                     stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
                 }
 

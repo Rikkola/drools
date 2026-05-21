@@ -80,6 +80,8 @@ import org.drools.model.view.Expr8ViewItemImpl;
 import org.drools.model.view.Expr9ViewItemImpl;
 import org.drools.model.view.ExprViewItem;
 import org.drools.model.view.FixedValueItem;
+import org.drools.model.view.TimedExprViewItem;
+import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.model.view.GroupByExprViewItem;
 import org.drools.model.view.QueryCallViewItem;
 import org.drools.model.view.ViewItem;
@@ -172,6 +174,12 @@ public class ViewPatternBuilder implements ViewBuilder {
         if ( ruleItem instanceof AccumulateExprViewItem ) {
             AccumulateExprViewItem acc = (AccumulateExprViewItem) ruleItem;
             return new AccumulatePatternImpl(ruleItem2Condition( acc.getExpr() ), null, acc.getAccumulateFunctions());
+        }
+
+        if ( ruleItem instanceof TimedExprViewItem ) {
+            TimedExprViewItem timed = ( TimedExprViewItem ) ruleItem;
+            Condition inner = ruleItem2Condition( (RuleItem) timed.getStep() );
+            return new TimedConditionImpl( inner, timed.getTimeoutMillis() );
         }
 
         if ( ruleItem instanceof ExprViewItem ) {
