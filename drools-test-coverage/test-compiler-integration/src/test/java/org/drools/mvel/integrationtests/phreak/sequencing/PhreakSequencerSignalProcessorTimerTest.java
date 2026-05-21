@@ -20,7 +20,6 @@ package org.drools.mvel.integrationtests.phreak.sequencing;
 
 import org.drools.base.rule.Pattern;
 import org.drools.core.common.InternalFactHandle;
-import org.drools.base.reteoo.sequencing.signalprocessors.ConditionalSignalCounter;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
@@ -75,6 +74,7 @@ public class PhreakSequencerSignalProcessorTimerTest extends AbstractPhreakSeque
         pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
         session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
         assertThat(pseudo.getQueue().size()).isEqualTo(0);
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // timed out → never advanced past step 0
 
         createSession();
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
@@ -88,54 +88,6 @@ public class PhreakSequencerSignalProcessorTimerTest extends AbstractPhreakSeque
         pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
         session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
     }
-
-    @Test
-    public void testTimeoutWithCountFailure() {
-        LogicGate gate1 = new LogicGate((inputMask, sourceMask) -> Gates.and(inputMask, sourceMask),0,
-                                        new int[] {0}, // B
-                                        new int[] {0},
-                                        0);
-
-        ConditionalSignalCounter counter = new ConditionalSignalCounter(0, 0, c -> c <= 2);
-        counter.setOutput(gate1);
-        gate1.setInputSignalCounters(new ConditionalSignalCounter[] {counter});
-
-        //gate1.setPropagationTimer(new TimeoutTimer(gate1, new DurationTimer(1000)));
-        gate1.setOutput(TerminatingSignalProcessor.get());
-
-        LogicCircuit circuit1 = new LogicCircuit(gate1);
-
-        Sequence seq = new Sequence(0, Step.of(circuit1));
-        seq.setFilters(new Pattern[]{bpattern});
-        rule.addSequence(seq);
-        kbase.addPackage(pkg);
-
-        createSession();
-
-        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
-        InternalFactHandle   fhB0   = (InternalFactHandle) session.insert(new B(0, "b"));
-        InternalFactHandle   fhB1   = (InternalFactHandle) session.insert(new B(0, "b"));
-        InternalFactHandle   fhB2   = (InternalFactHandle) session.insert(new B(0, "b"));
-        PseudoClockScheduler pseudo = (PseudoClockScheduler) session.getTimerService();
-
-//        assertThat(pseudo.getQueue().size()).isEqualTo(1);
-//        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
-        session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
-//        assertThat(pseudo.getQueue().size()).isEqualTo(0);
-//
-//        mnode.getSequencer().start(sequencerMemory, session);
-//        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
-//        fhB0   = (InternalFactHandle) session.insert(new B(0, "b"));
-//        pseudo = (PseudoClockScheduler) session.getTimerService();
-//        assertThat(pseudo.getQueue().size()).isEqualTo(1);
-//
-//        InternalFactHandle fhC0   = (InternalFactHandle) session.insert(new C(0, "c"));
-//        pseudo = (PseudoClockScheduler) session.getTimerService();
-//        assertThat(pseudo.getQueue().peek().isCanceled()).isTrue(); // cancelled timers, stay on the queue until they fire (where they noop)
-//        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
-//        session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
-    }
-
 
     @Test
     public void testDelayFromActivation() {
