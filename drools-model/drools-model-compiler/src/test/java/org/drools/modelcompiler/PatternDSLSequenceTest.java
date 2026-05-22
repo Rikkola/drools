@@ -117,6 +117,20 @@ public class PatternDSLSequenceTest {
         assertThat(results).isEmpty();
     }
 
+    @Test
+    public void leadingSequenceFiresFromSessionStart() {
+        // A rule whose LHS begins directly with sequence() — no anchor pattern —
+        // is anchored by a synthetic InitialFact and fires by matching its steps
+        // from session creation.
+        ksession = makeKSession(leadingSeqRule());
+
+        insertAndFire(new Toy("ball"));               // step 0
+        assertThat(results).isEmpty();                // step 1 not yet matched
+        insertAndFire(new Relationship("go", "done")); // step 1 → sequence completes
+
+        assertThat(results).containsExactly("fired");
+    }
+
     @AfterEach
     public void tearDown() {
         results.clear();
@@ -134,6 +148,22 @@ public class PatternDSLSequenceTest {
 
     private KieSession makeKSession() {
         final Model model = new ModelImpl().addRule(rule);
+        final KieBase kieBase = KieBaseBuilder.createKieBaseFromModel(model);
+        return kieBase.newKieSession();
+    }
+
+    private Rule leadingSeqRule() {
+        return rule("leading-seq").build(
+                sequence(
+                        pattern(toy).expr("toy-filter", t -> t.getName().equals("ball")),
+                        pattern(relationship).expr("rel-filter", rl -> rl.getStart().equals("go"))
+                ),
+                execute(() -> results.add("fired"))
+        );
+    }
+
+    private KieSession makeKSession(Rule r) {
+        final Model model = new ModelImpl().addRule(r);
         final KieBase kieBase = KieBaseBuilder.createKieBaseFromModel(model);
         return kieBase.newKieSession();
     }
