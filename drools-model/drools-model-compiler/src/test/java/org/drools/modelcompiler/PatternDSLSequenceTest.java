@@ -131,6 +131,22 @@ public class PatternDSLSequenceTest {
         assertThat(results).containsExactly("fired");
     }
 
+    @Test
+    public void leadingSequenceIsOneShot() {
+        ksession = makeKSession(leadingSeqRule());
+
+        // First run completes → fires once
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Relationship("go", "done"));
+        assertThat(results).containsExactly("fired");
+
+        // A second valid run does not produce a second fire — the single
+        // InitialFact tuple means a single sequencer that does not re-arm.
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Relationship("go", "done"));
+        assertThat(results).containsExactly("fired");
+    }
+
     @AfterEach
     public void tearDown() {
         results.clear();
