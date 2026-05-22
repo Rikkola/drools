@@ -471,7 +471,11 @@ public class KiePackagesBuilder {
             GroupElement and = (GroupElement) rce;
             return and.getChildren().isEmpty() || requiresLeftActivation( and.getChildren().get( 0 ) );
         }
-        return rce instanceof QueryElement;
+        // A leading sequence() is stashed as a Sequence node on the LHS (contributing no
+        // pattern), so the rule has no anchor; like top-level not()/exists(), it needs a
+        // synthetic InitialFact left input so the SequenceNode receives an activating tuple
+        // at session creation.
+        return rce instanceof QueryElement || rce instanceof Sequence;
     }
 
     private RuleConditionElement conditionToElement( RuleContext ctx, GroupElement group, Condition condition ) {

@@ -169,6 +169,21 @@ public class PatternDSLSequenceTest {
     }
 
     @Test
+    public void anchoredSequenceIgnoresStepFactInsertedBeforeAnchor() {
+        // Regression guard for the leading-sequence replay change: the InitialFact
+        // replay must NOT leak into anchored sequences. A step-0 fact inserted before
+        // the anchor is not retroactively replayed when the anchor starts the sequencer,
+        // matching pre-fix anchored behavior.
+        ksession = makeKSession();
+
+        insertAndFire(new Toy("ball"));          // step-0 fact, but no anchor yet → not retained for the sequence
+        insertAndFire(new Person("anchor"));     // anchor starts the sequencer (no replay for anchored)
+        insertAndFire(new Relationship("go", "done"));
+
+        assertThat(results).isEmpty();           // sequence never saw step 0, so it does not fire
+    }
+
+    @Test
     public void norFactoryProducesNorType() {
         org.drools.model.view.CombinedExprViewItem item =
                 org.drools.model.PatternDSL.nor(pattern(person));

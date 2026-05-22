@@ -355,8 +355,6 @@ public class SequenceNode extends LeftTupleSource
         public void assertObject(final InternalFactHandle factHandle,
                                  final PropagationContext pctx,
                                  final ReteEvaluator reteEvaluator) {
-            System.out.println(getClass().getSimpleName() + ":" + adapterIndex + ":" + factHandle.getObject());
-
             SequenceNodeMemory memory = reteEvaluator.getNodeMemory(node);
 
             LinkedList<DynamicFilter> filters       = memory.getActiveFilters()[adapterIndex];
@@ -549,6 +547,17 @@ public class SequenceNode extends LeftTupleSource
                 SequencerMemory sequencerMemory = memory.node.createSequencerMemory(leftTuple, sink, memory);
                 leftTuple.setContextObject(sequencerMemory);
                 node.getSequencer().start(sequencerMemory, reteEvaluator);
+                // A leading sequence() is anchored by the synthetic InitialFact tuple and can
+                // see facts inserted before the sequencer started (before the first
+                // fireAllRules), when its step filters were not yet active. Replay existing WM
+                // facts through the now-active filters for that case only. Anchored sequences
+                // start on a domain tuple and need no replay — their step facts arrive after
+                // activation through normal alpha propagation.
+                if (leftTuple.getFactHandle() == ((InternalWorkingMemory) reteEvaluator).getInitialFactHandle()) {
+                    for (AlphaAdapter adapter : node.getAlphaAdapters()) {
+                        adapter.source.updateSink(adapter, null, (InternalWorkingMemory) reteEvaluator);
+                    }
+                }
 
                 leftTuple.clearStaged();
                 leftTuple = next;
