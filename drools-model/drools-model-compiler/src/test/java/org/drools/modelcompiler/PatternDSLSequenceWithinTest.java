@@ -44,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
+import static org.drools.model.PatternDSL.and;
 import static org.drools.model.PatternDSL.never;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
@@ -149,6 +150,75 @@ public class PatternDSLSequenceWithinTest {
 
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));      // within-step activates, timer scheduled
+        clock.advanceTime(31, TimeUnit.SECONDS);             // blow past the 30s deadline
+        ksession.fireAllRules();                             // process the timeout job → sequencer stops
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void sequenceAdvancesWhenCompositeStepCompletesBeforeDeadline() {
+        // within(d, and(...)) — the timer attaches to whatever buildStepGate returns,
+        // so a composite gate should obey the deadline just like a single pattern.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("within-composite-met").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(30),
+                                and(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                ))
+                ),
+                execute(() -> results.add("acknowledged"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
+        conf.setOption(ClockTypeOption.get("pseudo"));
+        ksession = kbase.newKieSession(conf, null);
+        SessionPseudoClock clock = ksession.getSessionClock();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));     // within-step activates, timer scheduled
+        clock.advanceTime(10, TimeUnit.SECONDS);            // still inside the 30s window
+        insertAndFire(new HeartbeatOk("sensor-1"));         // AND child #1 — composite still waiting
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // AND child #2 — composite completes
+
+        assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void sequenceAbortsWhenCompositeStepHalfCompletesAtDeadline() {
+        // Only one AND child arrives before the deadline. The timer governs the whole
+        // composite gate, so the partially-satisfied step must still abort the sequencer.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("within-composite-expired").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(30),
+                                and(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                ))
+                ),
+                execute(() -> results.add("acknowledged"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
+        conf.setOption(ClockTypeOption.get("pseudo"));
+        ksession = kbase.newKieSession(conf, null);
+        SessionPseudoClock clock = ksession.getSessionClock();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // within-step activates, timer scheduled
+        insertAndFire(new HeartbeatOk("sensor-1"));          // AND child #1 only — composite half-satisfied
         clock.advanceTime(31, TimeUnit.SECONDS);             // blow past the 30s deadline
         ksession.fireAllRules();                             // process the timeout job → sequencer stops
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
