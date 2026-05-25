@@ -21,7 +21,6 @@ package org.drools.modelcompiler;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.drools.model.Rule;
 import org.drools.model.Variable;
@@ -34,11 +33,7 @@ import org.drools.modelcompiler.domain.SensorEvents.SensorActivated;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kie.api.KieBase;
-import org.kie.api.KieServices;
 import org.kie.api.runtime.KieSession;
-import org.kie.api.runtime.KieSessionConfiguration;
-import org.kie.api.runtime.conf.ClockTypeOption;
-import org.kie.api.time.SessionPseudoClock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -115,14 +110,11 @@ public class PatternDSLSequenceWithinTest {
         );
 
         KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
-        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
-        conf.setOption(ClockTypeOption.get("pseudo"));
-        ksession = kbase.newKieSession(conf, null);
-        SessionPseudoClock clock = ksession.getSessionClock();
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
 
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));     // step 0 matches → within-step activates, timer scheduled
-        clock.advanceTime(10, TimeUnit.SECONDS);            // still inside the 30s window
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(10)); // still inside the 30s window
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
         assertThat(results).containsExactly("acknowledged");
@@ -143,15 +135,11 @@ public class PatternDSLSequenceWithinTest {
         );
 
         KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
-        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
-        conf.setOption(ClockTypeOption.get("pseudo"));
-        ksession = kbase.newKieSession(conf, null);
-        SessionPseudoClock clock = ksession.getSessionClock();
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
 
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));      // within-step activates, timer scheduled
-        clock.advanceTime(31, TimeUnit.SECONDS);             // blow past the 30s deadline
-        ksession.fireAllRules();                             // process the timeout job → sequencer stops
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(31)); // blow past the 30s deadline, process timeout job → sequencer stops
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
 
         assertThat(results).isEmpty();
@@ -177,14 +165,11 @@ public class PatternDSLSequenceWithinTest {
         );
 
         KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
-        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
-        conf.setOption(ClockTypeOption.get("pseudo"));
-        ksession = kbase.newKieSession(conf, null);
-        SessionPseudoClock clock = ksession.getSessionClock();
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
 
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));     // within-step activates, timer scheduled
-        clock.advanceTime(10, TimeUnit.SECONDS);            // still inside the 30s window
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(10)); // still inside the 30s window
         insertAndFire(new HeartbeatOk("sensor-1"));         // AND child #1 — composite still waiting
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // AND child #2 — composite completes
 
@@ -211,16 +196,12 @@ public class PatternDSLSequenceWithinTest {
         );
 
         KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
-        KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
-        conf.setOption(ClockTypeOption.get("pseudo"));
-        ksession = kbase.newKieSession(conf, null);
-        SessionPseudoClock clock = ksession.getSessionClock();
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
 
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));      // within-step activates, timer scheduled
         insertAndFire(new HeartbeatOk("sensor-1"));          // AND child #1 only — composite half-satisfied
-        clock.advanceTime(31, TimeUnit.SECONDS);             // blow past the 30s deadline
-        ksession.fireAllRules();                             // process the timeout job → sequencer stops
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(31)); // blow past the 30s deadline, process timeout job → sequencer stops
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequencer aborted
 
         assertThat(results).isEmpty();
