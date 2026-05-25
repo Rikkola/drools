@@ -24,5 +24,4 @@ public enum TimedKind {
     TIMEOUT,
     /** {@code settle(d, step)} — propagate only if a match is held for d continuously. */
     SETTLE
-    // ARM_AFTER added in Task 8 (PR 2)
 }

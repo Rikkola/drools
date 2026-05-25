@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.drools.model.Rule;
+import org.drools.model.TimedKind;
 import org.drools.model.Variable;
 import org.drools.model.impl.ModelImpl;
 import org.drools.model.view.TimedExprViewItem;
@@ -93,6 +94,7 @@ public class PatternDSLSequenceWithinTest {
     public void withinWrapsStepWithTimeout() {
         TimedExprViewItem<?> timed = within(Duration.ofSeconds(5), pattern(ack));
         assertThat(timed.getDurationMillis()).isEqualTo(5000L);
+        assertThat(timed.getKind()).isEqualTo(TimedKind.TIMEOUT);
     }
 
     @Test

@@ -545,7 +545,7 @@ public class KiePackagesBuilder {
                         // catches any nesting depth — we intentionally unwrap only one layer
                         if (stepCondition instanceof TimedConditionImpl) {
                             throw new UnsupportedOperationException(
-                                    "Temporal decorators (within/settle/armAfter) do not support nesting another temporal decorator on the same step; " +
+                                    "Temporal decorators do not support nesting another temporal decorator on the same step; " +
                                     "one temporal decorator per step.");
                         }
                     }
@@ -567,17 +567,10 @@ public class KiePackagesBuilder {
                     root.setOutput(TerminatingSignalProcessor.get());
                     if (timedKind != null) {
                         Timer durationTimer = new DurationTimer(durationMillis);
-                        PropagationTimer pt;
-                        switch (timedKind) {
-                            case TIMEOUT:
-                                pt = new TimeoutTimer(root, durationTimer);
-                                break;
-                            case SETTLE:
-                                pt = new DelayFromMatchTimer(root, durationTimer);
-                                break;
-                            default:
-                                throw new UnsupportedOperationException("Unknown TimedKind: " + timedKind);
-                        }
+                        PropagationTimer pt = switch (timedKind) {
+                            case TIMEOUT -> new TimeoutTimer(root, durationTimer);
+                            case SETTLE  -> new DelayFromMatchTimer(root, durationTimer);
+                        };
                         root.setPropagationTimer(pt);
                     }
                     stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
