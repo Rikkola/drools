@@ -716,9 +716,11 @@ public class Sequence implements RuleConditionElement {
         public void cancelJobHandle(int gateIndex, ValueResolver valueResolver) {
             if (jobHandles != null) {
                 JobHandle handle = jobHandles[gateIndex];
-                valueResolver.getTimerService().removeJob(handle);
-                jobHandles[gateIndex] = null;
-                System.out.println("Job handle cancelled: " + handle);
+                if (handle != null) {
+                    valueResolver.getTimerService().removeJob(handle);
+                    jobHandles[gateIndex] = null;
+                    System.out.println("Job handle cancelled: " + handle);
+                }
             }
         }
 

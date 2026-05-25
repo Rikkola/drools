@@ -289,6 +289,7 @@ public class LogicGate extends SignalProcessor {
 
         @Override
         public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
+            memory.cancelJobHandle(gate.getGateIndex(), valueResolver);   // cancel any pending DELAY job before scheduling fresh
             Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.DELAY, trigger, valueResolver, gate, memory);
             JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
@@ -402,10 +403,9 @@ public class LogicGate extends SignalProcessor {
                     if (status == SignalStatus.MATCHED) {
                         // transition
                         gate.propagate(sequenceMemory, valueResolver, status);
-                    } else {
-                        // fail
-                        sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
                     }
+                    // else: status reverted before delay expired — drop silently; gate keeps listening,
+                    // next match schedules a fresh DELAY (see DelayFromMatchTimer.matched cancel-before-schedule).
                     break;
                 case LogicGateTimerJobContext.TIMEOUT:
                     // fail, if not already transitioned
