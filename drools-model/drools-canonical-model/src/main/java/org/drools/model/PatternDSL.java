@@ -1933,14 +1933,18 @@ public class PatternDSL extends DSL {
         return new CombinedExprViewItem(Condition.Type.NOR, new ViewItem[] { (ViewItem) child });
     }
 
-    public static TimedExprViewItem within(Duration timeout, SequenceStep step) {
-        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+    private static void validateTimedArgs(Duration duration, SequenceStep step, String operatorName) {
+        if (duration == null || duration.isZero() || duration.isNegative()) {
             throw new IllegalArgumentException(
-                    "within(...) requires a positive timeout, got: " + timeout);
+                    operatorName + "(...) requires a positive duration, got: " + duration);
         }
         if (step == null) {
-            throw new IllegalArgumentException("within(...) requires a non-null step");
+            throw new IllegalArgumentException(operatorName + "(...) requires a non-null step");
         }
+    }
+
+    public static TimedExprViewItem within(Duration timeout, SequenceStep step) {
+        validateTimedArgs(timeout, step, "within");
         return new TimedExprViewItem<>(TimedKind.TIMEOUT, timeout.toMillis(), (ViewItem) step);
     }
 

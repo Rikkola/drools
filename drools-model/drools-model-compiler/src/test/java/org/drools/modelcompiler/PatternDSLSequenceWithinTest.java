@@ -73,21 +73,21 @@ public class PatternDSLSequenceWithinTest {
     public void withinRejectsNullTimeout() {
         assertThatThrownBy(() -> within(null, pattern(ack)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("positive timeout");
+                .hasMessageContaining("positive duration");
     }
 
     @Test
     public void withinRejectsZeroTimeout() {
         assertThatThrownBy(() -> within(Duration.ZERO, pattern(ack)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("positive timeout");
+                .hasMessageContaining("positive duration");
     }
 
     @Test
     public void withinRejectsNegativeTimeout() {
         assertThatThrownBy(() -> within(Duration.ofSeconds(-1), pattern(ack)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("positive timeout");
+                .hasMessageContaining("positive duration");
     }
 
     @Test
