@@ -92,7 +92,7 @@ public class PatternDSLSequenceWithinTest {
     @Test
     public void withinWrapsStepWithTimeout() {
         TimedExprViewItem<?> timed = within(Duration.ofSeconds(5), pattern(ack));
-        assertThat(timed.getTimeoutMillis()).isEqualTo(5000L);
+        assertThat(timed.getDurationMillis()).isEqualTo(5000L);
     }
 
     @Test
@@ -241,6 +241,6 @@ public class PatternDSLSequenceWithinTest {
 
         assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("one timeout per step");
+                .hasMessageContaining("one temporal decorator per step");
     }
 }

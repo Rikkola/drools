@@ -134,7 +134,10 @@ import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
 import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromMatchTimer;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.PropagationTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.TimeoutTimer;
+import org.drools.model.TimedKind;
 import org.drools.core.time.impl.DurationTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
@@ -532,16 +535,18 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition stepCondition = steps.get(i);
-                    Long timeoutMillis = null;
+                    TimedKind timedKind = null;
+                    long durationMillis = 0;
                     if (stepCondition instanceof TimedConditionImpl) {
                         TimedConditionImpl tc = (TimedConditionImpl) stepCondition;
-                        timeoutMillis = tc.getTimeoutMillis();
+                        timedKind = tc.getKind();
+                        durationMillis = tc.getDurationMillis();
                         stepCondition = tc.getInner();
                         // catches any nesting depth — we intentionally unwrap only one layer
                         if (stepCondition instanceof TimedConditionImpl) {
                             throw new UnsupportedOperationException(
-                                    "within(...) does not support nesting another within(...) on the same step; " +
-                                    "one timeout per step.");
+                                    "Temporal decorators (within/settle/armAfter) do not support nesting another temporal decorator on the same step; " +
+                                    "one temporal decorator per step.");
                         }
                     }
                     if (statusCanRevertFor(stepCondition.getType())) {
@@ -560,8 +565,20 @@ public class KiePackagesBuilder {
                     List<LogicGate> stepGates = new ArrayList<>();
                     LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter);
                     root.setOutput(TerminatingSignalProcessor.get());
-                    if (timeoutMillis != null) {
-                        root.setPropagationTimer(new TimeoutTimer(root, new DurationTimer(timeoutMillis)));
+                    if (timedKind != null) {
+                        Timer durationTimer = new DurationTimer(durationMillis);
+                        PropagationTimer pt;
+                        switch (timedKind) {
+                            case TIMEOUT:
+                                pt = new TimeoutTimer(root, durationTimer);
+                                break;
+                            case SETTLE:
+                                pt = new DelayFromMatchTimer(root, durationTimer);
+                                break;
+                            default:
+                                throw new UnsupportedOperationException("Unknown TimedKind: " + timedKind);
+                        }
+                        root.setPropagationTimer(pt);
                     }
                     stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
                 }

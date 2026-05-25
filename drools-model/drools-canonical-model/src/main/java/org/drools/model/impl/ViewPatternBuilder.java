@@ -179,7 +179,7 @@ public class ViewPatternBuilder implements ViewBuilder {
         if ( ruleItem instanceof TimedExprViewItem ) {
             TimedExprViewItem timed = ( TimedExprViewItem ) ruleItem;
             Condition inner = ruleItem2Condition( (RuleItem) timed.getStep() );
-            return new TimedConditionImpl( inner, timed.getTimeoutMillis() );
+            return new TimedConditionImpl( timed.getKind(), inner, timed.getDurationMillis() );
         }
 
         if ( ruleItem instanceof ExprViewItem ) {

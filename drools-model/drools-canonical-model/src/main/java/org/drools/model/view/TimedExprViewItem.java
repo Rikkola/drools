@@ -19,22 +19,29 @@
 package org.drools.model.view;
 
 import org.drools.model.Condition;
+import org.drools.model.TimedKind;
 import org.drools.model.Variable;
 
 public class TimedExprViewItem<T> extends AbstractExprViewItem<T> implements org.drools.model.SequenceStep {
 
-    private final long timeoutMillis;
+    private final TimedKind kind;
+    private final long durationMillis;
     private final ViewItem step;
 
     @SuppressWarnings("unchecked")
-    public TimedExprViewItem(long timeoutMillis, ViewItem step) {
+    public TimedExprViewItem(TimedKind kind, long durationMillis, ViewItem step) {
         super((Variable<T>) step.getFirstVariable());
-        this.timeoutMillis = timeoutMillis;
+        this.kind = kind;
+        this.durationMillis = durationMillis;
         this.step = step;
     }
 
-    public long getTimeoutMillis() {
-        return timeoutMillis;
+    public TimedKind getKind() {
+        return kind;
+    }
+
+    public long getDurationMillis() {
+        return durationMillis;
     }
 
     public ViewItem getStep() {
@@ -46,7 +53,7 @@ public class TimedExprViewItem<T> extends AbstractExprViewItem<T> implements org
         return step.getVariables();
     }
 
-    // Transparent: the timeout is orthogonal to gate kind. The SEQUENCE walker
+    // Transparent: the timer is orthogonal to gate kind. The SEQUENCE walker
     // unwraps the timed step before inspecting its type, so this simply reports
     // the wrapped step's type rather than a distinct timed type.
     @Override

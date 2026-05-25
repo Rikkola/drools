@@ -22,24 +22,31 @@ import java.util.Collections;
 import java.util.List;
 
 import org.drools.model.Condition;
+import org.drools.model.TimedKind;
 import org.drools.model.Variable;
 
 public class TimedConditionImpl implements Condition {
 
+    private final TimedKind kind;
     private final Condition inner;
-    private final long timeoutMillis;
+    private final long durationMillis;
 
-    public TimedConditionImpl(Condition inner, long timeoutMillis) {
+    public TimedConditionImpl(TimedKind kind, Condition inner, long durationMillis) {
+        this.kind = kind;
         this.inner = inner;
-        this.timeoutMillis = timeoutMillis;
+        this.durationMillis = durationMillis;
+    }
+
+    public TimedKind getKind() {
+        return kind;
     }
 
     public Condition getInner() {
         return inner;
     }
 
-    public long getTimeoutMillis() {
-        return timeoutMillis;
+    public long getDurationMillis() {
+        return durationMillis;
     }
 
     @Override

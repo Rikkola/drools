@@ -1941,7 +1941,7 @@ public class PatternDSL extends DSL {
         if (step == null) {
             throw new IllegalArgumentException("within(...) requires a non-null step");
         }
-        return new TimedExprViewItem<>(timeout.toMillis(), (ViewItem) step);
+        return new TimedExprViewItem<>(TimedKind.TIMEOUT, timeout.toMillis(), (ViewItem) step);
     }
 
     public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
