@@ -21,6 +21,7 @@ package org.drools.modelcompiler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import org.drools.core.ClockType;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieSession;
@@ -35,7 +36,7 @@ final class TemporalSequenceTestHarness {
     /** Build a session with PSEUDO clock. */
     static KieSession newPseudoClockSession(KieBase kbase) {
         KieSessionConfiguration conf = KieServices.get().newKieSessionConfiguration();
-        conf.setOption(ClockTypeOption.get("pseudo"));
+        conf.setOption(ClockTypeOption.get(ClockType.PSEUDO_CLOCK.getId()));
         return kbase.newKieSession(conf, null);
     }
 
