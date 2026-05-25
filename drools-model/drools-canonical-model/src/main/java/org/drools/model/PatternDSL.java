@@ -1948,6 +1948,11 @@ public class PatternDSL extends DSL {
         return new TimedExprViewItem<>(TimedKind.TIMEOUT, timeout.toMillis(), (ViewItem) step);
     }
 
+    public static TimedExprViewItem settle(Duration duration, SequenceStep step) {
+        validateTimedArgs(duration, step, "settle");
+        return new TimedExprViewItem<>(TimedKind.SETTLE, duration.toMillis(), (ViewItem) step);
+    }
+
     public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
         return new CombinedExprViewItem(Condition.Type.NOR, prependStep(first, rest));
     }
