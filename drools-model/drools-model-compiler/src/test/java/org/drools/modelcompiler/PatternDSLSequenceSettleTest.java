@@ -33,8 +33,10 @@ import org.junit.jupiter.api.Test;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.KieSession;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
+import static org.drools.model.PatternDSL.never;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
@@ -86,5 +88,52 @@ public class PatternDSLSequenceSettleTest {
         TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(2)); // delay expires → ack propagates
 
         assertThat(results).containsExactly("settled");
+    }
+
+    @Test
+    public void settleRejectsNullDuration() {
+        assertThatThrownBy(() -> settle(null, pattern(ack)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("positive duration");
+    }
+
+    @Test
+    public void settleRejectsZeroDuration() {
+        assertThatThrownBy(() -> settle(Duration.ZERO, pattern(ack)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("positive duration");
+    }
+
+    @Test
+    public void settleRejectsNegativeDuration() {
+        assertThatThrownBy(() -> settle(Duration.ofSeconds(-1), pattern(ack)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("positive duration");
+    }
+
+    @Test
+    public void settleRejectsNullStep() {
+        assertThatThrownBy(() -> settle(Duration.ofSeconds(1), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("non-null step");
+    }
+
+    @Test
+    public void settleRejectsSelfRevertingInnerStep() {
+        Rule r = rule("settle-never-rejected").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        settle(Duration.ofSeconds(1),
+                                never(pattern(ack).expr("ack", a -> a.getOperator().equals("alice")))),
+                        pattern(ack).expr("ack-final", a -> a.getOperator().equals("alice"))
+                ),
+                execute(() -> { })
+        );
+
+        assertThatThrownBy(() -> KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("does not support self-reverting steps at the top level")
+                .hasMessageContaining("ADR 0001");
     }
 }
