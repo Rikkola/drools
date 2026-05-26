@@ -166,6 +166,55 @@ public class PhreakSequencerSignalProcessorTimerTest extends AbstractPhreakSeque
     }
 
     /**
+     * Directly exercises the ARM_AFTER_EXPIRED switch case in LogicGateTimerAction.
+     * After activated() schedules the timer and the timer fires, the gate must be armed,
+     * its logic-gate memory and signal-status reset to 0 / null, and the step must NOT
+     * advance (the sequence is passively waiting for the next match).
+     */
+    @Test
+    public void testArmAfterExpiredAction() {
+        LogicGate gate1 = new LogicGate((inputMask, sourceMask) -> Gates.and(inputMask, sourceMask), 0,
+                                        new int[] {0, 1}, // B and C
+                                        new int[] {0, 1}, // Each SignalAdapter must be in a unique index for the Sequence
+                                        0);
+
+        gate1.setPropagationTimer(new DelayFromActivatedTimer(gate1, new DurationTimer(1000)));
+
+        gate1.setOutput(TerminatingSignalProcessor.get());
+
+        LogicCircuit circuit1 = new LogicCircuit(gate1);
+
+        Sequence seq = new Sequence(0, Step.of(circuit1));
+        seq.setFilters(new Pattern[]{bpattern, cpattern});
+        rule.addSequence(seq);
+        kbase.addPackage(pkg);
+
+        createSession();
+
+        SequenceMemory sequenceMemory = sequencerMemory.getChildSequenceMemory();
+        int gateIndex = gate1.getGateIndex();
+
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0 — sequence waiting
+
+        // Insert the facts that trip the gate's activation (schedules the ARM_AFTER_EXPIRED timer).
+        session.insert(new B(0, "b"));
+        session.insert(new C(0, "c"));
+        PseudoClockScheduler pseudo = (PseudoClockScheduler) session.getTimerService();
+        assertThat(pseudo.getQueue().size()).isEqualTo(1); // ARM_AFTER_EXPIRED job queued
+
+        // Drive the clock past the timer duration so the job fires.
+        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
+        session.fireAllRules();
+        assertThat(pseudo.getQueue().size()).isEqualTo(0); // job consumed
+
+        // ARM_AFTER_EXPIRED case has fired: gate is armed, memory and status reset, step unchanged.
+        assertThat(sequenceMemory.isGateArmed(gateIndex)).isTrue();
+        assertThat(sequenceMemory.getLogicGateMemory()[gateIndex]).isEqualTo(0L);
+        assertThat(sequenceMemory.getLogicGateSignalStatus(gateIndex)).isNull();
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // no step advance — gate listens passively
+    }
+
+    /**
      * Verifies the post-Task-5 DELAY-branch polarity in LogicGateTimerAction:
      * when a DELAY job fires after the gate's status has reverted to non-MATCHED,
      * the action must be a no-op — neither gate.propagate() nor Sequence.fail() is called.
