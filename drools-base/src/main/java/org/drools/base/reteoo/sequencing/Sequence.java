@@ -504,6 +504,8 @@ public class Sequence implements RuleConditionElement {
 
         private final long[] gateMemory;
 
+        private final boolean[] gateArmed;
+
         private final long[] counterMemories;
 
         private JobHandle[] jobHandles;
@@ -534,6 +536,7 @@ public class Sequence implements RuleConditionElement {
             this.gateMemory           = gateMemory;
             this.counterMemories      = counterMemories;
             this.signalStatuses       = new SignalStatus[gateMemory.length + counterMemories.length];
+            this.gateArmed            = new boolean[gateMemory.length];
         }
 
         public SequenceMemory getParent() {
@@ -571,6 +574,18 @@ public class Sequence implements RuleConditionElement {
 
         public void setLogicGateSignalStatus(int index, SignalStatus status) {
             signalStatuses[index] = status;
+        }
+
+        public boolean isGateArmed(int gateIndex) {
+            return gateArmed[gateIndex];
+        }
+
+        public void armGate(int gateIndex) {
+            gateArmed[gateIndex] = true;
+        }
+
+        public void disarmGate(int gateIndex) {
+            gateArmed[gateIndex] = false;
         }
 
         public SignalAdapter[] getSignalAdapters() {
@@ -706,6 +721,7 @@ public class Sequence implements RuleConditionElement {
         public void resetLogicGateMemory(int gateIndex, ValueResolver valueResolver) {
             gateMemory[gateIndex]     = 0;
             signalStatuses[gateIndex] = null;
+            gateArmed[gateIndex]      = false;
         }
 
         public void resetSignalCounterMemory(int counterIndex) {
