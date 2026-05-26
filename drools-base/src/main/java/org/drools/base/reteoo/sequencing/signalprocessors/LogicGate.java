@@ -257,14 +257,17 @@ public class LogicGate extends SignalProcessor {
         @Override
         public void activated(SequenceMemory memory, ValueResolver valueResolver)  {
             Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
-            LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.TIMEOUT, trigger, valueResolver, gate, memory);
+            LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.ARM_AFTER_EXPIRED, trigger, valueResolver, gate, memory);
             JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
         }
 
         @Override
         public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
-            //gate.propagate(memory, reteEvaluator, status);
+            if (memory.isGateArmed(gate.getGateIndex())) {
+                gate.propagate(memory, valueResolver, status);
+            }
+            // else: gate not yet armed — drop this match.
         }
 
         @Override
@@ -323,6 +326,7 @@ public class LogicGate extends SignalProcessor {
             JobContext {
         private static final int DELAY   = 0;
         private static final int TIMEOUT = 1;
+        private static final int ARM_AFTER_EXPIRED = 2;
 
         private       JobHandle     jobHandle;
         private final Trigger       trigger;
