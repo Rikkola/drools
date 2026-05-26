@@ -419,9 +419,10 @@ public class LogicGate extends SignalProcessor {
                     }
                     break;
                 case LogicGateTimerJobContext.ARM_AFTER_EXPIRED:
+                    // Order matters: resetLogicGateMemory clears gateArmed, so arm must come after reset.
                     sequenceMemory.resetLogicGateMemory(gate.getGateIndex(), valueResolver);
                     sequenceMemory.armGate(gate.getGateIndex());
-                    // gate is now armed; next match propagates via DelayFromActivatedTimer.matched.
+                    // Gate is now armed; next match propagates via DelayFromActivatedTimer.matched.
                     // No propagate, no fail — the gate listens passively for the next match.
                     break;
             }
