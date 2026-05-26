@@ -23,5 +23,7 @@ public enum TimedKind {
     /** {@code within(d, step)} — fail the sequence if no match within d. */
     TIMEOUT,
     /** {@code settle(d, step)} — propagate only if a match is held for d continuously. */
-    SETTLE
+    SETTLE,
+    /** {@code armAfter(d, step)} — ignore matches during a quiet window after activation, propagate the first match after. */
+    ARM_AFTER
 }

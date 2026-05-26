@@ -134,6 +134,7 @@ import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
 import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromActivatedTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromMatchTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.PropagationTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.TimeoutTimer;
@@ -568,8 +569,9 @@ public class KiePackagesBuilder {
                     if (timedKind != null) {
                         Timer durationTimer = new DurationTimer(durationMillis);
                         PropagationTimer pt = switch (timedKind) {
-                            case TIMEOUT -> new TimeoutTimer(root, durationTimer);
-                            case SETTLE  -> new DelayFromMatchTimer(root, durationTimer);
+                            case TIMEOUT    -> new TimeoutTimer(root, durationTimer);
+                            case SETTLE     -> new DelayFromMatchTimer(root, durationTimer);
+                            case ARM_AFTER  -> new DelayFromActivatedTimer(root, durationTimer);
                         };
                         root.setPropagationTimer(pt);
                     }
