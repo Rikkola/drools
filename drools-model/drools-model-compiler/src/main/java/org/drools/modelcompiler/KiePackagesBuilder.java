@@ -528,59 +528,11 @@ public class KiePackagesBuilder {
                 }
             case SEQUENCE: {
                 SequenceConditionImpl sc = (SequenceConditionImpl) condition;
-                List<Condition> steps = sc.getSubConditions();
-                int n = steps.size();
                 List<Pattern> filters = new ArrayList<>();
-                Step.StepFactory[] stepFactories = new Step.StepFactory[n];
-                int[] gateCounter = new int[]{0};
-
-                for (int i = 0; i < n; i++) {
-                    Condition stepCondition = steps.get(i);
-                    TimedKind timedKind = null;
-                    long durationMillis = 0;
-                    if (stepCondition instanceof TimedConditionImpl) {
-                        TimedConditionImpl tc = (TimedConditionImpl) stepCondition;
-                        timedKind = tc.getKind();
-                        durationMillis = tc.getDurationMillis();
-                        stepCondition = tc.getInner();
-                        // catches any nesting depth — we intentionally unwrap only one layer
-                        if (stepCondition instanceof TimedConditionImpl) {
-                            throw new UnsupportedOperationException(
-                                    "Temporal decorators do not support nesting another temporal decorator on the same step; " +
-                                    "one temporal decorator per step.");
-                        }
-                    }
-                    if (statusCanRevertFor(stepCondition.getType())) {
-                        throw new UnsupportedOperationException(
-                                "sequence(...) does not support self-reverting steps at the top level " +
-                                "(nor, nand, never, xor, xnor — their UNMATCHED rollback would propagate through " +
-                                "the step's terminator and call sequence.next() a second time). " +
-                                "Wrap inside and(...) with a positive sibling that gates the advance, e.g. " +
-                                "and(nor(absentChild), positiveTrigger), " +
-                                "and(never(absent), positiveTrigger), " +
-                                "and(nand(absent1, absent2), positiveTrigger), " +
-                                "and(xor(absent1, absent2, absent3), positiveTrigger), " +
-                                "or and(xnor(absent1, absent2), positiveTrigger). " +
-                                "See ADR 0001.");
-                    }
-                    List<LogicGate> stepGates = new ArrayList<>();
-                    LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter);
-                    root.setOutput(TerminatingSignalProcessor.get());
-                    if (timedKind != null) {
-                        Timer durationTimer = new DurationTimer(durationMillis);
-                        PropagationTimer pt = switch (timedKind) {
-                            case TIMEOUT    -> new TimeoutTimer(root, durationTimer);
-                            case SETTLE     -> new DelayFromMatchTimer(root, durationTimer);
-                            case ARM_AFTER  -> new DelayFromActivatedTimer(root, durationTimer);
-                        };
-                        root.setPropagationTimer(pt);
-                    }
-                    stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
-                }
-
-                Sequence seq = new Sequence(0, stepFactories);
-                seq.setFilters(filters.toArray(new Pattern[0]));
-                ctx.getRule().addSequence(seq);
+                int[] seqCounter = new int[]{0};
+                Sequence seq = buildSequence(ctx, group, sc, filters, seqCounter);
+                seq.setFilters(filters.toArray(new Pattern[0]));   // root only — filters are global across the tree
+                ctx.getRule().addSequence(seq);                    // root only — nested reached via SubsequenceStep
                 return null;
             }
         }
@@ -626,17 +578,93 @@ public class KiePackagesBuilder {
         return transformedForall;
     }
 
+    // filterIndexes are GLOBAL across the entire nested-sequence tree: SequenceNode holds a single
+    // shared DynamicFilter array indexed by filterIdx, so the `filters` list is threaded through all
+    // recursive buildSequence/buildStepGate calls.
+    // signalAdapterIndexes are LOCAL to each Sequence: every SequenceMemory has its own signalAdapters[]
+    // sized by the number of PATTERN leaves in THAT sequence's own steps (not the whole tree), so
+    // signalAdapterCounter (like gateCounter) is reset per buildSequence invocation. Do not share it.
+    private Sequence buildSequence(RuleContext ctx, GroupElement group, SequenceConditionImpl sc,
+                                   List<Pattern> filters, int[] seqCounter) {
+        List<Condition> steps = sc.getSubConditions();
+        int n = steps.size();
+        int myIndex = seqCounter[0]++;                      // rule-unique, pre-order
+        Step.StepFactory[] stepFactories = new Step.StepFactory[n];
+        int[] gateCounter          = new int[]{0};          // per-sequence gate indices
+        int[] signalAdapterCounter = new int[]{0};          // per-sequence signal-adapter indices (local to this seq's SequenceMemory)
+
+        for (int i = 0; i < n; i++) {
+            Condition stepCondition = steps.get(i);
+            TimedKind timedKind = null;
+            long durationMillis = 0;
+            if (stepCondition instanceof TimedConditionImpl) {
+                TimedConditionImpl tc = (TimedConditionImpl) stepCondition;
+                timedKind = tc.getKind();
+                durationMillis = tc.getDurationMillis();
+                stepCondition = tc.getInner();
+                if (stepCondition instanceof TimedConditionImpl) {
+                    throw new UnsupportedOperationException(
+                            "Temporal decorators do not support nesting another temporal decorator on the same step; " +
+                            "one temporal decorator per step.");
+                }
+            }
+
+            if (stepCondition.getType() == Condition.Type.SEQUENCE) {
+                if (timedKind != null) {
+                    throw new UnsupportedOperationException(
+                            "sequence(...) does not yet support a temporal decorator on a nested sequence step " +
+                            "(only direct PATTERN/AND/OR/... steps can carry within/settle/armAfter decorators).");
+                }
+                Sequence sub = buildSequence(ctx, group, (SequenceConditionImpl) stepCondition, filters, seqCounter);
+                stepFactories[i] = Step.of(sub);
+                continue;
+            }
+
+            if (statusCanRevertFor(stepCondition.getType())) {
+                throw new UnsupportedOperationException(
+                        "sequence(...) does not support self-reverting steps at the top level " +
+                        "(nor, nand, never, xor, xnor — their UNMATCHED rollback would propagate through " +
+                        "the step's terminator and call sequence.next() a second time). " +
+                        "Wrap inside and(...) with a positive sibling that gates the advance, e.g. " +
+                        "and(nor(absentChild), positiveTrigger), " +
+                        "and(never(absent), positiveTrigger), " +
+                        "and(nand(absent1, absent2), positiveTrigger), " +
+                        "and(xor(absent1, absent2, absent3), positiveTrigger), " +
+                        "or and(xnor(absent1, absent2), positiveTrigger). " +
+                        "See ADR 0001.");
+            }
+
+            List<LogicGate> stepGates = new ArrayList<>();
+            LogicGate root = buildStepGate(ctx, group, stepCondition, filters, stepGates, gateCounter, signalAdapterCounter);
+            root.setOutput(TerminatingSignalProcessor.get());
+            if (timedKind != null) {
+                Timer durationTimer = new DurationTimer(durationMillis);
+                PropagationTimer pt = switch (timedKind) {
+                    case TIMEOUT    -> new TimeoutTimer(root, durationTimer);
+                    case SETTLE     -> new DelayFromMatchTimer(root, durationTimer);
+                    case ARM_AFTER  -> new DelayFromActivatedTimer(root, durationTimer);
+                };
+                root.setPropagationTimer(pt);
+            }
+            stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
+        }
+
+        return new Sequence(myIndex, stepFactories);   // SequenceMemory parent link wired at runtime in SequencerMemoryImpl.getOrCreateSequenceMemory
+    }
+
     private static final String DEFERRED_GATE_ERROR =
             "sequence(...) does not support condition type %s — see ADR 0001 " +
             "(nor-step-runtime-boundary).";
 
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
                                     Condition node, List<Pattern> filters,
-                                    List<LogicGate> stepGates, int[] gateCounter) {
+                                    List<LogicGate> stepGates, int[] gateCounter,
+                                    int[] signalAdapterCounter) {
         Condition.Type type = node.getType();
 
         if (type == Condition.Type.PATTERN) {
-            int idx = filters.size();
+            int filterIdx         = filters.size();            // global filter index (shared across nested tree)
+            int signalAdapterIdx  = signalAdapterCounter[0]++; // local signal-adapter index (per-sequence SequenceMemory)
             RuleConditionElement built = buildPattern(ctx, group, (PatternImpl) node);
             if (!(built instanceof Pattern)) {
                 throw new IllegalStateException(
@@ -646,8 +674,8 @@ public class KiePackagesBuilder {
             LogicGate leaf = new LogicGate(
                     Gates::and,
                     gateCounter[0]++,
-                    new int[]{idx},
-                    new int[]{idx},
+                    new int[]{filterIdx},
+                    new int[]{signalAdapterIdx},
                     0);
             stepGates.add(leaf);
             return leaf;
@@ -661,7 +689,7 @@ public class KiePackagesBuilder {
         }
         LogicGate[] inputs = new LogicGate[children.size()];
         for (int i = 0; i < children.size(); i++) {
-            inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter);
+            inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter, signalAdapterCounter);
         }
         LogicGate parent = new LogicGate(
                 pred,
