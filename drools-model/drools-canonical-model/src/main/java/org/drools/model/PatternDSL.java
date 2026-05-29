@@ -1941,6 +1941,11 @@ public class PatternDSL extends DSL {
         if (step == null) {
             throw new IllegalArgumentException(operatorName + "(...) requires a non-null step");
         }
+        if (step instanceof SequenceViewItem) {
+            throw new UnsupportedOperationException(
+                    "sequence(...) does not yet support a temporal decorator on a nested sequence step " +
+                    "(only direct PATTERN/AND/OR/... steps can carry within/settle/armAfter decorators).");
+        }
     }
 
     public static TimedExprViewItem within(Duration timeout, SequenceStep step) {

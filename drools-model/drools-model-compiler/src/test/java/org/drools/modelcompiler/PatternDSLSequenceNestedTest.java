@@ -1,5 +1,6 @@
 package org.drools.modelcompiler;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +18,13 @@ import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
+import static org.drools.model.PatternDSL.within;
 
 public class PatternDSLSequenceNestedTest {
 
@@ -167,5 +170,29 @@ public class PatternDSLSequenceNestedTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
 
         assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void temporalDecoratorOnNestedSequenceIsRejected() {
+        // A temporal decorator wrapping a nested sequence step is out of scope (Stage 1) and must be rejected.
+        // The DSL itself (within/settle/armAfter) is the enforcement point: it throws
+        // UnsupportedOperationException as soon as it sees a SequenceViewItem as the inner step,
+        // so the assertion wraps the full rule-construction expression.
+        assertThatThrownBy(() ->
+                rule("temporal-on-nested").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                within(Duration.ofSeconds(5),
+                                        sequence(
+                                                pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                        )),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> { })
+                ))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("temporal decorator on a nested sequence step");
     }
 }
