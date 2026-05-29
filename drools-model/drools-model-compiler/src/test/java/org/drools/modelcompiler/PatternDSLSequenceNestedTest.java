@@ -76,4 +76,96 @@ public class PatternDSLSequenceNestedTest {
 
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void nestedSequenceDoesNotFireWhenInnerRunIncomplete() {
+        // Nested sequence(heartbeat, alarm): if alarm never arrives, the nested run never
+        // completes, so the parent never advances to ack and the rule never fires.
+        final List<String> results = new ArrayList<>();
+
+        Rule r =
+                rule("nested-incomplete").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                sequence(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));                       // nested step 1 only; no alarm
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));    // ack arrives but parent still inside nested run
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void nestedSequenceWorksAtDepthThree() {
+        // sequence(anchor, sequence(heartbeat, sequence(alarm, ack))) — three levels deep.
+        final List<String> results = new ArrayList<>();
+
+        Rule r =
+                rule("nested-depth-3").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                sequence(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        sequence(
+                                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high")),
+                                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                                        )
+                                )
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-1", "high"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void nestedSequenceMatchesFlatSequenceOnInOrderTrace() {
+        // sequence(A, sequence(B,C), D) and a flat sequence(A,B,C,D) fire identically
+        // on a strictly in-order trace. (They diverge only where scoping to the nested
+        // run matters — out of scope for Stage 1.)
+        final List<String> results = new ArrayList<>();
+
+        Rule flat =
+                rule("flat").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                pattern(alarm).expr("hi", al -> al.getSeverity().equals("high")),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> results.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(flat)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));
+        insertAndFire(new AlarmRaised("sensor-1", "high"));
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+
+        assertThat(results).containsExactly("acknowledged");
+    }
 }
