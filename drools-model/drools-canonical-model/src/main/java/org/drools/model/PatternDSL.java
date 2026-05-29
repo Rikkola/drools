@@ -1779,7 +1779,7 @@ public class PatternDSL extends DSL {
         }
     }
 
-    public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem {
+    public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem, SequenceStep {
         private final SequenceStep[] steps;
 
         public SequenceViewItem(SequenceStep... steps) {
