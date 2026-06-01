@@ -55,6 +55,17 @@ public class ParallelStep extends AbstractStep implements Step {
         for (int i = 0; i < this.subsequenceSteps.length; i++) {
             subsequenceSteps[i].getSubsequence().start(seqrMemory.getSequenceMemory(subsequenceSteps[i].getSubsequence()), valueResolver);
         }
+        seqMem.setCount(0); // join counter: number of branches that have completed
+    }
+
+    @Override
+    public void childEnded(SequenceMemory parentMemory, ValueResolver valueResolver) {
+        int completed = parentMemory.getCount() + 1;
+        parentMemory.setCount(completed);
+        if (completed == subsequenceSteps.length) {
+            // last branch in: advance the parent past this parallel step exactly once
+            parentMemory.getSequence().next(parentMemory, valueResolver);
+        }
     }
 
     @Override
