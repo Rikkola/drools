@@ -14,6 +14,15 @@ public interface Step {
 
     void onFail(SequenceMemory memory, ValueResolver valueResolver);
 
+    /**
+     * Called on a parent's <em>current</em> step when one of its child sequences
+     * ends. The default (see {@link org.drools.base.reteoo.sequencing.steps.AbstractStep})
+     * advances the parent immediately, which is correct for SUB_SEQUENCE and
+     * AGGREGATOR steps. PARALLEL overrides this to join (advance only when all
+     * branches have completed).
+     */
+    void childEnded(SequenceMemory parentMemory, ValueResolver valueResolver);
+
     StepType getType();
 
     static StepFactory of(LogicCircuit circuit) {

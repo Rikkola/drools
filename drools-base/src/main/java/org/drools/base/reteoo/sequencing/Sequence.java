@@ -250,7 +250,8 @@ public class Sequence implements RuleConditionElement {
             SequenceMemory parent = sequenceMemory.getParent();
             if (parent != null) {
                 SequenceMemory parentSeqMemory = parent.getSequencerMemory().getSequenceMemory(parent.getSequence());
-                parent.getSequence().next(parentSeqMemory, valueResolver);
+                Step parentStep = parentSeqMemory.getSequence().getSteps()[parentSeqMemory.getStep()];
+                parentStep.childEnded(parentSeqMemory, valueResolver);
             } else {
                 sequenceMemory.getSequencerMemory().match(valueResolver);
             }

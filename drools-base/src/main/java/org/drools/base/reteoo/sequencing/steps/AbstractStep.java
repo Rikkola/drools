@@ -35,6 +35,11 @@ public abstract class AbstractStep implements Step {
         failureHandler.onFail(this, memory, valueResolver);
     }
 
+    @Override
+    public void childEnded(SequenceMemory parentMemory, ValueResolver valueResolver) {
+        parentMemory.getSequence().next(parentMemory, valueResolver);
+    }
+
     public interface StepFailureHandler {
         void onFail(Step step, SequenceMemory memory, ValueResolver valueResolver);
     }
