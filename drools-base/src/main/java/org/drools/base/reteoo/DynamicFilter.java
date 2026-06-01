@@ -40,8 +40,10 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
     public void assertObject(final FactHandle factHandle,
                              final ValueResolver valueResolver) {
         if (constraint.isAllowed(factHandle, valueResolver)) {
-            for (SignalAdapter signal = signalAdapters.getFirst(); signal != null; signal = signal.getNext()) {
+            for (SignalAdapter signal = signalAdapters.getFirst(); signal != null; ) {
+                SignalAdapter next = signal.getNext(); // capture before receive() may remove signal from the list
                 signal.receive(valueResolver, factHandle);
+                signal = next;
             }
         }
     }

@@ -188,7 +188,7 @@ public class AbstractPhreakSequencerSubsequenceTest {
             ParallelStep parallelStep = (ParallelStep) step;
             for (int i = 0; i < parallelStep.getSubsequenceSteps().length; i++ ) {
                 SubsequenceStep subsequenceStep = parallelStep.getSubsequenceSteps()[i];
-                SequenceMemory subSqncMemory = sqncrMemory.getSequenceMemory(subsequenceStep.getSequence());
+                SequenceMemory subSqncMemory = sqncrMemory.getSequenceMemory(subsequenceStep.getSubsequence());
                 getLeafSequences(sqncrMemory, subSqncMemory, leafSequences);
             }
         } else {
