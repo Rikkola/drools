@@ -359,8 +359,10 @@ public class SequenceNode extends LeftTupleSource
 
             LinkedList<DynamicFilter> filters       = memory.getActiveFilters()[adapterIndex];
             if (filters != null) {
-                for (DynamicFilter f = filters.getFirst(); f != null; f = f.getNext()) {
+                for (DynamicFilter f = filters.getFirst(); f != null; ) {
+                    DynamicFilter next = f.getNext(); // capture before assertObject() may remove f from the list (mirrors DynamicFilter.assertObject)
                     f.assertObject(factHandle, reteEvaluator);
+                    f = next;
                 }
             }
         }
