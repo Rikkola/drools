@@ -107,6 +107,7 @@ public class PatternDSLSequenceParallelTest {
         insertAndFire(new MonitoringStation("station-1"));
         insertAndFire(new SensorActivated("sensor-1"));
         insertAndFire(new HeartbeatOk("sensor-1"));                    // branch 1 completes; branch 2 (calibration) never does
+        assertThat(results).isEmpty();                                 // join already unsatisfiable — must not fire on one branch
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // parent still parked on the parallel step
         assertThat(results).isEmpty();
     }
