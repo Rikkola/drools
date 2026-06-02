@@ -1965,6 +1965,10 @@ public class PatternDSL extends DSL {
                     "sequence(...) does not yet support a temporal decorator on a nested sequence step " +
                     "(only direct PATTERN/AND/OR/... steps can carry within/settle/armAfter decorators).");
         }
+        if (step instanceof ParallelViewItem) {
+            throw new UnsupportedOperationException(
+                    operatorName + "(...) does not support a temporal decorator on a parallel step.");
+        }
     }
 
     public static TimedExprViewItem within(Duration timeout, SequenceStep step) {

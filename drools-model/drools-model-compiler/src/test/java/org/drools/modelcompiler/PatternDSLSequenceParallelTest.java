@@ -1,5 +1,6 @@
 package org.drools.modelcompiler;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.and;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
+import static org.drools.model.PatternDSL.within;
 
 public class PatternDSLSequenceParallelTest {
 
@@ -68,6 +71,16 @@ public class PatternDSLSequenceParallelTest {
                 ),
                 execute(() -> results.add("acknowledged"))
         );
+    }
+
+    @Test
+    public void temporalDecoratorOnParallelStepIsRejected() {
+        assertThatThrownBy(() ->
+                within(Duration.ofSeconds(1),
+                        and(sequence(pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1"))),
+                            sequence(pattern(calibration).expr("cal", c -> c.getSensorId().equals("sensor-1"))))))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("parallel");
     }
 
     @Test
