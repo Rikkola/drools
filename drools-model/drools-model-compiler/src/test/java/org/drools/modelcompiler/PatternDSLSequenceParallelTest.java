@@ -96,4 +96,33 @@ public class PatternDSLSequenceParallelTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // ack step matches → root sequence ends → fire
         assertThat(results).containsExactly("acknowledged");
     }
+
+    @Test
+    public void parallelDoesNotFireWhenOneBranchIncomplete() {
+        // Only the heartbeat branch completes; the AND-join is never satisfied, so the
+        // parent never advances to ack — even though ack is present. The rule must not fire.
+        final List<String> results = new ArrayList<>();
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(buildParallelRule(results))).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));                    // branch 1 completes; branch 2 (calibration) never does
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // parent still parked on the parallel step
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void parallelJoinsRegardlessOfBranchOrder() {
+        // Calibration (branch 2) completes BEFORE heartbeat (branch 1); the AND-join still fires.
+        final List<String> results = new ArrayList<>();
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(buildParallelRule(results))).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new CalibrationPassed("sensor-1"));             // branch 2 first
+        assertThat(results).isEmpty();                                // still waiting on heartbeat
+        insertAndFire(new HeartbeatOk("sensor-1"));                   // branch 1 second → join fires
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+        assertThat(results).containsExactly("acknowledged");
+    }
 }
