@@ -1796,6 +1796,18 @@ public class PatternDSL extends DSL {
         }
     }
 
+    public static class ParallelViewItem implements RuleItem, SequenceStep {
+        private final SequenceViewItem[] branches;
+
+        public ParallelViewItem(SequenceViewItem... branches) {
+            this.branches = branches;
+        }
+
+        public SequenceViewItem[] getBranches() {
+            return branches;
+        }
+    }
+
     public static abstract class PatternBindingImpl<T, A> implements PatternItem<T> {
         protected final Variable<A> boundVar;
         protected final ReactOn reactOn;
@@ -1918,6 +1930,13 @@ public class PatternDSL extends DSL {
 
     public static CombinedExprViewItem and(ViewItemBuilder<?> first, ViewItemBuilder<?>... rest) {
         return new CombinedExprViewItem(Condition.Type.AND, viewItems(first, rest));
+    }
+
+    public static ParallelViewItem and(SequenceViewItem first, SequenceViewItem... rest) {
+        SequenceViewItem[] branches = new SequenceViewItem[1 + rest.length];
+        branches[0] = first;
+        System.arraycopy(rest, 0, branches, 1, rest.length);
+        return new ParallelViewItem(branches);
     }
 
     private static ViewItem[] viewItems(ViewItemBuilder<?> first, ViewItemBuilder<?>[] rest) {
