@@ -620,6 +620,25 @@ public class KiePackagesBuilder {
                 continue;
             }
 
+            if (stepCondition.getType() == Condition.Type.PARALLEL) {
+                if (timedKind != null) {
+                    throw new UnsupportedOperationException(
+                            "sequence(...) does not support a temporal decorator on a parallel step.");
+                }
+                List<Condition> branches = stepCondition.getSubConditions();
+                Sequence[] branchSeqs = new Sequence[branches.size()];
+                for (int b = 0; b < branches.size(); b++) {
+                    Condition branch = branches.get(b);
+                    if (branch.getType() != Condition.Type.SEQUENCE) {
+                        throw new UnsupportedOperationException(
+                                "and(...) parallel branches must all be sequences; got " + branch.getType());
+                    }
+                    branchSeqs[b] = buildSequence(ctx, group, (SequenceConditionImpl) branch, filters, seqCounter);
+                }
+                stepFactories[i] = Step.of(branchSeqs);   // plural factory → StepType.PARALLEL
+                continue;
+            }
+
             if (statusCanRevertFor(stepCondition.getType())) {
                 throw new UnsupportedOperationException(
                         "sequence(...) does not support self-reverting steps at the top level " +
