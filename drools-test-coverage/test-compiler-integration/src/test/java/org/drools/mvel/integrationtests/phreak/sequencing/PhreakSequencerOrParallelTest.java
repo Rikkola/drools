@@ -107,4 +107,21 @@ public class PhreakSequencerOrParallelTest extends AbstractPhreakSequencerSubseq
         assertThat(sequencerMemory.getSequenceMemory(seq2).getStep()).isEqualTo(1);
         assertThat(sequencerMemory.getSequenceMemory(seq3).getStep()).isEqualTo(1);
     }
+
+    // Order independence: whichever branch reaches its terminal first wins.
+    // Drive D first (branch 2) instead of C, and the outcome is identical.
+    @Test
+    public void anyBranchCanWinFirst() {
+        buildDistinctTriggerOr();
+        createSession();
+
+        SequenceMemory seq0Memory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));
+        session.insert(new D(0, "d")); // branch 2 (B→D) completes first
+        assertThat(seq0Memory.getCount()).isEqualTo(1);
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+        assertThat(sequencerMemory.getSequenceMemory(seq1).getStep()).isEqualTo(1); // branch 1 (C) did not win
+        assertThat(sequencerMemory.getSequenceMemory(seq3).getStep()).isEqualTo(1); // branch 3 (E) did not win
+    }
 }
