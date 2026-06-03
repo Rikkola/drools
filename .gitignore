@@ -39,3 +39,7 @@ dependency-reduced-pom.xml
 
 # Claude Code project documentation
 CLAUDE.md
+
+# Local stress-test modules
+/sequence-stress-test/
+/out/

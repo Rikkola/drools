@@ -6,6 +6,7 @@ import org.drools.base.base.ValueResolver;
 import org.drools.base.definitions.InternalKnowledgePackage;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
+import org.drools.base.reteoo.sequencing.steps.OrParallelStep;
 import org.drools.base.reteoo.sequencing.steps.ParallelStep;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.steps.Step.StepType;
@@ -188,6 +189,13 @@ public class AbstractPhreakSequencerSubsequenceTest {
             ParallelStep parallelStep = (ParallelStep) step;
             for (int i = 0; i < parallelStep.getSubsequenceSteps().length; i++ ) {
                 SubsequenceStep subsequenceStep = parallelStep.getSubsequenceSteps()[i];
+                SequenceMemory subSqncMemory = sqncrMemory.getSequenceMemory(subsequenceStep.getSubsequence());
+                getLeafSequences(sqncrMemory, subSqncMemory, leafSequences);
+            }
+        } else if (step.getType() == StepType.OR_PARALLEL) {
+            OrParallelStep orParallelStep = (OrParallelStep) step;
+            for (int i = 0; i < orParallelStep.getSubsequenceSteps().length; i++ ) {
+                SubsequenceStep subsequenceStep = orParallelStep.getSubsequenceSteps()[i];
                 SequenceMemory subSqncMemory = sqncrMemory.getSequenceMemory(subsequenceStep.getSubsequence());
                 getLeafSequences(sqncrMemory, subSqncMemory, leafSequences);
             }

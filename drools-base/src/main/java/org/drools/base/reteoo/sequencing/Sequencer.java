@@ -2,6 +2,7 @@ package org.drools.base.reteoo.sequencing;
 
 import org.drools.base.base.ValueResolver;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
+import org.drools.base.reteoo.sequencing.steps.OrParallelStep;
 import org.drools.base.reteoo.sequencing.steps.ParallelStep;
 import org.drools.base.reteoo.sequencing.steps.SubsequenceStep;
 import org.drools.base.reteoo.sequencing.steps.Step;
@@ -28,6 +29,10 @@ public class Sequencer {
                 populateSequences(((SubsequenceStep)step).getSubsequence(), list);
             } else if (step instanceof ParallelStep) {
                 for (SubsequenceStep subseqStep : ((ParallelStep)step).getSubsequenceSteps()) {
+                    populateSequences(subseqStep.getSubsequence(), list);
+                }
+            } else if (step instanceof OrParallelStep) {
+                for (SubsequenceStep subseqStep : ((OrParallelStep)step).getSubsequenceSteps()) {
                     populateSequences(subseqStep.getSubsequence(), list);
                 }
             }

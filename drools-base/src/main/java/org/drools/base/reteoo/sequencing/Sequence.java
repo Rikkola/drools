@@ -496,10 +496,11 @@ public class Sequence implements RuleConditionElement {
         private int step;
 
         // Dual-purpose: LoopController uses it as the loop-iteration counter; ParallelStep
-        // uses it as the AND-join completion counter (branches finished so far). These two
-        // roles must never share one SequenceMemory — i.e. a looping sequence must not also
-        // directly contain a ParallelStep — or the counters would clobber each other. Not
-        // constructible via any current API; give the join its own field before that changes.
+        // uses it as the AND-join completion counter; OrParallelStep uses it as the OR-join
+        // open/closed flag (0 = open, 1 = joined). These roles must never share one
+        // SequenceMemory — a looping sequence must not directly contain a ParallelStep or
+        // OrParallelStep — or the counters would clobber each other. Not constructible via
+        // any current API; give the join its own field before that changes.
         private int count;
 
         private final SequencerMemory sequencerMemory;

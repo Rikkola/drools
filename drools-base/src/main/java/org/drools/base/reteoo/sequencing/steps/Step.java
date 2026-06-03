@@ -43,6 +43,12 @@ public interface Step {
         return factory;
     }
 
+    static StepFactory anyOf(Sequence... subsequences) {   // OR-join: advance on the first branch to complete
+        StepFactory factory = new StepFactory(StepType.OR_PARALLEL);
+        factory.setSubsequences(subsequences);
+        return factory;
+    }
+
     static StepFactory of(Sequence sequence, Consumer<SequenceMemory> function) {
         StepFactory factory = new StepFactory(StepType.AGGREGATOR);
         factory.setAggregator(function);
@@ -60,7 +66,7 @@ public interface Step {
 
 
     enum StepType {
-        LOGIC_CIRCUIT, SUB_SEQUENCE, AGGREGATOR, ACTION, PARALLEL
+        LOGIC_CIRCUIT, SUB_SEQUENCE, AGGREGATOR, ACTION, PARALLEL, OR_PARALLEL
     }
 
     class StepFactory {
@@ -144,6 +150,20 @@ public interface Step {
                         }
                     }
                     return new ParallelStep(index, outputSize, sequence, steps);
+                case OR_PARALLEL:
+                    SubsequenceStep[] orSteps = new SubsequenceStep[subsequences.length];
+                    for ( int i = 0; i < orSteps.length; i++ ) {
+                        orSteps[i] = (SubsequenceStep) Step.of(subsequences[i]).createStep(i, sequence);
+                    }
+                    int orOutputSize = 0;
+                    for (int i = 0; i < subsequences.length; i++ ) {
+                        Sequence s = subsequences[i];
+                        s.setSubsequenceIndex(i);
+                        if (orOutputSize < s.getOutputSize() ) {
+                            orOutputSize = s.getOutputSize();
+                        }
+                    }
+                    return new OrParallelStep(index, orOutputSize, sequence, orSteps);
             }
             throw new IllegalArgumentException("Unsupported step type: " + type);
         }
