@@ -49,6 +49,30 @@ public class PhreakSequencerOrParallelTest extends AbstractPhreakSequencerSubseq
         kbase.addPackage(pkg);
     }
 
+    // Two branches with the SAME trigger: one C would complete both. The OR-join
+    // must advance exactly once and not let the torn-down sibling fire on the same fact.
+    @Test
+    public void sameFactCompletingTwoBranchesAdvancesOnce() {
+        seq1 = twoStepBranch(1, 1); // B then C
+        seq2 = twoStepBranch(2, 1); // B then C  → both register a C adapter on the same filter
+        seq0 = new Sequence(0, Step.anyOf(seq1, seq2));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern, epattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory seq0Memory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));
+        assertThat(sequencerMemory.getSequenceMemory(seq1).getStep()).isEqualTo(1);
+        assertThat(sequencerMemory.getSequenceMemory(seq2).getStep()).isEqualTo(1);
+
+        // One C satisfies BOTH branches' terminals in a single delivery.
+        session.insert(new C(0, "c"));
+        assertThat(seq0Memory.getCount()).isEqualTo(1);            // exactly one join, not two
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // terminated once
+    }
+
     @Test
     public void firstBranchWinsAndParentAdvances() {
         buildDistinctTriggerOr();
