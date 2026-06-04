@@ -1988,6 +1988,10 @@ public class PatternDSL extends DSL {
             throw new UnsupportedOperationException(
                     operatorName + "(...) does not support a temporal decorator on a parallel step.");
         }
+        if (step instanceof OrParallelViewItem) {
+            throw new UnsupportedOperationException(
+                    operatorName + "(...) does not support a temporal decorator on an or-parallel step.");
+        }
     }
 
     public static TimedExprViewItem within(Duration timeout, SequenceStep step) {

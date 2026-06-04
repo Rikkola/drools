@@ -1,5 +1,6 @@
 package org.drools.modelcompiler;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.PatternDSL.or;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
+import static org.drools.model.PatternDSL.within;
 
 public class PatternDSLSequenceOrParallelTest {
 
@@ -80,5 +83,51 @@ public class PatternDSLSequenceOrParallelTest {
         insertAndFire(new HeartbeatOk("sensor-1"));                    // branch 1 completes → parent advances (calibration never delivered)
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // ack step matches → root sequence ends → fire
         assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void orAdvancesRegardlessOfWhichBranchWins() {
+        // Calibration (branch 2) completes; heartbeat (branch 1) never does. The OR-join
+        // still advances the parent — any branch winning first is sufficient.
+        final List<String> results = new ArrayList<>();
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(buildOrParallelRule(results))).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new CalibrationPassed("sensor-1"));            // branch 2 wins (heartbeat never delivered)
+        assertThat(results).isEmpty();                              // or-join advanced parent to ack; rule not fired yet
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));
+        assertThat(results).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void orLosingBranchEventIsInertAfterWin() {
+        // Heartbeat (branch 1) wins and the parent advances; the rule fires once. Delivering
+        // the losing branch's event (calibration) afterward must be inert — no second fire —
+        // confirming the losing branch was torn down.
+        final List<String> results = new ArrayList<>();
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(buildOrParallelRule(results))).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));
+        insertAndFire(new HeartbeatOk("sensor-1"));                   // branch 1 wins
+        assertThat(results).isEmpty();                               // or-join advanced parent to ack; rule not fired yet
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // root ends → fire once
+        assertThat(results).containsExactly("acknowledged");
+        insertAndFire(new CalibrationPassed("sensor-1"));            // losing branch event — must be inert
+        assertThat(results).containsExactly("acknowledged");         // still exactly one fire
+    }
+
+    @Test
+    public void temporalDecoratorOnOrParallelStepIsRejected() {
+        // Mirror of PatternDSLSequenceParallelTest#temporalDecoratorOnParallelStepIsRejected
+        // with the step changed to or(...). within(...) rejects a temporal decorator on an
+        // or-parallel step at construction time (in validateTimedArgs), not at KieBase build.
+        assertThatThrownBy(() ->
+                within(Duration.ofSeconds(1),
+                        or(sequence(pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1"))),
+                           sequence(pattern(calibration).expr("cal", c -> c.getSensorId().equals("sensor-1"))))))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("parallel");
     }
 }
