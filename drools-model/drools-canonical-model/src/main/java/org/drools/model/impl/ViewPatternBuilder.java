@@ -34,6 +34,7 @@ import org.drools.model.PatternDSL.PatternBindingImpl;
 import org.drools.model.PatternDSL.PatternDefImpl;
 import org.drools.model.PatternDSL.PatternExprImpl;
 import org.drools.model.PatternDSL.PatternItem;
+import org.drools.model.PatternDSL.OrParallelViewItem;
 import org.drools.model.PatternDSL.ParallelViewItem;
 import org.drools.model.PatternDSL.SequenceViewItem;
 import org.drools.model.RuleItem;
@@ -62,6 +63,7 @@ import org.drools.model.patterns.ExistentialPatternImpl;
 import org.drools.model.patterns.GroupByPatternImpl;
 import org.drools.model.patterns.PatternImpl;
 import org.drools.model.patterns.QueryCallPattern;
+import org.drools.model.patterns.OrParallelConditionImpl;
 import org.drools.model.patterns.ParallelConditionImpl;
 import org.drools.model.patterns.SequenceConditionImpl;
 import org.drools.model.patterns.TimedConditionImpl;
@@ -207,6 +209,14 @@ public class ViewPatternBuilder implements ViewBuilder {
                     .map(b -> ruleItem2Condition((RuleItem) b))
                     .collect(toList());
             return new ParallelConditionImpl(branches);
+        }
+
+        if (ruleItem instanceof OrParallelViewItem) {
+            OrParallelViewItem ov = (OrParallelViewItem) ruleItem;
+            List<Condition> branches = Arrays.stream(ov.getBranches())
+                    .map(b -> ruleItem2Condition((RuleItem) b))
+                    .collect(toList());
+            return new OrParallelConditionImpl(branches);
         }
 
         throw new UnsupportedOperationException( "Unknown " + ruleItem );

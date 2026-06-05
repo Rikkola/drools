@@ -1808,6 +1808,18 @@ public class PatternDSL extends DSL {
         }
     }
 
+    public static class OrParallelViewItem implements RuleItem, SequenceStep {
+        private final SequenceViewItem[] branches;
+
+        public OrParallelViewItem(SequenceViewItem... branches) {
+            this.branches = branches;
+        }
+
+        public SequenceViewItem[] getBranches() {
+            return branches;
+        }
+    }
+
     public static abstract class PatternBindingImpl<T, A> implements PatternItem<T> {
         protected final Variable<A> boundVar;
         protected final ReactOn reactOn;
@@ -1939,6 +1951,13 @@ public class PatternDSL extends DSL {
         return new ParallelViewItem(branches);
     }
 
+    public static OrParallelViewItem or(SequenceViewItem first, SequenceViewItem... rest) {
+        SequenceViewItem[] branches = new SequenceViewItem[1 + rest.length];
+        branches[0] = first;
+        System.arraycopy(rest, 0, branches, 1, rest.length);
+        return new OrParallelViewItem(branches);
+    }
+
     private static ViewItem[] viewItems(ViewItemBuilder<?> first, ViewItemBuilder<?>[] rest) {
         ViewItem[] all = new ViewItem[1 + rest.length];
         all[0] = first.get();
@@ -1968,6 +1987,10 @@ public class PatternDSL extends DSL {
         if (step instanceof ParallelViewItem) {
             throw new UnsupportedOperationException(
                     operatorName + "(...) does not support a temporal decorator on a parallel step.");
+        }
+        if (step instanceof OrParallelViewItem) {
+            throw new UnsupportedOperationException(
+                    operatorName + "(...) does not support a temporal decorator on an or-parallel step.");
         }
     }
 
