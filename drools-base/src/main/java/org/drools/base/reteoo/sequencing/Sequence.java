@@ -232,6 +232,14 @@ public class Sequence implements RuleConditionElement {
             Sequence sequence = sequenceMemory.getSequence();
             int step = sequenceMemory.getStep();
 
+            // A step whose gate tree vacuously matches more than once during a single
+            // activation can re-enter next() after the sequence has already ended (the
+            // first match advanced step past the last index). Ignore advances past the
+            // end rather than indexing steps[step] out of bounds.
+            if (step >= sequence.getSteps().length) {
+                return;
+            }
+
             sequence.steps[step].deactivate(sequenceMemory, valueResolver);
             step = sequenceMemory.incrementStep();
 
