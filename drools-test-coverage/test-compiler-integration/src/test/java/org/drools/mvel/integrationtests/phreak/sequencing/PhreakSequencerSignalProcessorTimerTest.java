@@ -76,7 +76,7 @@ public class PhreakSequencerSignalProcessorTimerTest extends AbstractPhreakSeque
         pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
         session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
         assertThat(pseudo.getQueue().size()).isEqualTo(0);
-        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // timed out → never advanced past step 0
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // timed out → sequence marked terminal, no active leaf
 
         createSession();
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
