@@ -67,7 +67,12 @@ public class Sequencer {
 
     public void stop(SequenceMemory memory, ValueResolver valueResolver) {
         while (memory != null) {
-            memory.getSequence().getSteps()[memory.getStep()].deactivate(memory, valueResolver);
+            Sequence sequence = memory.getSequence();
+            sequence.getSteps()[memory.getStep()].deactivate(memory, valueResolver);
+            // Mark this sequence terminal: advance the step past the last index, mirroring how
+            // DefaultController.next ends a completed sequence. getCurrentStep()'s leaf-walk treats
+            // step >= steps.length as "no active leaf" and reports -1.
+            memory.setStep(sequence.getSteps().length);
             memory = memory.getParent();
         }
     }
