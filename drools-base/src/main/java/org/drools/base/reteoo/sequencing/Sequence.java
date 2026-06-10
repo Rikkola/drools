@@ -315,7 +315,6 @@ public class Sequence implements RuleConditionElement {
 
             JobHandle               jobHandle = valueResolver.getTimerService().scheduleJob(SequenceJob.getINSTANCE(), ctx, trigger);
             memory.setJobHandle(jobHandle);
-            System.out.println("handle created");
         }
 
         @Override
@@ -465,7 +464,6 @@ public class Sequence implements RuleConditionElement {
 ////                        sequencerMemory.getNode().getSequencer().fail(sequencerMemory);
 //                        System.out.println("2");
 //                    }
-                        System.out.println("1");
                     break;
                 case SequenceTimerJobContext.TIMEOUT:
                     // fail, if not already transitioned
@@ -474,7 +472,6 @@ public class Sequence implements RuleConditionElement {
 //                        sequencerMemory.getNode().getSequencer().fail(sequencerMemory);
                     sequenceMemory.getSequence().fail(sequenceMemory, reteEvaluator);
 
-                        System.out.println("2");
 //                    }
                     break;
             }
