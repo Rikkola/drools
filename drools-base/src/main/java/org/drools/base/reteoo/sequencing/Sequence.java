@@ -308,7 +308,7 @@ public class Sequence implements RuleConditionElement {
         }
     }
 
-    public static class TimeoutController implements SequenceController {
+    public static class TimeoutController extends DefaultController implements SequenceController {
         private final Timer    timer;
         private final DefaultController defaultController = DefaultController.getINSTANCE();
 
@@ -475,13 +475,13 @@ public class Sequence implements RuleConditionElement {
 //                    }
                     break;
                 case SequenceTimerJobContext.TIMEOUT:
-                    // fail, if not already transitioned
-//                    if (status != SignalStatus.MATCHED) {
-//                        // fail
-//                        sequencerMemory.getNode().getSequencer().fail(sequencerMemory);
-                    sequenceMemory.getSequence().fail(sequenceMemory, reteEvaluator);
-
-//                    }
+                    // Match-monotonicity: a late-firing deadline must not fail a sequence that has
+                    // already terminated (completed or otherwise advanced past its last step).
+                    // Normal completion cancels this job via TimeoutController.end; this guards the
+                    // race where the job fires before cancellation lands.
+                    if (sequenceMemory.getStep() < sequenceMemory.getSequence().getSteps().length) {
+                        sequenceMemory.getSequence().fail(sequenceMemory, reteEvaluator);
+                    }
                     break;
             }
         }

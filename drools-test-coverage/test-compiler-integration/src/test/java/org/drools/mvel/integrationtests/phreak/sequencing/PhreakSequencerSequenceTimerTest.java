@@ -31,10 +31,10 @@ import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProce
 import org.drools.core.time.impl.DurationTimer;
 import org.drools.core.time.impl.PseudoClockScheduler;
 import org.drools.mvel.integrationtests.phreak.B;
+import org.drools.mvel.integrationtests.phreak.C;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,22 +78,28 @@ public class PhreakSequencerSequenceTimerTest  extends AbstractPhreakSequencerSu
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // terminated
     }
-//
-//    @Test
-//    public void testSequenceComplete() {
-//        seq0.setController(new TimeoutController(new DurationTimer(1000)));
-//        rule.addSequence(seq0);
-//        kbase.addPackage(pkg);
-//
-//        createSession();
-//        ArrayList<SequenceMemory> stack = sequencerMemory.getSequenceStack();
-//
-//        InternalFactHandle   fhB0   = (InternalFactHandle) session.insert(new B(0, "b"));
-//        PseudoClockScheduler pseudo = (PseudoClockScheduler) session.getTimerService();
-//        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
-//
-//        session.fireAllRules();
-//
-//        assertThat(sequencerMemory.getCurrentStep()).isEqualTo(-1); // terminated
-//    }
+    @Test
+    public void testSequenceComplete() {
+        seq0.setController(new TimeoutController(new DurationTimer(1000)));
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory rootMemory = sequencerMemory.getChildSequenceMemory();
+
+        // Complete both steps within the deadline.
+        session.insert(new B(0, "b"));
+        session.insert(new C(0, "c"));
+        session.fireAllRules();
+
+        // Completed: terminal, and the deadline job was cancelled by end().
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+        assertThat(rootMemory.getJobHandle()).isNull();
+
+        // A late clock advance past the original deadline must not resurrect a failure.
+        PseudoClockScheduler pseudo = (PseudoClockScheduler) session.getTimerService();
+        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
+        session.fireAllRules();
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+    }
 }
