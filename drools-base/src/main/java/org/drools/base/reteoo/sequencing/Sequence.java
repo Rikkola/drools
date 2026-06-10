@@ -389,7 +389,6 @@ public class Sequence implements RuleConditionElement {
         public void execute(JobContext ctx) {
             SequenceTimerJobContext timerJobCtx   = (SequenceTimerJobContext) ctx;
             ValueResolver           valueResolver = timerJobCtx.getValueResolver();
-            System.out.println("add propagation");
             valueResolver.addPropagation( new SequenceTimerAction(timerJobCtx ));
         }
     }
@@ -669,7 +668,6 @@ public class Sequence implements RuleConditionElement {
                 return eventsStartPosition - sequence.getOutputSize();
             } else {
                 int i = eventsStartPosition - ((sequence.getSubsequenceIndex() + 1) * sequence.getOutputSize());
-                System.out.println("eventsStartPosition = " + i);
                 return i;
             }
         }
