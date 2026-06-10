@@ -203,4 +203,30 @@ public class AbstractPhreakSequencerSubsequenceTest {
             leafSequences.add(sqncMemory);
         }
     }
+
+    /** The chain of currently-active sequence memories, root → leaf. Empty once terminated. */
+    public List<SequenceMemory> getSequenceStack(SequencerMemory sqncrMemory) {
+        List<SequenceMemory> stack = new ArrayList<>();
+        SequenceMemory m = sqncrMemory.getChildSequenceMemory();
+        while (m != null) {
+            Sequence sequence = m.getSequence();
+            if (m.getStep() >= sequence.getSteps().length) {
+                break; // terminal: not on the active stack
+            }
+            stack.add(m);
+            Step step = sequence.getSteps()[m.getStep()];
+            if (step.getType() == StepType.SUB_SEQUENCE) {
+                m = sqncrMemory.getSequenceMemory(((SubsequenceStep) step).getSubsequence());
+            } else {
+                break; // leaf step is a gate circuit, not a nested sequence
+            }
+        }
+        return stack;
+    }
+
+    /** The deepest currently-active sequence memory, or null when terminated. */
+    public SequenceMemory getCurrentSequence(SequencerMemory sqncrMemory) {
+        List<SequenceMemory> stack = getSequenceStack(sqncrMemory);
+        return stack.isEmpty() ? null : stack.get(stack.size() - 1);
+    }
 }
