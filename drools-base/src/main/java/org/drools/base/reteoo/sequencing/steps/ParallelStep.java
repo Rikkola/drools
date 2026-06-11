@@ -56,6 +56,7 @@ public class ParallelStep extends AbstractStep implements Step {
             subsequenceSteps[i].getSubsequence().start(seqrMemory.getSequenceMemory(subsequenceSteps[i].getSubsequence()), valueResolver);
         }
         seqMem.setCount(0); // join counter: number of branches that have completed
+        seqMem.setFailedBranches(0);
     }
 
     @Override

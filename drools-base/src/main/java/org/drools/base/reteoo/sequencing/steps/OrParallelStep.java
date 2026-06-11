@@ -65,6 +65,7 @@ public class OrParallelStep extends AbstractStep implements Step {
             subsequenceSteps[i].getSubsequence().start(seqrMemory.getSequenceMemory(subsequenceSteps[i].getSubsequence()), valueResolver);
         }
         seqMem.setCount(0); // OR-join flag: 0 = open, 1 = joined
+        seqMem.setFailedBranches(0);
     }
 
     @Override

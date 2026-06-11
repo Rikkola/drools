@@ -518,6 +518,11 @@ public class Sequence implements RuleConditionElement {
         // any current API; give the join its own field before that changes.
         private int count;
 
+        // Number of parallel branches that have FAILED. Its own field rather than
+        // overloading `count` (which is loop counter / AND-join / OR-open flag),
+        // per the note on `count`. Used only by OR_PARALLEL/PARALLEL childFailed.
+        private int failedBranches;
+
         private final SequencerMemory sequencerMemory;
 
         private final SignalAdapter[] signalAdapters;
@@ -660,6 +665,14 @@ public class Sequence implements RuleConditionElement {
 
         public void setCount(int count) {
             this.count = count;
+        }
+
+        public int getFailedBranches() {
+            return failedBranches;
+        }
+
+        public void setFailedBranches(int failedBranches) {
+            this.failedBranches = failedBranches;
         }
 
         public int getEventsStartPosition() {
