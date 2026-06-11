@@ -79,6 +79,21 @@ public class OrParallelStep extends AbstractStep implements Step {
     }
 
     @Override
+    public void childFailed(SequenceMemory parentMemory, ValueResolver valueResolver) {
+        if (parentMemory.getCount() != 0) {
+            return; // OR already joined; losing branches are being torn down — ignore late failures
+        }
+        int failed = parentMemory.getFailedBranches() + 1;
+        parentMemory.setFailedBranches(failed);
+        if (failed == subsequenceSteps.length) {
+            // every branch has failed → the OR fails; propagate to this sequence's parent (or root)
+            parentMemory.getSequencerMemory().getSequencer().failSequence(parentMemory, valueResolver);
+        }
+        // else: the failed branch is already terminal and inert (the failSequence walk
+        // deactivated it on the way up); the OR stays open for the remaining branches.
+    }
+
+    @Override
     public void deactivate(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
         SequencerMemory seqrMemory = sequenceMemory.getSequencerMemory();
 
