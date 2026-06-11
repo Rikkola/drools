@@ -77,6 +77,31 @@ public class Sequencer {
         }
     }
 
+    /**
+     * Fail one sequence level and route the failure to its parent's policy.
+     * Mirrors DefaultController.end's parent routing: cancel any controller-held
+     * timer, deactivate the active step, mark this level terminal (step == length,
+     * the Option A contract), then hand off to the parent step's childFailed — or,
+     * at the root, leave the sequencer terminal with no match (the rule does not fire).
+     */
+    public void failSequence(SequenceMemory memory, ValueResolver valueResolver) {
+        Sequence sequence = memory.getSequence();
+        sequence.getController().failed(memory, valueResolver);
+        int step = memory.getStep();
+        if (step >= 0 && step < sequence.getSteps().length) {
+            sequence.getSteps()[step].deactivate(memory, valueResolver);
+        }
+        memory.setStep(sequence.getSteps().length); // terminal: getCurrentStep()'s leaf-walk reports -1
+
+        SequenceMemory parent = memory.getParent();
+        if (parent != null) {
+            SequenceMemory parentSeqMemory = parent.getSequencerMemory().getSequenceMemory(parent.getSequence());
+            Step parentStep = parentSeqMemory.getSequence().getSteps()[parentSeqMemory.getStep()];
+            parentStep.childFailed(parentSeqMemory, valueResolver);
+        }
+        // parent == null → root failed: sequencer stays terminal, no match() is called.
+    }
+
 //    public void next(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
 //        SequenceMemory sequenceMemory = sequencerMemory.getCurrentSequence();
 //        if (sequenceMemory != null) {

@@ -40,6 +40,13 @@ public abstract class AbstractStep implements Step {
         parentMemory.getSequence().next(parentMemory, valueResolver);
     }
 
+    @Override
+    public void childFailed(SequenceMemory parentMemory, ValueResolver valueResolver) {
+        // The active child failed, so this sequence cannot continue: fail it too,
+        // which routes to its own parent (or terminates the sequencer at the root).
+        parentMemory.getSequencerMemory().getSequencer().failSequence(parentMemory, valueResolver);
+    }
+
     public interface StepFailureHandler {
         void onFail(Step step, SequenceMemory memory, ValueResolver valueResolver);
     }
@@ -54,9 +61,7 @@ public abstract class AbstractStep implements Step {
 
         @Override
         public void onFail(Step step, SequenceMemory sequenceMemory, ValueResolver valueResolver) {
-            SequencerMemory sequencerMemory = sequenceMemory.getSequencerMemory();
-            step.deactivate(sequenceMemory, valueResolver);
-            sequencerMemory.getSequencer().stop(sequenceMemory, valueResolver);
+            sequenceMemory.getSequencerMemory().getSequencer().failSequence(sequenceMemory, valueResolver);
         }
     }
 }

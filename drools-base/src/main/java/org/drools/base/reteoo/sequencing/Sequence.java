@@ -214,6 +214,9 @@ public class Sequence implements RuleConditionElement {
 
         }
 
+        default void failed(SequenceMemory memory, ValueResolver valueResolver) {
+        }
+
         default void next(SequenceMemory memory, ValueResolver valueResolver) {
 
         }
@@ -337,6 +340,14 @@ public class Sequence implements RuleConditionElement {
             defaultController.end(memory, valueResolver);
             valueResolver.getTimerService().removeJob(memory.getJobHandle());
             memory.setJobHandle(null);
+        }
+
+        @Override
+        public void failed(SequenceMemory memory, ValueResolver valueResolver) {
+            if (memory.getJobHandle() != null) {
+                valueResolver.getTimerService().removeJob(memory.getJobHandle());
+                memory.setJobHandle(null);
+            }
         }
 
         @Override

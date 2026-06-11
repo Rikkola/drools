@@ -23,6 +23,17 @@ public interface Step {
      */
     void childEnded(SequenceMemory parentMemory, ValueResolver valueResolver);
 
+    /**
+     * Called on a parent's <em>current</em> step when one of its child sequences
+     * fails. Symmetric to {@link #childEnded}. The default (see
+     * {@link org.drools.base.reteoo.sequencing.steps.AbstractStep}) propagates the
+     * failure up — the parent sequence cannot continue past a failed child — which
+     * is correct for SUB_SEQUENCE and AGGREGATOR steps. PARALLEL overrides this to
+     * fail fast (tear down siblings, then propagate); OR_PARALLEL overrides it to
+     * lose only the failed branch and fail the join only when every branch has failed.
+     */
+    void childFailed(SequenceMemory parentMemory, ValueResolver valueResolver);
+
     StepType getType();
 
     static StepFactory of(LogicCircuit circuit) {
