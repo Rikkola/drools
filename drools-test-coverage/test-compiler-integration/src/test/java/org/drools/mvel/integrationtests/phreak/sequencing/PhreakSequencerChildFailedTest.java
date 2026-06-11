@@ -123,4 +123,37 @@ public class PhreakSequencerChildFailedTest extends AbstractPhreakSequencerSubse
         session.insert(new D(0, "d"));
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
     }
+
+    @Test
+    public void nestedTimeoutInsideOrBranchLosesOnlyThatBranch() {
+        // Branch 1 of the OR is itself sequence(innerSeq), where innerSeq (B→C) carries
+        // the 1s deadline. The inner timeout must walk inner → branch1 → OR (default
+        // SUB_SEQUENCE policy), and the OR must lose only branch 1.
+        Sequence inner = twoStepBranch(3, 1); // B then C, with the deadline
+        inner.setController(new TimeoutController(new DurationTimer(1000)));
+        seq1 = new Sequence(1, Step.of(inner)); // SUB_SEQUENCE wrapping the timed inner sequence
+        seq1.setFilters(new Pattern[]{bpattern, cpattern, dpattern, epattern});
+        seq1.setOutputSize(1);
+
+        seq2 = twoStepBranch(2, 2); // B then D, no deadline
+        seq0 = new Sequence(0, Step.anyOf(seq1, seq2));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern, epattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory seq0Memory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));                    // drives inner branch and branch 2 to step 1
+        clock().advanceTime(2000, TimeUnit.MILLISECONDS); // inner misses the 1s deadline → fails
+        session.fireAllRules();
+
+        // The inner failure propagated up to the OR, which lost only branch 1.
+        assertThat(seq0Memory.getCount()).isEqualTo(0);                 // OR still open
+        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
+
+        session.insert(new D(0, "d"));                    // branch 2 still wins
+        assertThat(seq0Memory.getCount()).isEqualTo(1);
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+    }
 }
