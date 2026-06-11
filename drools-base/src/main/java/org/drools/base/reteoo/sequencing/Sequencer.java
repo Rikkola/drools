@@ -96,8 +96,11 @@ public class Sequencer {
         SequenceMemory parent = memory.getParent();
         if (parent != null) {
             SequenceMemory parentSeqMemory = parent.getSequencerMemory().getSequenceMemory(parent.getSequence());
-            Step parentStep = parentSeqMemory.getSequence().getSteps()[parentSeqMemory.getStep()];
-            parentStep.childFailed(parentSeqMemory, valueResolver);
+            if (parentSeqMemory.getStep() < parentSeqMemory.getSequence().getSteps().length) {
+                Step parentStep = parentSeqMemory.getSequence().getSteps()[parentSeqMemory.getStep()];
+                parentStep.childFailed(parentSeqMemory, valueResolver);
+            }
+            // else: parent already terminal — nothing to route to (defends against late re-entry)
         }
         // parent == null → root failed: sequencer stays terminal, no match() is called.
     }

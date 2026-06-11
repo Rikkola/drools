@@ -47,13 +47,15 @@ public abstract class AbstractStep implements Step {
         parentMemory.getSequencerMemory().getSequencer().failSequence(parentMemory, valueResolver);
     }
 
-    /** Unlink a branch's currently-active step so it can never fire again. No-op if terminated. */
+    /** Unlink a branch's currently-active step so it can never fire again, and cancel any
+     *  sequence-level timer it holds. No-op if already terminated. */
     protected static void tearDownBranch(SequenceMemory branchMem, ValueResolver valueResolver) {
         Sequence branchSeq = branchMem.getSequence();
         int step = branchMem.getStep();
         if (step < 0 || step >= branchSeq.getSteps().length) {
             return; // already terminated — nothing active to tear down
         }
+        branchSeq.getController().failed(branchMem, valueResolver); // cancel any pending sequence-level deadline
         // LogicCircuitStep.deactivate() → LogicGate.deactivate() → unlinks this branch's adapters
         branchSeq.getSteps()[step].deactivate(branchMem, valueResolver);
     }

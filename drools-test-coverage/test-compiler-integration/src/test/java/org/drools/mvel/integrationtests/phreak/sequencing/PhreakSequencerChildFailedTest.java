@@ -156,4 +156,38 @@ public class PhreakSequencerChildFailedTest extends AbstractPhreakSequencerSubse
         assertThat(seq0Memory.getCount()).isEqualTo(1);
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
     }
+
+    @Test
+    public void andSiblingTimerDoesNotResurrectAfterFailFast() {
+        // AND of two timed branches. Branch 1 (1s) fails first and fail-fast tears down
+        // branch 2. Branch 2's OWN 5s deadline must be cancelled by the teardown — advancing
+        // past it must not resurrect branch 2 nor throw (regression: AIOOBE in failSequence).
+        seq1 = twoStepBranch(1, 1); // B then C
+        seq1.setController(new TimeoutController(new DurationTimer(1000)));
+        seq2 = twoStepBranch(2, 2); // B then D
+        seq2.setController(new TimeoutController(new DurationTimer(5000)));
+        seq0 = new Sequence(0, Step.of(seq1, seq2)); // PARALLEL (AND)
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern, epattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory seq2Memory = sequencerMemory.getSequenceMemory(seq2);
+
+        session.insert(new B(0, "b"));                    // both branches → step 1, both timers scheduled
+        // sanity: branch 2's deadline is scheduled before the fail-fast
+        assertThat(seq2Memory.getJobHandle()).isNotNull();
+
+        clock().advanceTime(2000, TimeUnit.MILLISECONDS);  // branch 1 (1s) fires → AND fail-fast tears down branch 2
+        session.fireAllRules();
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // terminal
+        // THE GUARD: teardown must have cancelled branch 2's pending deadline
+        assertThat(seq2Memory.getJobHandle()).isNull();
+
+        // Advance past branch 2's ORIGINAL 5s deadline. Its timer must have been cancelled by
+        // teardown; this must NOT throw and must NOT change the terminal state.
+        clock().advanceTime(5000, TimeUnit.MILLISECONDS);
+        session.fireAllRules();
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+    }
 }
