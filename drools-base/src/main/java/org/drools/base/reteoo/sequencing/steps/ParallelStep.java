@@ -70,6 +70,18 @@ public class ParallelStep extends AbstractStep implements Step {
     }
 
     @Override
+    public void childFailed(SequenceMemory parentMemory, ValueResolver valueResolver) {
+        // One branch can never complete → the AND can never complete. Tear down the
+        // sibling branches (the failed branch is already terminal), then propagate.
+        SequencerMemory seqrMemory = parentMemory.getSequencerMemory();
+        for (SubsequenceStep branch : subsequenceSteps) {
+            SequenceMemory branchMem = seqrMemory.getSequenceMemory(branch.getSubsequence());
+            tearDownBranch(branchMem, valueResolver);
+        }
+        seqrMemory.getSequencer().failSequence(parentMemory, valueResolver);
+    }
+
+    @Override
     public void deactivate(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
         CircularArrayList<Object> data = sequenceMemory.getData();
 

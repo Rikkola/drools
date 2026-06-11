@@ -109,14 +109,4 @@ public class OrParallelStep extends AbstractStep implements Step {
         SequenceMemory firstBranchMemory = seqrMemory.getSequenceMemory(subsequenceSteps[0].getSubsequence());
         data.resetHeadByOffset(data.size() - firstBranchMemory.getEventsStartPosition());
     }
-
-    private void tearDownBranch(SequenceMemory branchMem, ValueResolver valueResolver) {
-        Sequence branchSeq = branchMem.getSequence();
-        int step = branchMem.getStep();
-        if (step < 0 || step >= branchSeq.getSteps().length) {
-            return; // terminated (e.g. the winner) — nothing active to tear down
-        }
-        // LogicCircuitStep.deactivate() → LogicGate.deactivate() → unlinks this branch's adapters
-        branchSeq.getSteps()[step].deactivate(branchMem, valueResolver);
-    }
 }

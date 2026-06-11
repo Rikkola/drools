@@ -95,4 +95,32 @@ public class PhreakSequencerChildFailedTest extends AbstractPhreakSequencerSubse
         assertThat(seq0Memory.getCount()).isEqualTo(0);                 // never joined -> failed, not won
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);      // sequencer terminal
     }
+
+    @Test
+    public void andBranchFailsFastTearingDownSiblings() {
+        // AND of two branches: branch 1 (B→C) has a 1s deadline, branch 2 (B→D) has none.
+        // Branch 1 missing its deadline must doom the whole AND immediately and tear down branch 2.
+        seq1 = twoStepBranch(1, 1); // B then C
+        seq1.setController(new TimeoutController(new DurationTimer(1000)));
+        seq2 = twoStepBranch(2, 2); // B then D
+        seq0 = new Sequence(0, Step.of(seq1, seq2)); // Step.of(Sequence...) → PARALLEL (AND-join)
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern, epattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory seq0Memory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));                    // both branches advance to step 1
+        clock().advanceTime(2000, TimeUnit.MILLISECONDS); // branch 1 misses its deadline → fails
+        session.fireAllRules();
+
+        // Fail-fast: the AND can never complete, so the whole sequencer is terminal.
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+        assertThat(seq0Memory.getCount()).isLessThan(2);  // never reached all-branches-completed join
+
+        // Branch 2 was torn down — its trigger arriving late is inert (no resurrection).
+        session.insert(new D(0, "d"));
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
+    }
 }
