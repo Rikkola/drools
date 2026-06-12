@@ -200,7 +200,7 @@ public class ViewPatternBuilder implements ViewBuilder {
             List<Condition> steps = Arrays.stream(sv.getSteps())
                     .map(s -> ruleItem2Condition((RuleItem) s))
                     .collect(toList());
-            return new SequenceConditionImpl(steps);
+            return new SequenceConditionImpl(steps, sv.getDeadlineMillis());
         }
 
         if (ruleItem instanceof ParallelViewItem) {

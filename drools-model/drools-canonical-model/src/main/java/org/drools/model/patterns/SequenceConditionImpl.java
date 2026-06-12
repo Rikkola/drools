@@ -26,9 +26,19 @@ import org.drools.model.Variable;
 public class SequenceConditionImpl implements Condition {
 
     private final List<Condition> steps;
+    private final long deadlineMillis;
 
     public SequenceConditionImpl(List<Condition> steps) {
+        this(steps, 0);
+    }
+
+    public SequenceConditionImpl(List<Condition> steps, long deadlineMillis) {
         this.steps = steps;
+        this.deadlineMillis = deadlineMillis;
+    }
+
+    public long getDeadlineMillis() {
+        return deadlineMillis;
     }
 
     @Override
