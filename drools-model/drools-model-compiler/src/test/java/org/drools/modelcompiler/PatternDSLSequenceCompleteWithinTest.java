@@ -162,4 +162,68 @@ public class PatternDSLSequenceCompleteWithinTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void nestedCompleteWithinCancelsOnInnerCompletionAndOuterProceeds() {
+        // Outer: anchor, then a nested sequence(heartbeat) with its OWN 30s deadline, then ack.
+        // The inner completes in time → its deadline is cancelled → the outer advances to ack and fires.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("complete-within-nested-met").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        sequence(
+                                pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1"))
+                        ).completeWithin(Duration.ofSeconds(30)),
+                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                ),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // outer step 0; nested subsequence + its 30s deadline start
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(10)); // inside the inner window
+        insertAndFire(new HeartbeatOk("sensor-1"));          // inner completes → inner deadline cancelled → outer advances
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(60)); // outer still progresses long after the inner window — nested deadline composes cleanly
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // outer final step → fire
+
+        assertThat(results).containsExactly("done");
+    }
+
+    @Test
+    public void nestedCompleteWithinExpiryAbortsTheWholeRuleUnderPlainNesting() {
+        // The real proof that the nested controller is live: under plain nesting the inner
+        // sequence is a SubsequenceStep of the outer, so an expired inner completeWithin
+        // propagates up the DEFAULT childFailed policy and aborts the whole rule. Without a
+        // nested controller the inner would simply stay open and a late heartbeat would
+        // complete it — so this abort is observable only because the nested deadline fires.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("complete-within-nested-expired").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        sequence(
+                                pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1"))
+                        ).completeWithin(Duration.ofSeconds(30)),
+                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                ),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // outer step 0 → inner subsequence starts, 30s deadline scheduled
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(31)); // inner deadline expires → propagates → whole rule aborts
+        insertAndFire(new HeartbeatOk("sensor-1"));          // would have completed the inner — too late, sequence aborted
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // also inert
+
+        assertThat(results).isEmpty();
+    }
 }
