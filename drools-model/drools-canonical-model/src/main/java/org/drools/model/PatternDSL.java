@@ -1781,6 +1781,7 @@ public class PatternDSL extends DSL {
 
     public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem, SequenceStep {
         private final SequenceStep[] steps;
+        private long deadlineMillis = 0;   // 0 = no whole-sequence deadline
 
         public SequenceViewItem(SequenceStep... steps) {
             this.steps = steps;
@@ -1788,6 +1789,29 @@ public class PatternDSL extends DSL {
 
         public SequenceStep[] getSteps() {
             return steps;
+        }
+
+        /**
+         * Whole-sequence deadline: from step-0 activation, the sequence has
+         * {@code deadline} to reach its final step's match, else it aborts.
+         * Returns {@code this} so the deadline-bearing sequence stays a valid step
+         * (it can be nested or used as an or(...) branch).
+         */
+        public SequenceViewItem completeWithin(Duration deadline) {
+            if (deadline == null || deadline.isZero() || deadline.isNegative()) {
+                throw new IllegalArgumentException(
+                        "completeWithin(...) requires a positive duration, got: " + deadline);
+            }
+            if (this.deadlineMillis != 0) {
+                throw new IllegalStateException(
+                        "completeWithin(...) was already set on this sequence");
+            }
+            this.deadlineMillis = deadline.toMillis();
+            return this;
+        }
+
+        public long getDeadlineMillis() {
+            return deadlineMillis;
         }
 
         @Override
