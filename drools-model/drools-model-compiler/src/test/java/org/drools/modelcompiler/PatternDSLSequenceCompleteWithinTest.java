@@ -293,4 +293,61 @@ public class PatternDSLSequenceCompleteWithinTest {
 
         assertThat(results).isEmpty();
     }
+
+    @Test
+    public void perStepWithinFiresBeforeWholeSequenceDeadline() {
+        // Sequence carries BOTH a per-step within(5s) on the ack step and a completeWithin(60s).
+        // The ack step stalls past 5s: the per-step within (the EARLIER deadline) aborts first.
+        // The late ack must be inert and the rule must not fire.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("within-plus-complete-within").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(5),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice")))
+                ).completeWithin(Duration.ofSeconds(60)),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // step 0; within-step arms its 5s timer; 60s sequence deadline scheduled
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(6)); // past the 5s per-step within, well inside 60s → per-step aborts
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequence already aborted by the within
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void completeWithinFiresBeforePerStepWithin() {
+        // Reverse ordering: completeWithin(5s) is the EARLIER deadline; the per-step within(60s)
+        // is later. The completeWithin must abort first. Non-vacuous: if completeWithin's
+        // controller were silently cancelled by the presence of a within, the within(60s) would
+        // let the ack (at 6s) complete the sequence and the rule would fire.
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("complete-within-before-within").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        within(Duration.ofSeconds(60),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice")))
+                ).completeWithin(Duration.ofSeconds(5)),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // step 0; 5s sequence deadline scheduled; within-step's 60s timer arms next
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(6)); // past the 5s completeWithin, well inside the 60s within → completeWithin aborts
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequence already aborted by completeWithin
+
+        assertThat(results).isEmpty();
+    }
 }
