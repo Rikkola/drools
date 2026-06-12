@@ -94,6 +94,14 @@ public class PatternDSLSequenceCompleteWithinTest {
     }
 
     @Test
+    public void completeWithinRejectsSubMillisecondDuration() {
+        // A positive duration that rounds down to 0ms would be silently dropped (no deadline).
+        assertThatThrownBy(() -> sequence(pattern(sensorActivated)).completeWithin(Duration.ofNanos(500_000)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("at least 1ms");
+    }
+
+    @Test
     public void completeWithinRejectsDoubleSet() {
         assertThatThrownBy(() -> sequence(pattern(sensorActivated))
                         .completeWithin(Duration.ofSeconds(10))

@@ -1802,11 +1802,16 @@ public class PatternDSL extends DSL {
                 throw new IllegalArgumentException(
                         "completeWithin(...) requires a positive duration, got: " + deadline);
             }
+            long millis = deadline.toMillis();
+            if (millis <= 0) {
+                throw new IllegalArgumentException(
+                        "completeWithin(...) requires a duration of at least 1ms, got: " + deadline);
+            }
             if (this.deadlineMillis != 0) {
                 throw new IllegalStateException(
                         "completeWithin(...) was already set on this sequence");
             }
-            this.deadlineMillis = deadline.toMillis();
+            this.deadlineMillis = millis;
             return this;
         }
 
