@@ -107,4 +107,59 @@ public class PatternDSLSequenceCompleteWithinTest {
         SequenceViewItem sv = sequence(pattern(sensorActivated)).completeWithin(Duration.ofMinutes(10));
         assertThat(sv.getDeadlineMillis()).isEqualTo(600_000L);
     }
+
+    // ---- top-level behaviour ----
+
+    @Test
+    public void sequenceFiresWhenItCompletesBeforeTheDeadline() {
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("complete-within-met").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1")),
+                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                ).completeWithin(Duration.ofSeconds(30)),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // step 0 → sequence starts, 30s deadline scheduled
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(10)); // still inside the window
+        assertThat(results).isEmpty(); // whole-sequence timer must NOT abort a still-progressing sequence
+        insertAndFire(new HeartbeatOk("sensor-1"));          // step 1
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // step 2 → final → fire
+
+        assertThat(results).containsExactly("done");
+    }
+
+    @Test
+    public void sequenceAbortsWhenTheWholeSequenceDeadlineExpires() {
+        final List<String> results = new ArrayList<>();
+
+        Rule r = rule("complete-within-expired").build(
+                pattern(station),
+                sequence(
+                        pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                        pattern(heartbeat).expr("hb", h -> h.getSensorId().equals("sensor-1")),
+                        pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                ).completeWithin(Duration.ofSeconds(30)),
+                execute(() -> results.add("done"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(r));
+        ksession = TemporalSequenceTestHarness.newPseudoClockSession(kbase);
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));      // sequence starts, 30s deadline scheduled
+        insertAndFire(new HeartbeatOk("sensor-1"));          // step 1 reached, but step 2 stalls
+        TemporalSequenceTestHarness.advance(ksession, Duration.ofSeconds(31)); // blow past the whole-sequence deadline → abort
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice")); // too late — sequence already aborted
+
+        assertThat(results).isEmpty();
+    }
 }

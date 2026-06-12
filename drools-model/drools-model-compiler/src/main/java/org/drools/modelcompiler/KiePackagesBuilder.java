@@ -134,6 +134,7 @@ import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
 import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.Sequence.TimeoutController;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromActivatedTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromMatchTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.PropagationTimer;
@@ -687,7 +688,14 @@ public class KiePackagesBuilder {
             stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
         }
 
-        return new Sequence(myIndex, stepFactories);   // SequenceMemory parent link wired at runtime in SequencerMemoryImpl.getOrCreateSequenceMemory
+        Sequence seq = new Sequence(myIndex, stepFactories);   // SequenceMemory parent link wired at runtime in SequencerMemoryImpl.getOrCreateSequenceMemory
+        long deadlineMillis = sc.getDeadlineMillis();
+        if (deadlineMillis > 0) {
+            // whole-sequence deadline: scopes to this Sequence; buildSequence recurses per
+            // (sub)sequence, so a deadline on a nested/branch SequenceConditionImpl scopes to its own.
+            seq.setController(new TimeoutController(new DurationTimer(deadlineMillis)));
+        }
+        return seq;
     }
 
     private static final String DEFERRED_GATE_ERROR =
