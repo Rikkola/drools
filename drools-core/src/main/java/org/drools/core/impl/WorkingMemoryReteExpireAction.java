@@ -29,16 +29,14 @@ import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.WorkingMemoryAction;
 import org.drools.core.marshalling.MarshallerReaderContext;
-import org.drools.base.phreak.PropagationEntry;
-import org.drools.base.phreak.actions.AbstractPropagationEntry;
-import org.drools.core.phreak.actions.AbstractPartitionedPropagationEntry;
+import org.drools.core.phreak.PropagationEntry;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.RightTuple;
 
 import static org.drools.core.common.PhreakPropagationContextFactory.createPropagationContextForFact;
 
 public class WorkingMemoryReteExpireAction
-        extends AbstractPropagationEntry<ReteEvaluator>
+        extends PropagationEntry.AbstractPropagationEntry
         implements WorkingMemoryAction, Externalizable {
 
     protected DefaultEventHandle factHandle;
@@ -129,7 +127,7 @@ public class WorkingMemoryReteExpireAction
         this.factHandle = (DefaultEventHandle) in.readObject();
     }
 
-    public static class PartitionAwareWorkingMemoryReteExpireAction extends AbstractPartitionedPropagationEntry<ReteEvaluator> {
+    public static class PartitionAwareWorkingMemoryReteExpireAction extends PropagationEntry.AbstractPartitionedPropagationEntry {
         private final DefaultEventHandle factHandle;
         private final ObjectTypeNode node;
 

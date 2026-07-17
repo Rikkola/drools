@@ -16,8 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.core.time;
+package org.drools.base.reteoo;
 
-public interface Job {
-    void execute(JobContext ctx);
+import org.drools.base.common.NetworkNode;
+
+/**
+ * A simple markup interfaces for Sink types
+ */
+public interface Sink extends NetworkNode {
+
 }

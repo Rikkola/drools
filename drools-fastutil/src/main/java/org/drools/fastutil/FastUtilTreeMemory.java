@@ -19,7 +19,6 @@
 package org.drools.fastutil;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.drools.core.reteoo.TupleImpl;
@@ -28,7 +27,6 @@ import org.drools.core.reteoo.TupleMemory;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.drools.base.util.FastIterator;
 import org.drools.base.util.IndexedValueReader;
-import org.drools.base.util.Iterator;
 import org.drools.core.util.index.AbstractTupleIndexTree;
 import org.drools.base.util.index.ConstraintTypeOperator;
 import org.drools.core.util.index.TupleIndexRBTree;

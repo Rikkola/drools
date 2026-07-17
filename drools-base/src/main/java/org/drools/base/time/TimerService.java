@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.core.time;
+package org.drools.base.time;
 
 import java.util.Collection;
 
-import org.drools.core.time.impl.TimerJobFactoryManager;
-import org.drools.core.time.impl.TimerJobInstance;
+import org.drools.base.time.impl.TimerJobInstance;
+import org.drools.base.time.impl.TimerJobFactoryManager;
 
 /**
  * An interface for all timer service implementations used in a drools session.

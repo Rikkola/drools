@@ -39,9 +39,9 @@ public class LeftTupleRBTreeTest {
             tree.insert( key );
         }
 
-        int i = 0;
+        int                     i            = 0;
         Iterator<Node<Integer>> fastIterator = tree.iterator();
-        int lastKey = Integer.MIN_VALUE;
+        int                     lastKey      = Integer.MIN_VALUE;
         for (Node<Integer> node = fastIterator.next(); node != null; node = fastIterator.next()) {
             int currentKey = node.key;
             if (currentKey < lastKey) {

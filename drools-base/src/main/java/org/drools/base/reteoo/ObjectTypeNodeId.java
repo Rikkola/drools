@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.core.reteoo;
+package org.drools.base.reteoo;
 
 public class ObjectTypeNodeId {
 

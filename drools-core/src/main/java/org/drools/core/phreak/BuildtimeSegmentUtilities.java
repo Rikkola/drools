@@ -40,6 +40,8 @@ import org.drools.core.reteoo.PathEndNode;
 import org.drools.core.reteoo.PathEndNode.PathMemSpec;
 import org.drools.core.reteoo.QueryElementNode;
 import org.drools.core.reteoo.ReactiveFromNode;
+import org.drools.core.reteoo.SegmentMemory.SequenceMemoryPrototype;
+import org.drools.core.reteoo.SequenceNode;
 import org.drools.core.reteoo.TupleToObjectNode;
 import org.drools.core.reteoo.SegmentMemory.AccumulateMemoryPrototype;
 import org.drools.core.reteoo.SegmentMemory.AsyncReceiveMemoryPrototype;
@@ -240,6 +242,9 @@ public class BuildtimeSegmentUtilities {
                     case NodeTypeEnums.TimerConditionNode:
                         processTimerNode((TimerNode) node, memories, nodes, nodePosMask);
                         break;
+                    case NodeTypeEnums.SequenceNode:
+                        processSequenceNode((SequenceNode) node, memories, nodes, nodePosMask);
+                        break;
                     case NodeTypeEnums.AsyncSendNode:
                         processAsyncSendNode((AsyncSendNode) node, memories, nodes);
                         break;
@@ -379,6 +384,12 @@ public class BuildtimeSegmentUtilities {
         nodes.add(tupleSource);
     }
 
+    private static void processSequenceNode(SequenceNode tupleSource, List<MemoryPrototype> memories, List<LeftTupleNode> nodes, long nodePosMask) {
+        SequenceMemoryPrototype seqMem = new SequenceMemoryPrototype(nodePosMask);
+        memories.add(seqMem);
+        nodes.add(tupleSource);
+    }
+
     private static long processLiaNode(LeftInputAdapterNode tupleSource,
                                        List<MemoryPrototype> memories,
                                        List<LeftTupleNode> nodes,
@@ -391,7 +402,7 @@ public class BuildtimeSegmentUtilities {
         return allLinkedTestMask;
     }
 
-    private static long processBetaNode(SegmentPrototypeRegistry prototypeRegistry, 
+    private static long processBetaNode(SegmentPrototypeRegistry prototypeRegistry,
                                         BetaNode betaNode,
                                         TerminalNode removingTn,
                                         SegmentPrototype smem,

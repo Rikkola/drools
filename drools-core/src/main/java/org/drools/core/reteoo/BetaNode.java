@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,7 @@ import org.drools.base.common.NetworkNode;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.reteoo.BaseTerminalNode;
 import org.drools.base.reteoo.NodeTypeEnums;
+import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.rule.IndexableConstraint;
 import org.drools.base.util.index.IndexUtil;
 import org.drools.core.RuleBaseConfiguration;
@@ -54,6 +55,8 @@ import org.drools.base.util.FastIterator;
 import org.kie.api.definition.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.drools.core.phreak.TupleEvaluationUtil.flushLeftTupleIfNecessary;
 
 public abstract class BetaNode extends LeftTupleSource
         implements
@@ -400,6 +403,12 @@ public abstract class BetaNode extends LeftTupleSource
      */
     public void setPreviousLeftTupleSinkNode(final LeftTupleSinkNode previous) {
         this.previousTupleSinkNode = previous;
+    }
+    void disablePropertyReactivity() {
+        rightInput.disablePropertyReactivity();
+        if (NodeTypeEnums.isBetaNode(leftInput)) {
+            ((BetaNode)leftInput).disablePropertyReactivity();
+        }
     }
 
     @Override

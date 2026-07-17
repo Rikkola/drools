@@ -25,7 +25,6 @@ import java.io.ObjectOutput;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-
 /**
  * This is a simple linked implementation. Each node must implement </code>LinkedListNode<code> so that it references
  * the node before and after it. This way a node can be removed without having to scan the list to find it. This class

@@ -49,17 +49,17 @@ import org.drools.core.reteoo.TupleImpl;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.QueryElementNode.QueryElementNodeMemory;
-import org.drools.core.reteoo.Sink;
+import org.drools.base.reteoo.Sink;
 import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.rule.consequence.InternalMatch;
-import org.drools.core.time.JobContext;
+import org.drools.base.time.JobContext;
 import org.drools.core.time.SelfRemovalJobContext;
 import org.drools.core.time.impl.CompositeMaxDurationTrigger;
 import org.drools.core.time.impl.CronTrigger;
 import org.drools.core.time.impl.IntervalTrigger;
 import org.drools.core.time.impl.PointInTimeTrigger;
 import org.drools.core.time.impl.PseudoClockScheduler;
-import org.drools.core.time.impl.TimerJobInstance;
+import org.drools.base.time.impl.TimerJobInstance;
 import org.drools.base.util.FastIterator;
 import org.drools.base.util.LinkedList;
 import org.drools.base.util.LinkedListEntry;
@@ -297,7 +297,7 @@ public class ProtobufOutputMarshaller {
         _ab.setFocusStack( _fsb.build() );
 
         // serialize all dormant activations
-        org.drools.base.util.Iterator it = ActivationIterator.iterator( wm );
+        org.drools.base.util.Iterator it = ActivationIterator.iterator(wm);
         List<InternalMatch> dormant = new ArrayList<>();
         for (InternalMatch item = (InternalMatch) it.next(); item != null; item = (InternalMatch) it.next() ) {
             if ( !item.isQueued() ) {
@@ -356,7 +356,7 @@ public class ProtobufOutputMarshaller {
     private static ProtobufMessages.NodeMemory writeQueryElementNodeMemory(final int nodeId,
                                                                            final Memory memory,
                                                                            final InternalWorkingMemory wm) {
-        org.drools.base.util.Iterator<TupleImpl> it = LeftTupleIterator.iterator(wm, ((QueryElementNodeMemory) memory).getNode() );
+        org.drools.base.util.Iterator<TupleImpl> it = LeftTupleIterator.iterator(wm, ((QueryElementNodeMemory) memory).getNode());
 
         ProtobufMessages.NodeMemory.QueryElementNodeMemory.Builder _query = ProtobufMessages.NodeMemory.QueryElementNodeMemory.newBuilder();
         for ( TupleImpl leftTuple = it.next(); leftTuple != null; leftTuple = it.next() ) {
@@ -681,7 +681,7 @@ public class ProtobufOutputMarshaller {
         }
 
         if (internalMatch instanceof TruthMaintenanceSystemInternalMatch) {
-            org.drools.base.util.LinkedList<LogicalDependency<M>> list = ((TruthMaintenanceSystemInternalMatch) internalMatch).getLogicalDependencies();
+            LinkedList<LogicalDependency<M>> list = ((TruthMaintenanceSystemInternalMatch) internalMatch).getLogicalDependencies();
             if (list != null && !list.isEmpty()) {
                 for (LogicalDependency<?> node = list.getFirst(); node != null; node = node.getNext()) {
                     _activation.addLogicalDependency(((BeliefSet) node.getJustified()).getFactHandle().getId());

@@ -16,22 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.core.time.impl;
+package org.drools.base.time;
 
-import org.drools.base.time.JobHandle;
-import org.drools.base.time.Trigger;
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
-
-public interface TimerJobInstance {
-    JobHandle getJobHandle();
-    
-    Job getJob();
-    
-    Trigger getTrigger();
-    
-    JobContext getJobContext();
-    
-    void cancel();
-    boolean isCanceled();
+public interface Job {
+    void execute(JobContext ctx);
 }

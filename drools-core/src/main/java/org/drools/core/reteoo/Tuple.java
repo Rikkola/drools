@@ -21,6 +21,8 @@ package org.drools.core.reteoo;
 import java.io.Serializable;
 
 import org.drools.base.reteoo.BaseTuple;
+import org.drools.base.reteoo.ObjectTypeNodeId;
+import org.drools.base.reteoo.Sink;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.PropagationContext;
 import org.drools.base.util.DoubleLinkedEntry;

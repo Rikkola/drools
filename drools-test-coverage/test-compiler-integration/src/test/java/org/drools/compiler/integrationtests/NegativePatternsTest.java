@@ -59,7 +59,7 @@ public class NegativePatternsTest {
     public static Stream<KieBaseTestConfiguration> parameters() {
         return TestParametersUtil2.getKieBaseStreamConfigurations(true).stream();
     }
-    
+
     public void prepareKieSession(KieBaseTestConfiguration kieBaseTestConfiguration) {
         final String drl = "package org.drools.compiler.integrationtests\n" +
                      "\n" +
