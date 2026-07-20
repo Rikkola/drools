@@ -355,8 +355,6 @@ public class SequenceNode extends LeftTupleSource
         public void assertObject(final InternalFactHandle factHandle,
                                  final PropagationContext pctx,
                                  final ReteEvaluator reteEvaluator) {
-            System.out.println(getClass().getSimpleName() + ":" + adapterIndex + ":" + factHandle.getObject());
-
             SequenceNodeMemory memory = reteEvaluator.getNodeMemory(node);
 
             LinkedList<DynamicFilter> filters       = memory.getActiveFilters()[adapterIndex];
