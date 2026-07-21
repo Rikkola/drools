@@ -457,11 +457,11 @@ public class SequenceNode extends LeftTupleSource
                            TupleSets trgLeftTuples,
                            TupleSets stagedLeftTuples) {
             if (srcLeftTuples.getDeleteFirst() != null) {
-                doLeftDeletes(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples);
+                doLeftDeletes(node, srcLeftTuples, trgLeftTuples);
             }
 
             if (srcLeftTuples.getUpdateFirst() != null) {
-                doLeftUpdates(node, srcLeftTuples, trgLeftTuples, stagedLeftTuples);
+                doLeftUpdates(node, srcLeftTuples, trgLeftTuples);
             }
 
             if (srcLeftTuples.getInsertFirst() != null) {
@@ -485,8 +485,7 @@ public class SequenceNode extends LeftTupleSource
 
         private void doLeftUpdates(SequenceNode node,
                                    TupleSets srcLeftTuples,
-                                   TupleSets trgLeftTuples,
-                                   TupleSets stagedLeftTuples) { // TODO unused
+                                   TupleSets trgLeftTuples) {
             for (TupleImpl leftTuple = srcLeftTuples.getDeleteFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 
@@ -505,8 +504,7 @@ public class SequenceNode extends LeftTupleSource
 
         private void doLeftDeletes(SequenceNode node,
                                    TupleSets srcLeftTuples,
-                                   TupleSets trgLeftTuples,
-                                   TupleSets stagedLeftTuples) { // TODO unused
+                                   TupleSets trgLeftTuples) {
             for (TupleImpl leftTuple = srcLeftTuples.getDeleteFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 

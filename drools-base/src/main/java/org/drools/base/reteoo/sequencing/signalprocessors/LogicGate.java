@@ -127,9 +127,6 @@ public class LogicGate extends SignalProcessor {
         if (matched) {
             status = SignalStatus.MATCHED;//repetition.newMatch();
         }
-//            else {
-//                status = SignalStatus.UNMATCHED;
-//            }
 
         memory.setLogicGateSignalStatus(gateIndex, status);
         if (priorStatus != status) {
@@ -211,7 +208,7 @@ public class LogicGate extends SignalProcessor {
         public void activated(SequenceMemory memory, ValueResolver valueResolver)  {
             Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.TIMEOUT, trigger, valueResolver, gate, memory);
-            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
+            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getInstance(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
         }
 
@@ -240,7 +237,7 @@ public class LogicGate extends SignalProcessor {
         public void activated(SequenceMemory memory, ValueResolver valueResolver)  {
             Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.TIMEOUT, trigger, valueResolver, gate, memory);
-            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
+            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getInstance(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
         }
 
@@ -273,7 +270,7 @@ public class LogicGate extends SignalProcessor {
         public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
             Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
             LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.DELAY, trigger, valueResolver, gate, memory);
-            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getINSTANCE(), ctx, trigger);
+            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getInstance(), ctx, trigger);
             memory.setJobHandle(gate.getGateIndex(), jobHandle);
         }
 
@@ -288,7 +285,7 @@ public class LogicGate extends SignalProcessor {
             Job {
         private static final LogicGateJob INSTANCE = new LogicGateJob();
 
-        public static LogicGateJob getINSTANCE() {
+        public static LogicGateJob getInstance() {
             return INSTANCE;
         }
 
@@ -398,8 +395,6 @@ public class LogicGate extends SignalProcessor {
                     break;
             }
 
-            // Logic is satsified and waiting to transition
-            // Logic is not satsified and has run out of time.
         }
     }
 }

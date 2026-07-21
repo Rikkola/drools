@@ -37,8 +37,6 @@ public class Sequence implements RuleConditionElement {
 
     private final SubsequenceStep parentStep;
 
-    //private Step;
-    private Parent parent;
 
     private Pattern[] filters;
 
@@ -224,7 +222,7 @@ public class Sequence implements RuleConditionElement {
     public static class DefaultController implements SequenceController {
         private static final DefaultController INSTANCE = new DefaultController();
 
-        public static DefaultController getINSTANCE() {
+        public static DefaultController getInstance() {
             return INSTANCE;
         }
 
@@ -265,20 +263,12 @@ public class Sequence implements RuleConditionElement {
     public static class LoopController extends DefaultController implements SequenceController {
         private final Predicate<SequenceMemory> predicate;
 
-        private final SequenceController defaultController = DefaultController.getINSTANCE();
+        private final SequenceController defaultController = DefaultController.getInstance();
 
         public LoopController(Predicate<SequenceMemory> predicate) {
             this.predicate = predicate;
         }
 
-
-//        public void restart(SequenceMemory memory, ValueResolver valueResolver) {
-//            defaultController.restart(memory, valueResolver);
-//        }
-//
-//        public void next(SequenceMemory memory, ValueResolver valueResolver) {
-//            defaultController.next(memory, valueResolver);
-//        }
 
         @Override
         public void end(SequenceMemory sequenceMemory, ValueResolver valueResolver)  {
@@ -301,7 +291,7 @@ public class Sequence implements RuleConditionElement {
 
     public static class TimeoutController implements SequenceController {
         private final Timer    timer;
-        private final DefaultController defaultController = DefaultController.getINSTANCE();
+        private final DefaultController defaultController = DefaultController.getInstance();
 
         public TimeoutController(Timer timer) {
             this.timer    = timer;
@@ -313,7 +303,7 @@ public class Sequence implements RuleConditionElement {
             Trigger                 trigger   = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
             SequenceTimerJobContext ctx       = new SequenceTimerJobContext(SequenceTimerJobContext.TIMEOUT, trigger, valueResolver, memory);
 
-            JobHandle               jobHandle = valueResolver.getTimerService().scheduleJob(SequenceJob.getINSTANCE(), ctx, trigger);
+            JobHandle               jobHandle = valueResolver.getTimerService().scheduleJob(SequenceJob.getInstance(), ctx, trigger);
             memory.setJobHandle(jobHandle);
         }
 
@@ -373,7 +363,7 @@ public class Sequence implements RuleConditionElement {
             Job {
         private static final SequenceJob INSTANCE = new SequenceJob();
 
-        public static SequenceJob getINSTANCE() {
+        public static SequenceJob getInstance() {
             return INSTANCE;
         }
 
@@ -454,24 +444,11 @@ public class Sequence implements RuleConditionElement {
 
             switch (jobCtx.getActionType()) {
                 case SequenceTimerJobContext.DELAY:
-//                    if (status == SignalStatus.MATCHED) {
-//                        // transition
-//                        gate.propagate(sequencerMemory, reteEvaluator, status);
-//                        System.out.println("1");
-//                    } else {
-//                        // fail
-////                        sequencerMemory.getNode().getSequencer().fail(sequencerMemory);
-//                        System.out.println("2");
-//                    }
                     break;
                 case SequenceTimerJobContext.TIMEOUT:
                     // fail, if not already transitioned
-//                    if (status != SignalStatus.MATCHED) {
-//                        // fail
-//                        sequencerMemory.getNode().getSequencer().fail(sequencerMemory);
                     sequenceMemory.getSequence().fail(sequenceMemory, reteEvaluator);
 
-//                    }
                     break;
             }
         }
