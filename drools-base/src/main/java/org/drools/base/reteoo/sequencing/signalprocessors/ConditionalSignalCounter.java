@@ -96,12 +96,6 @@ public class ConditionalSignalCounter extends SignalProcessor {
         }
     }
 
-    LongPredicate ONE = c -> c == 1;
-
-    LongPredicate NONE = c -> c == 0;
-
-    LongPredicate ANY = c -> true;
-
     public void reset(SequenceMemory memory, ValueResolver valueResolver) {
         memory.resetSignalCounterMemory(counterIndex);
     }

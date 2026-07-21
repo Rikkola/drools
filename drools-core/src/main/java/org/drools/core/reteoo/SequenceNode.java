@@ -82,7 +82,7 @@ public class SequenceNode extends LeftTupleSource
         setLeftTupleSource(tupleSource);
         this.tupleMemoryEnabled = context.isTupleMemoryEnabled();
 
-        initMasks(context); // Is this still relevant? (mdp for multi input)
+        initMasks(context);
 
         hashcode = calculateHashCode();
         setStreamMode(true);
@@ -434,7 +434,7 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public int getType() {
-            return NodeTypeEnums.SequenceNode; // need to update enums for multi input (mdp)
+            return NodeTypeEnums.SequenceNode; // FIXME: AlphaAdapter needs its own NodeTypeEnums entry
         }
 
         public void doAttach(BuildContext context) {
