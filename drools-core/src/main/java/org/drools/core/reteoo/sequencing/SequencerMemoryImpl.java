@@ -146,7 +146,7 @@ public class SequencerMemoryImpl implements SequencerMemory {
         }
 
         if (shouldFlush) {
-            flushLeftTupleIfNecessary(valueResolver.as(ReteEvaluator.class), smem, node.isStreamMode() );
+            flushLeftTupleIfNecessary((ReteEvaluator) valueResolver, smem, node.isStreamMode() );
         }
     }
 
