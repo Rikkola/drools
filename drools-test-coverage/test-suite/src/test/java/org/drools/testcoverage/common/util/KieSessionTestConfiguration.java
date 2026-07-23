@@ -70,7 +70,6 @@ public enum KieSessionTestConfiguration implements KieSessionModelProvider {
         return kieSessionModel;
     }
 
-    @Override
     public KieSessionConfiguration getKieSessionConfiguration() {
         final KieSessionConfiguration kieSessionConfiguration = KieServices.Factory.get().newKieSessionConfiguration();
         if (pseudoClock) {
