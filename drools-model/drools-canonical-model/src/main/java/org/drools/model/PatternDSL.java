@@ -1777,6 +1777,7 @@ public class PatternDSL extends DSL {
         }
     }
 
+    // TODO: implement SequenceStep to allow nested sequences (runtime support not yet wired)
     public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem {
         private final SequenceStep[] steps;
 
