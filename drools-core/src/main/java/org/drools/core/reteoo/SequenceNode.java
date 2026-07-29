@@ -504,7 +504,7 @@ public class SequenceNode extends LeftTupleSource
         private void doLeftUpdates(SequenceNode node,
                                    TupleSets srcLeftTuples,
                                    TupleSets trgLeftTuples) {
-            for (TupleImpl leftTuple = srcLeftTuples.getDeleteFirst(); leftTuple != null; ) {
+            for (TupleImpl leftTuple = srcLeftTuples.getUpdateFirst(); leftTuple != null; ) {
                 TupleImpl next = leftTuple.getStagedNext();
 
                 SequencerMemory sequencerMemory = (SequencerMemory) leftTuple.getContextObject();
