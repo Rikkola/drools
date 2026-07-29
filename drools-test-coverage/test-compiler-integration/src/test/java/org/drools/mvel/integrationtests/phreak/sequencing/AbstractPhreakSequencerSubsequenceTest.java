@@ -67,6 +67,7 @@ public class AbstractPhreakSequencerSubsequenceTest {
     SequenceNodeMemory nodeMemory;
     PathMemory         pmem;
     SequencerMemory    sequencerMemory;
+    InternalFactHandle fhA0;
     BuildContext       buildContext;
     Sequence           seq0;
     Sequence           seq1;
@@ -171,7 +172,7 @@ public class AbstractPhreakSequencerSubsequenceTest {
 
         session = (StatefulKnowledgeSessionImpl) kbase.newKieSession(sessionConf, null);
 
-        InternalFactHandle fhA0 = (InternalFactHandle) session.insert(new A(0));
+        fhA0 = (InternalFactHandle) session.insert(new A(0));
         session.fireAllRules();
         nodeMemory = session.getNodeMemory(snode);
         pmem = nodeMemory.getSegmentMemory().getPathMemories().get(0);

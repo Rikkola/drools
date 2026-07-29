@@ -33,6 +33,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
+import org.drools.mvel.integrationtests.phreak.A;
 import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
 import org.drools.mvel.integrationtests.phreak.D;
@@ -153,5 +154,31 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
         assertThat(nodeMemory.getActiveFilters()[0].size()).isEqualTo(0);
         assertThat(nodeMemory.getActiveFilters()[1].size()).isEqualTo(0);
         assertThat(nodeMemory.getActiveFilters()[2].size()).isEqualTo(0);
+    }
+
+    /**
+     * Regression test for the doLeftUpdates bug: the method iterated getDeleteFirst()
+     * instead of getUpdateFirst(), so an update to the driving tuple (A) was silently
+     * dropped and the sequence was never restarted.
+     *
+     * Expected: after advancing to step 1 then updating A, the sequence restarts at step 0.
+     * With the bug: the update list is never drained — the sequence stays at step 1.
+     */
+    @Test
+    public void testUpdateOnDrivingTupleRestartsSequence() {
+        // Advance to step 1: insert B then C to satisfy gate 1
+        session.insert(new B(0, "b"));
+        session.insert(new C(0, "c"));
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(1); // sequence is at step 1
+
+        // Update A — should stop the running sequence and restart it at step 0.
+        // fireAllRules() is required to flush the Phreak left-tuple update queue.
+        A a = (A) fhA0.getObject();
+        session.update(fhA0, a);
+        session.fireAllRules();
+
+        // With the bug, the update list is never consumed and the sequence stays at step 1.
+        // The correct behaviour is a restart to step 0.
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0);
     }
 }
