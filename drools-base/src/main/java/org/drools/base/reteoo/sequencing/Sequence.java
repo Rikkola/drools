@@ -180,7 +180,7 @@ public class Sequence implements RuleConditionElement {
 
     @Override
     public RuleConditionElement clone() {
-        return null;
+        throw new UnsupportedOperationException("Sequence does not support clone()");
     }
 
     @Override
