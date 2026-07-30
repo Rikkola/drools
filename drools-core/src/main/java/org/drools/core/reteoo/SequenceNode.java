@@ -400,6 +400,8 @@ public class SequenceNode extends LeftTupleSource
             throw new UnsupportedOperationException();
         }
 
+        // AlphaAdapter is not part of the standard ObjectSinkNode linked-list propagation chain.
+        // It is wired directly to an ObjectTypeNode for filtering only; sink-list navigation is never used.
         @Override
         public ObjectSinkNode getNextObjectSinkNode() {
             return null;
@@ -407,7 +409,7 @@ public class SequenceNode extends LeftTupleSource
 
         @Override
         public void setNextObjectSinkNode(ObjectSinkNode next) {
-
+            // not used — AlphaAdapter is not part of the sink propagation chain
         }
 
         @Override
@@ -417,9 +419,10 @@ public class SequenceNode extends LeftTupleSource
 
         @Override
         public void setPreviousObjectSinkNode(ObjectSinkNode previous) {
-
+            // not used — AlphaAdapter is not part of the sink propagation chain
         }
 
+        // AlphaAdapter constraints are evaluated at alpha-node level; declared mask is unused here.
         @Override
         public BitMask calculateDeclaredMask(Pattern pattern, ObjectType modifiedType, List<String> settableProperties) {
             return null;

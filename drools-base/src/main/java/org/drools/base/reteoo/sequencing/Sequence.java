@@ -346,35 +346,6 @@ public class Sequence implements RuleConditionElement {
         }
     }
 
-    public static class CompositeController implements SequenceController {
-        private final SequenceController[] controllers;
-
-        public CompositeController(SequenceController... controllers) {
-            this.controllers = controllers;
-        }
-
-        @Override
-        public void start(SequenceMemory memory, ValueResolver valueResolver) {
-            for ( SequenceController controller : controllers ) {
-                controller.start(memory, valueResolver);
-            }
-        }
-
-        @Override
-        public void restart(SequenceMemory memory, ValueResolver valueResolver) {
-            for ( SequenceController controller : controllers ) {
-                controller.restart(memory, valueResolver);
-            }
-        }
-
-        @Override
-        public void end(SequenceMemory memory, ValueResolver valueResolver)  {
-            for ( SequenceController controller : controllers ) {
-                controller.end(memory, valueResolver);
-            }
-        }
-    }
-
 
     public static class SequenceJob
             implements
