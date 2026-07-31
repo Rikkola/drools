@@ -286,10 +286,11 @@ public class SequenceNode extends LeftTupleSource
 
         public void readExternal(ObjectInput in) throws IOException,
                                                 ClassNotFoundException {
+            throw new UnsupportedOperationException("SequenceNodeMemory does not support serialization");
         }
 
         public void writeExternal(ObjectOutput out) throws IOException {
-
+            throw new UnsupportedOperationException("SequenceNodeMemory does not support serialization");
         }
 
         public int getNodeType() {

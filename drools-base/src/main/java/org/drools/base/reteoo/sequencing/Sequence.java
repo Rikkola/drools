@@ -195,12 +195,12 @@ public class Sequence implements RuleConditionElement {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-
+        throw new UnsupportedOperationException("Sequence does not support serialization");
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-
+        throw new UnsupportedOperationException("Sequence does not support serialization");
     }
 
     public void start(SequenceMemory memory, ValueResolver valueResolver) {
@@ -654,6 +654,12 @@ public class Sequence implements RuleConditionElement {
 
         public void deactivateSignalAdapter(int filterIndex, LogicGate gate, int signalAdapterIndex) {
             SignalAdapter signalAdapter = activeSignalAdapters[signalAdapterIndex];
+            if (signalAdapter == null) {
+                // Already deactivated — e.g. FailStackFailureHandler called deactivate()
+                // before Sequencer.stop() reaches the same step. No-op to prevent a
+                // double-remove from the linked filter list.
+                return;
+            }
             activeSignalAdapters[signalAdapterIndex] = null;
 
             DynamicFilter filter = sequencerMemory.getActiveDynamicFilter(filterIndex);
