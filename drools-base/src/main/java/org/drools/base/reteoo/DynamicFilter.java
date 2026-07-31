@@ -27,20 +27,26 @@ import org.kie.api.runtime.rule.FactHandle;
 public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
     private AlphaNodeFieldConstraint  constraint;
     private LinkedList<SignalAdapter> signalAdapters;
-    private int                       activeFilterIndex;
+    private int                       filterIndex;
+    private int                       adapterIndex;
 
     public DynamicFilter(DynamicFilterProto proto) {
-        this.constraint        = proto.getConstraint();
-        this.activeFilterIndex = proto.getFilterIndex();
-        this.signalAdapters    = new LinkedList<>();
+        this.constraint    = proto.getConstraint();
+        this.filterIndex   = proto.getFilterIndex();
+        this.adapterIndex  = proto.getAdapterIndex();
+        this.signalAdapters = new LinkedList<>();
     }
 
     public AlphaNodeFieldConstraint getConstraint() {
         return constraint;
     }
 
-    public int getActiveFilterIndex() {
-        return activeFilterIndex;
+    public int getFilterIndex() {
+        return filterIndex;
+    }
+
+    public int getAdapterIndex() {
+        return adapterIndex;
     }
 
     public void addSignalAdapter(SignalAdapter signalAdapter) {

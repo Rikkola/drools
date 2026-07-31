@@ -144,8 +144,12 @@ public class SequenceNode extends LeftTupleSource
     }
 
     public SequenceNodeMemory createMemory(final RuleBaseConfiguration config, ReteEvaluator reteEvaluator) {
-        LinkedList<DynamicFilter>[] filters = new LinkedList[alphaAdapters.length];
-        SequenceNodeMemory          memory  = new SequenceNodeMemory(this, filters, new DynamicFilter[filters.length]);
+        // activeFilters is indexed by adapter index (one slot per distinct object type).
+        // AlphaAdapter.assertObject looks up activeFilters[adapterIndex] to dispatch to matching filters.
+        // filters is indexed by pattern/filter index (one slot per step).
+        // The two sizes differ when multiple steps share the same object type.
+        LinkedList<DynamicFilter>[] activeFilters = new LinkedList[alphaAdapters.length];
+        SequenceNodeMemory          memory  = new SequenceNodeMemory(this, activeFilters, new DynamicFilter[dynamicFilters.length]);
         return memory;
     }
 
@@ -245,14 +249,15 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public void addActiveFilter(DynamicFilter filter) {
-            if (this.activeFilters[filter.getActiveFilterIndex()] == null) {
-                this.activeFilters[filter.getActiveFilterIndex()] = new LinkedList<>();
+            int adapterIdx = filter.getAdapterIndex();
+            if (this.activeFilters[adapterIdx] == null) {
+                this.activeFilters[adapterIdx] = new LinkedList<>();
             }
-            this.activeFilters[filter.getActiveFilterIndex()].add(filter);
+            this.activeFilters[adapterIdx].add(filter);
         }
 
         public void removeActiveFilter(DynamicFilter filter) {
-            this.activeFilters[filter.getActiveFilterIndex()].remove(filter);
+            this.activeFilters[filter.getAdapterIndex()].remove(filter);
         }
 
         public LinkedList<DynamicFilter>[] getActiveFilters() {

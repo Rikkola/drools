@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.drools.base.base.ClassObjectType;
@@ -31,6 +32,10 @@ import org.drools.base.base.ObjectType;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.DynamicFilterProto;
+import org.drools.base.rule.Pattern;
+import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
+import org.drools.base.rule.constraint.CombinedAlphaConstraint;
+import org.drools.base.rule.constraint.Constraint;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.Sequencer;
 import org.drools.base.rule.Accumulate;
@@ -144,13 +149,19 @@ public class PhreakNodeFactory implements NodeFactory, Serializable {
 
         ObjectSource[] otns = new ObjectSource[objectTypeList.size()];
         EntryPointNode epn = context.getRuleBase().getRete().getEntryPointNode(context.getCurrentEntryPoint());
-        for ( int i = 0; i < objectTypeSet.size(); i++ ) {
-            otns[i] = nFactory.buildObjectTypeNode(context.getNextNodeId(),
-                    epn,
-                    objectTypeList.get(i),
-                    context);
-
-            otns[i].attach(context);
+        Map<ObjectType, ObjectTypeNode> existingOtns = epn.getObjectTypeNodes();
+        for ( int i = 0; i < objectTypeList.size(); i++ ) {
+            ObjectType objectType = objectTypeList.get(i);
+            ObjectTypeNode existing = existingOtns.get(objectType);
+            if (existing != null) {
+                // Reuse the existing OTN — building a fresh one and calling attach()
+                // would call EntryPointNode.addObjectSink which is a Map.put, silently
+                // replacing the existing OTN and cutting off all rules already wired to it.
+                otns[i] = existing;
+            } else {
+                otns[i] = nFactory.buildObjectTypeNode(context.getNextNodeId(), epn, objectType, context);
+                otns[i].attach(context);
+            }
         }
 
         // For each source create an alpha adapter, which will map it to any filters on the stack.
@@ -165,9 +176,28 @@ public class PhreakNodeFactory implements NodeFactory, Serializable {
 
 
         // Create all the dynamic filters, these are added on demand to the stack.
+        // filterIndex (i) is the pattern index — one per step.
+        // adapterIndex is the index of this pattern's type in objectTypeList — one per distinct type.
         DynamicFilterProto[] filters = new DynamicFilterProto[patterns.length];
         for ( int i = 0; i < patterns.length; i++ ) {
-            filters[i] = new DynamicFilterProto((AlphaNodeFieldConstraint) patterns[i].getConstraints().get(0), i);
+            List<Constraint> constraints = patterns[i].getConstraints();
+            if (constraints.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "sequence step " + i + " has no constraint expression. " +
+                        "Every sequence step must have at least one expr(). " +
+                        "Add an expr() to the pattern, or use a dedicated fact type per step.");
+            }
+            AlphaNodeFieldConstraint combined;
+            if (constraints.size() == 1) {
+                combined = (AlphaNodeFieldConstraint) constraints.get(0);
+            } else {
+                AlphaNodeFieldConstraint[] all = constraints.stream()
+                        .map(c -> (AlphaNodeFieldConstraint) c)
+                        .toArray(AlphaNodeFieldConstraint[]::new);
+                combined = new CombinedAlphaConstraint(all);
+            }
+            int adapterIndex = objectTypeList.indexOf(patterns[i].getObjectType());
+            filters[i] = new DynamicFilterProto(combined, i, adapterIndex);
         }
 
         node.setDynamicFilters( filters);
