@@ -37,9 +37,13 @@ public interface ValueResolver {
 
     RuleBase getRuleBase();
 
-    void addPropagation(PropagationEntry propagationEntry);
+    default void addPropagation(PropagationEntry propagationEntry) {
+        throw new UnsupportedOperationException();
+    }
 
-    TimerService getTimerService();
+    default TimerService getTimerService() {
+        throw new UnsupportedOperationException();
+    }
 
     default void setWorkingMemoryActionListener(Consumer<PropagationEntry> listener) {
         throw new UnsupportedOperationException();

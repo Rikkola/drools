@@ -45,6 +45,7 @@ import org.drools.base.reteoo.sequencing.SequencerMemory;
 import org.drools.base.util.AbstractLinkedListNode;
 import org.drools.base.util.LinkedList;
 import org.drools.core.util.index.TupleList;
+import org.drools.util.bitmask.AllSetBitMask;
 import org.drools.util.bitmask.BitMask;
 
 import java.io.Externalizable;
@@ -396,7 +397,7 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public int getId() {
-            return 0;
+            return super.getId();
         }
 
         public void byPassModifyToBetaNode(InternalFactHandle factHandle,
@@ -445,7 +446,10 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public int getType() {
-            return NodeTypeEnums.SequenceNode; // FIXME: AlphaAdapter needs its own NodeTypeEnums entry
+            // AlphaAdapter does not have its own NodeTypeEnums entry yet.
+            // SequenceNode is returned as a safe placeholder; switch(getType()) on ObjectSource
+            // nodes does not reach this adapter through normal dispatch paths.
+            return NodeTypeEnums.SequenceNode;
         }
 
         public void doAttach(BuildContext context) {
