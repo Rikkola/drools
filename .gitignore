@@ -39,6 +39,7 @@ dependency-reduced-pom.xml
 
 # Claude Code project documentation
 CLAUDE.md
+AGENTS.md
 # --- merged from optaplanner .gitignore ---
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
