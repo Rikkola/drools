@@ -45,18 +45,4 @@ public interface ValueResolver {
         throw new UnsupportedOperationException();
     }
 
-    default void setWorkingMemoryActionListener(Consumer<PropagationEntry> listener) {
-        throw new UnsupportedOperationException();
-    }
-
-    default Consumer<PropagationEntry> getWorkingMemoryActionListener() {
-        return null;
-    }
-
-    default void onWorkingMemoryAction(PropagationEntry entry) {
-        Consumer<PropagationEntry> listener = getWorkingMemoryActionListener();
-        if (listener != null) {
-            listener.accept(entry);
-        }
-    }
 }

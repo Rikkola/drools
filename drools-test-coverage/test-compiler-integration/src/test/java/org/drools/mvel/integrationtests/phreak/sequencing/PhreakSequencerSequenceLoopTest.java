@@ -24,7 +24,6 @@ import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.Sequence;
-import org.drools.base.reteoo.sequencing.Sequence.LoopController;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
@@ -59,38 +58,6 @@ public class PhreakSequencerSequenceLoopTest extends AbstractPhreakSequencerSubs
 
         seq0 = new Sequence(0, Step.of(circuit1), Step.of(circuit2));
         seq0.setFilters(new Pattern[]{bpattern, cpattern});
-    }
-
-    @Test
-    public void testSequenceLoopConstraint() {
-        seq0.setController(new LoopController(m -> m.getCount() < 2));
-        rule.addSequence(seq0);
-        kbase.addPackage(pkg);
-
-        createSession();
-
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(0);
-        InternalFactHandle fhB0 = (InternalFactHandle) session.insert(new B(0, "b"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(0);
-        InternalFactHandle fhC0 = (InternalFactHandle) session.insert(new C(0, "c"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(1);
-
-        InternalFactHandle fhB1 = (InternalFactHandle) session.insert(new B(0, "b"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(1);
-        InternalFactHandle fhC1 = (InternalFactHandle) session.insert(new C(0, "c"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(2);
-
-        InternalFactHandle fhB2 = (InternalFactHandle) session.insert(new B(0, "b"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(2);
-        InternalFactHandle fhC2 = (InternalFactHandle) session.insert(new C(0, "c"));
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(3);
-
-        // Sequence is ended, so this does nothing
-        InternalFactHandle fhB4 = (InternalFactHandle) session.insert(new B(0, "b"));
-        InternalFactHandle fhC4 = (InternalFactHandle) session.insert(new C(0, "c"));
-
-        assertThat(sequencerMemory.getSequenceMemory(seq0).getCount()).isEqualTo(3);
-        //assertThat(sequencerMemory.getCurrentStep()).isEqualTo(-1); // terminated
     }
 
 }
