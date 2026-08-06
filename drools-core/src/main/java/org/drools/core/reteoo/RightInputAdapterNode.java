@@ -22,7 +22,6 @@ package org.drools.core.reteoo;
 import org.drools.base.base.ObjectType;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.rule.Pattern;
 import org.drools.core.common.BaseNode;
 import org.drools.core.common.InternalFactHandle;

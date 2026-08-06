@@ -96,16 +96,8 @@ public interface Step {
             this.circuit = circuit;
         }
 
-        public Sequence getSubsequence() {
-            return subsequence;
-        }
-
         public void setSubsequence(Sequence subsequence) {
             this.subsequence = subsequence;
-        }
-
-        public Sequence[] getSubsequences() {
-            return subsequences;
         }
 
         public void setSubsequences(Sequence[] subsequences) {

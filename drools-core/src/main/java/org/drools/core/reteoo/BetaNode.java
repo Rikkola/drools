@@ -27,7 +27,6 @@ import org.drools.base.common.NetworkNode;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.reteoo.BaseTerminalNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.rule.IndexableConstraint;
 import org.drools.base.util.index.IndexUtil;
 import org.drools.core.RuleBaseConfiguration;

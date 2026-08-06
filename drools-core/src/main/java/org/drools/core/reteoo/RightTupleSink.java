@@ -18,7 +18,6 @@
  */
 package org.drools.core.reteoo;
 
-import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.reteoo.Sink;
 import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;

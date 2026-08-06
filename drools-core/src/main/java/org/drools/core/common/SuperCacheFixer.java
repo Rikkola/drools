@@ -38,7 +38,7 @@ import org.drools.core.reteoo.LeftTupleSinkNode;
 import org.drools.core.reteoo.LeftTupleSource;
 import org.drools.core.reteoo.NotNode;
 import org.drools.core.reteoo.NotRight;
-import org.drools.base.reteoo.ObjectTypeNodeId;
+import org.drools.core.reteoo.ObjectTypeNodeId;
 import org.drools.core.reteoo.QueryElementNode;
 import org.drools.core.reteoo.QueryTerminalNode;
 import org.drools.core.reteoo.ReactiveFromNode;

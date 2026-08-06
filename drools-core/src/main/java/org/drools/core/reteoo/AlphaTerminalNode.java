@@ -20,7 +20,6 @@ package org.drools.core.reteoo;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.PropagationContext;

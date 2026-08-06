@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.drools.base.base.ClassObjectType;
 import org.drools.base.base.ObjectType;
@@ -30,7 +29,6 @@ import org.drools.base.common.NetworkNode;
 import org.drools.base.common.RuleBasePartitionId;
 import org.drools.base.reteoo.BaseTerminalNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.ObjectTypeNodeId;
 import org.drools.base.rule.Pattern;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.common.BaseNode;
