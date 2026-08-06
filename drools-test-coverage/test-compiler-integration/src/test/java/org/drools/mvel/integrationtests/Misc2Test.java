@@ -20,8 +20,6 @@ package org.drools.mvel.integrationtests;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,7 +56,7 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.reteoo.LeftInputAdapterNode;
 import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.base.reteoo.ObjectTypeNodeId;
+import org.drools.core.reteoo.ObjectTypeNodeId;
 import org.drools.core.reteoo.Rete;
 import org.drools.core.reteoo.SegmentMemory;
 import org.drools.base.rule.accessor.Salience;
