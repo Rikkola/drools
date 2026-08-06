@@ -19,14 +19,8 @@
 package org.drools.base.reteoo.sequencing.signalprocessors;
 
 import org.drools.base.base.ValueResolver;
-import org.drools.base.phreak.actions.AbstractPropagationEntry;
-import org.drools.base.time.JobHandle;
-import org.drools.base.time.Trigger;
-import org.drools.base.time.Timer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit.LongBiPredicate;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
-import org.drools.base.time.Job;
-import org.drools.base.time.JobContext;
 
 public class LogicGate extends SignalProcessor {
     protected long allMatched;
@@ -45,8 +39,6 @@ public class LogicGate extends SignalProcessor {
 
     private static final LogicGate[] EMPTY_INPUT_GATES = new LogicGate[0];
 
-    private PropagationTimer propagationTimer;
-
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
         this.predicate = predicate;
 
@@ -62,10 +54,6 @@ public class LogicGate extends SignalProcessor {
 
     public int getGateIndex() {
         return gateIndex;
-    }
-
-    public void setPropagationTimer(PropagationTimer propagationTimer) {
-        this.propagationTimer = propagationTimer;
     }
 
     public int[] getSignalAdapterIndexes() {
@@ -120,11 +108,7 @@ public class LogicGate extends SignalProcessor {
 
         memory.setLogicGateSignalStatus(gateIndex, status);
         if (priorStatus != status) {
-            if (propagationTimer != null) {
-                propagationTimer.matched(memory, valueResolver, status);
-            } else {
-                propagate(memory, valueResolver, status);
-            }
+            propagate(memory, valueResolver, status);
         }
     }
 
@@ -154,9 +138,6 @@ public class LogicGate extends SignalProcessor {
             memory.activateSignalAdapter(filterIndexes[i], this, signalAdapterIndexes[i], i + 1); // bit indexes start at 1
         }
 
-        if (propagationTimer != null) {
-            propagationTimer.activated(memory, valueResolver);
-        }
     }
 
     public void deactivate(SequenceMemory memory, ValueResolver valueResolver) {
@@ -167,163 +148,4 @@ public class LogicGate extends SignalProcessor {
         memory.resetLogicGateMemory(gateIndex, valueResolver);
     }
 
-    public interface PropagationTimer {
-        default void activated(SequenceMemory memory, ValueResolver valueResolver)  {
-
-        }
-
-        default void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
-
-        }
-
-        default void failed(SequenceMemory memory, ValueResolver valueResolver)  {
-
-        }
-    }
-
-    public static class DelayFromMatchTimer implements PropagationTimer  {
-        private final LogicGate gate;
-        private final Timer     timer;
-
-        public DelayFromMatchTimer(LogicGate gate, Timer timer) {
-            this.gate  = gate;
-            this.timer = timer;
-        }
-
-        @Override
-        public void activated(SequenceMemory memory, ValueResolver valueResolver)  {
-
-        }
-
-        @Override
-        public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
-            Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
-            LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.DELAY, trigger, valueResolver, gate, memory);
-            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getInstance(), ctx, trigger);
-            memory.setJobHandle(gate.getGateIndex(), jobHandle);
-        }
-
-        @Override
-        public void failed(SequenceMemory memory, ValueResolver valueResolver)  {
-            memory.cancelJobHandle(gate.getGateIndex(), valueResolver);
-        }
-    }
-
-    public static class LogicGateJob
-            implements
-            Job {
-        private static final LogicGateJob INSTANCE = new LogicGateJob();
-
-        public static LogicGateJob getInstance() {
-            return INSTANCE;
-        }
-
-        public void execute(JobContext ctx) {
-            LogicGateTimerJobContext timerJobCtx   = (LogicGateTimerJobContext) ctx;
-            ValueResolver       resolver = timerJobCtx.getValueResolver();
-            resolver.addPropagation( new LogicGateTimerAction(timerJobCtx ));
-        }
-    }
-
-    public static class LogicGateTimerJobContext
-            implements
-            JobContext {
-        private static final int DELAY   = 0;
-        private static final int TIMEOUT = 1;
-
-        private       JobHandle     jobHandle;
-        private final Trigger       trigger;
-        private final ValueResolver valueResolver;
-
-        private final LogicGate gate;
-        private final SequenceMemory sequenceMemory;
-
-        private final int actionType;
-
-        public LogicGateTimerJobContext(int actionType, Trigger trigger, ValueResolver valueResolver, LogicGate gate, SequenceMemory sequenceMemory) {
-            this.trigger         = trigger;
-            this.valueResolver   = valueResolver;
-            this.gate            = gate;
-            this.sequenceMemory = sequenceMemory;
-            this.actionType = actionType;
-        }
-
-        public JobHandle getJobHandle() {
-            return this.jobHandle;
-        }
-
-        @Override
-        public ValueResolver getValueResolver() {
-            return valueResolver;
-        }
-
-        public void setJobHandle(JobHandle jobHandle) {
-            this.jobHandle = jobHandle;
-        }
-
-        public Trigger getTrigger() {
-            return trigger;
-        }
-
-        public LogicGate getGate() {
-            return gate;
-        }
-
-        public SequenceMemory getSequenceMemory() {
-            return sequenceMemory;
-        }
-
-        public int getActionType() {
-            return actionType;
-        }
-    }
-
-    public static class LogicGateTimerAction
-            extends AbstractPropagationEntry {
-
-        private final LogicGateTimerJobContext jobCtx;
-
-        private LogicGateTimerAction( LogicGateTimerJobContext jobCtx) {
-            this.jobCtx = jobCtx;
-        }
-
-        @Override
-        public boolean requiresImmediateFlushing() {
-            return true;
-        }
-
-        @Override
-        public void internalExecute(final ValueResolver valueResolver) {
-            execute( valueResolver, false );
-        }
-
-        public void execute( final ValueResolver valueResolver, boolean needEvaluation ) {
-            LogicGate gate = jobCtx.getGate();
-            SequenceMemory sequenceMemory = jobCtx.getSequenceMemory();
-
-            SignalStatus status = sequenceMemory.getLogicGateSignalStatus(gate.getGateIndex());
-
-            sequenceMemory.clearJobHandle(gate.getGateIndex(), valueResolver); // clear rather than cancel, as it's actually firing
-
-            switch (jobCtx.getActionType()) {
-                case LogicGateTimerJobContext.DELAY:
-                    if (status == SignalStatus.MATCHED) {
-                        // transition
-                        gate.propagate(sequenceMemory, valueResolver, status);
-                    } else {
-                        // fail
-                        sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
-                    }
-                    break;
-                case LogicGateTimerJobContext.TIMEOUT:
-                    // fail, if not already transitioned
-                    if (status != SignalStatus.MATCHED) {
-                        // fail
-                        sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
-                    }
-                    break;
-            }
-
-        }
-    }
 }

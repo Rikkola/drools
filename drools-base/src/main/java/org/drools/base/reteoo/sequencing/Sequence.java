@@ -30,12 +30,7 @@ import org.drools.base.reteoo.sequencing.steps.SubsequenceStep;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.RuleConditionElement;
-import org.drools.base.time.JobHandle;
-import org.drools.base.time.Trigger;
-import org.drools.base.time.Timer;
 import org.drools.base.reteoo.SignalAdapter;
-import org.drools.base.time.Job;
-import org.drools.base.time.JobContext;
 import org.drools.base.util.CircularArrayList;
 import org.kie.api.runtime.rule.FactHandle;
 
@@ -302,10 +297,6 @@ public class Sequence implements RuleConditionElement {
 
         private final long[] counterMemories;
 
-        private JobHandle[] jobHandles;
-
-        private JobHandle jobHandle;
-
         private final SignalStatus[] signalStatuses;
 
         private int eventsStartPosition;
@@ -385,18 +376,6 @@ public class Sequence implements RuleConditionElement {
             return counterMemories;
         }
 
-        public JobHandle[] getJobHandles() {
-            return jobHandles;
-        }
-
-        public JobHandle getJobHandle() {
-            return jobHandle;
-        }
-
-        public void setJobHandle(JobHandle jobHandle) {
-            this.jobHandle = jobHandle;
-        }
-
         public SignalStatus[] getSignalStatuses() {
             return signalStatuses;
         }
@@ -466,19 +445,6 @@ public class Sequence implements RuleConditionElement {
             return signalAdapter;
         }
 
-        public void setJobHandle(int index, JobHandle handle) {
-            if (jobHandles == null) {
-                // lazily create
-                jobHandles = new JobHandle[gateMemory.length]; // each gate can potentially have a job handle
-            }
-            jobHandles[index] = handle;
-        }
-
-
-        public JobHandle getJobHandle(int index) {
-            return jobHandles != null ? jobHandles[index] : null;
-        }
-
         public void deactivateSignalAdapter(int filterIndex, LogicGate gate, int signalAdapterIndex) {
             SignalAdapter signalAdapter = activeSignalAdapters[signalAdapterIndex];
             if (signalAdapter == null) {
@@ -505,18 +471,6 @@ public class Sequence implements RuleConditionElement {
         public void resetSignalCounterMemory(int counterIndex) {
             signalStatuses[gateMemory.length + counterIndex] = null;
             counterMemories[counterIndex]                    = 0;
-        }
-
-        public void cancelJobHandle(int gateIndex, ValueResolver valueResolver) {
-            if (jobHandles != null) {
-                JobHandle handle = jobHandles[gateIndex];
-                valueResolver.getTimerService().removeJob(handle);
-                jobHandles[gateIndex] = null;
-            }
-        }
-
-        public void clearJobHandle(int gateIndex, ValueResolver valueResolver) {
-            jobHandles[gateIndex] = null;
         }
 
         @Override
