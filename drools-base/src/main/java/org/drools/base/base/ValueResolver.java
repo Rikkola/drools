@@ -21,7 +21,6 @@ package org.drools.base.base;
 import org.drools.base.RuleBase;
 import org.drools.base.phreak.PropagationEntry;
 import org.drools.base.rule.accessor.GlobalResolver;
-import org.drools.base.time.TimerService;
 
 public interface ValueResolver {
 
@@ -36,7 +35,5 @@ public interface ValueResolver {
     RuleBase getRuleBase();
 
     void addPropagation(PropagationEntry propagationEntry);
-
-    TimerService getTimerService();
 
 }
