@@ -181,34 +181,6 @@ public class LogicGate extends SignalProcessor {
         }
     }
 
-    public static class DelayFromActivatedTimer implements PropagationTimer  {
-        private final LogicGate gate;
-        private final Timer     timer;
-
-        public DelayFromActivatedTimer(LogicGate gate, Timer timer) {
-            this.gate  = gate;
-            this.timer = timer;
-        }
-
-        @Override
-        public void activated(SequenceMemory memory, ValueResolver valueResolver)  {
-            Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
-            LogicGateTimerJobContext ctx = new LogicGateTimerJobContext(LogicGateTimerJobContext.TIMEOUT, trigger, valueResolver, gate, memory);
-            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(LogicGateJob.getInstance(), ctx, trigger);
-            memory.setJobHandle(gate.getGateIndex(), jobHandle);
-        }
-
-        @Override
-        public void matched(SequenceMemory memory, ValueResolver valueResolver, SignalStatus status)  {
-            //gate.propagate(memory, reteEvaluator, status);
-        }
-
-        @Override
-        public void failed(SequenceMemory memory, ValueResolver valueResolver)  {
-            memory.cancelJobHandle(gate.getGateIndex(), valueResolver);
-        }
-    }
-
     public static class DelayFromMatchTimer implements PropagationTimer  {
         private final LogicGate gate;
         private final Timer     timer;

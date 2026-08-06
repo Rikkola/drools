@@ -23,7 +23,6 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
-import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromActivatedTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.DelayFromMatchTimer;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.steps.Step;
@@ -45,46 +44,6 @@ public class PhreakSequencerSignalProcessorTimerTest extends AbstractPhreakSeque
     @BeforeEach
     public void setup() {
         initKBaseWithEmptyRule();
-    }
-
-    @Test
-    public void testDelayFromActivation() {
-        LogicGate gate1 = new LogicGate((inputMask, sourceMask) -> Gates.and(inputMask, sourceMask),0,
-                                        new int[] {0, 1}, // B and C
-                                        new int[] {0, 1}, // Each SignalAdapter must be in a unique index  for the Sequence
-                                        0);
-
-        gate1.setPropagationTimer(new DelayFromActivatedTimer(gate1, new DurationTimer(1000)));
-
-        gate1.setOutput(TerminatingSignalProcessor.get());
-
-        LogicCircuit circuit1 = new LogicCircuit(gate1);
-
-        Sequence seq = new Sequence(0, Step.of(circuit1));
-        seq.setFilters(new Pattern[]{bpattern, cpattern});
-        rule.addSequence(seq);
-        kbase.addPackage(pkg);
-
-        createSession();
-
-        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
-        InternalFactHandle   fhB0   = (InternalFactHandle) session.insert(new B(0, "b"));
-        InternalFactHandle fhC0   = (InternalFactHandle) session.insert(new C(0, "c"));
-        PseudoClockScheduler pseudo = (PseudoClockScheduler) session.getTimerService();
-        assertThat(pseudo.getQueue().size()).isEqualTo(1);
-        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
-        session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
-        assertThat(pseudo.getQueue().size()).isEqualTo(0);
-
-        createSession();
-
-        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
-        fhB0   = (InternalFactHandle) session.insert(new B(0, "b"));
-        pseudo = (PseudoClockScheduler) session.getTimerService();
-        assertThat(pseudo.getQueue().size()).isEqualTo(1);
-        pseudo.advanceTime(2000, TimeUnit.MILLISECONDS);
-        session.fireAllRules(); // if the rest of the system is immediate, why isn't this?
-        assertThat(pseudo.getQueue().size()).isEqualTo(0);
     }
 
     @Test
