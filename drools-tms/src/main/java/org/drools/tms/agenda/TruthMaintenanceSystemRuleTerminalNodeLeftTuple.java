@@ -21,7 +21,7 @@ package org.drools.tms.agenda;
 import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.reteoo.RuleTerminalNodeLeftTuple;
-import org.drools.base.reteoo.Sink;
+import org.drools.core.reteoo.Sink;
 import org.drools.core.common.PropagationContext;
 import org.drools.core.reteoo.TupleImpl;
 import org.drools.base.util.LinkedList;

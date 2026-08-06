@@ -47,7 +47,7 @@ import org.drools.core.reteoo.TupleToObjectNode;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.reteoo.RightTupleSink;
 import org.drools.core.reteoo.RuleTerminalNode;
-import org.drools.base.reteoo.Sink;
+import org.drools.core.reteoo.Sink;
 import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.reteoo.TimerNode;
 import org.drools.core.reteoo.TupleImpl;

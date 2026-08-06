@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.drools.base.reteoo.Sink;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.phreak.ReactiveObjectUtil.ModificationType;
 import org.kie.api.runtime.rule.FactHandle;

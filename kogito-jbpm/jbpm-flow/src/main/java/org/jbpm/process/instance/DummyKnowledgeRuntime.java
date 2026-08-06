@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-import org.drools.base.time.TimerService;
+import org.drools.core.time.TimerService;
 import org.drools.core.common.EndOperationListener;
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.InternalKnowledgeRuntime;

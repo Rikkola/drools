@@ -16,24 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.base.time;
+package org.drools.core.time.impl;
 
-import java.io.Serializable;
-
-import org.drools.base.base.ValueResolver;
-
-public interface JobContext extends Serializable {
-    /**
-     * This method should only be called by the scheduler
-     */    
-    void setJobHandle(JobHandle jobHandle);
-
-    JobHandle getJobHandle();
-
-    ValueResolver getValueResolver();
-//    ReteEvaluator getReteEvaluator();
-//
-//    default Optional<InternalKnowledgeRuntime> getInternalKnowledgeRuntime() {
-//        return getReteEvaluator() instanceof InternalWorkingMemory ? Optional.ofNullable(((InternalWorkingMemory)getReteEvaluator()).getKnowledgeRuntime()) : Optional.empty();
-//    }
+public interface InternalSchedulerService {
+    public void internalSchedule(TimerJobInstance timerJobInstance);
 }

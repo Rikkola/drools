@@ -16,8 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.base.time.impl;
+package org.drools.core.time.impl;
 
-public interface InternalSchedulerService {
-    public void internalSchedule(TimerJobInstance timerJobInstance);
+import org.drools.base.time.JobHandle;
+import org.drools.base.time.Trigger;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
+
+public interface TimerJobInstance {
+    JobHandle getJobHandle();
+    
+    Job getJob();
+    
+    Trigger getTrigger();
+    
+    JobContext getJobContext();
+    
+    void cancel();
+    boolean isCanceled();
 }

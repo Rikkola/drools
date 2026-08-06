@@ -16,26 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.base.time;
+package org.drools.core.time;
 
 import java.io.Serializable;
 
 import org.drools.base.base.ValueResolver;
-import org.drools.base.reteoo.BaseTuple;
-import org.drools.base.rule.Declaration;
-import org.drools.base.rule.RuleComponent;
-import org.drools.base.rule.RuleConditionElement;
-import org.kie.api.runtime.Calendars;
+import org.drools.base.time.JobHandle;
 
-public interface Timer extends Serializable, RuleComponent, RuleConditionElement {
+public interface JobContext extends Serializable {
+    /**
+     * This method should only be called by the scheduler
+     */    
+    void setJobHandle(JobHandle jobHandle);
 
-    Trigger createTrigger( long timestamp, String[] calendarNames, Calendars calendars);
+    JobHandle getJobHandle();
 
-    Trigger createTrigger(long timestamp,
-                          BaseTuple leftTuple,
-                          JobHandle jh,
-                          String[] calendarNames,
-                          Calendars calendars,
-                          Declaration[][] declrs,
-                          ValueResolver valueResolver);
+    ValueResolver getValueResolver();
+//    ReteEvaluator getReteEvaluator();
+//
+//    default Optional<InternalKnowledgeRuntime> getInternalKnowledgeRuntime() {
+//        return getReteEvaluator() instanceof InternalWorkingMemory ? Optional.ofNullable(((InternalWorkingMemory)getReteEvaluator()).getKnowledgeRuntime()) : Optional.empty();
+//    }
 }

@@ -16,27 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.drools.base.time.impl;
-
-import java.util.Collection;
+package org.drools.core.time;
 
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
-import org.drools.base.time.Job;
-import org.drools.base.time.JobContext;
 
-public interface TimerJobFactoryManager {
-    TimerJobInstance createTimerJobInstance(Job job,
-                                            JobContext ctx,
-                                            Trigger trigger,
-                                            JobHandle handle,
-                                            InternalSchedulerService scheduler);
-    
-    void addTimerJobInstance(TimerJobInstance instance);
-    
-    void removeTimerJobInstance(TimerJobInstance instance);
+public interface SchedulerService {
 
-    void removeTimerJobInstance(JobHandle handle);
+    /**
+     * Schedule a job for later execution
+     * 
+     * @param job
+     * @param ctx
+     * @param trigger
+     * 
+     * @return
+     */
+    JobHandle scheduleJob(Job job, JobContext ctx, Trigger trigger);
 
-    Collection<TimerJobInstance> getTimerJobInstances();
+    /**
+     * Remove the job identified by the given job handle from the 
+     * scheduled queue
+     * 
+     * @param jobHandle the job identity handle
+     * 
+     * @return
+     */
+    void removeJob(JobHandle jobHandle);
 }

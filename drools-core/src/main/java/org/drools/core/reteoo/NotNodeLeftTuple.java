@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.Sink;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.MemoryFactory;

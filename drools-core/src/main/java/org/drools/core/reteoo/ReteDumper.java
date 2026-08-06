@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.NodeTypeEnums;
-import org.drools.base.reteoo.Sink;
 import org.drools.core.common.BaseNode;
 import org.drools.core.impl.InternalRuleBase;
 import org.kie.api.KieBase;

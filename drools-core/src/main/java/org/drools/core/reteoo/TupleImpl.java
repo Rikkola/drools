@@ -18,7 +18,6 @@
  */
 package org.drools.core.reteoo;
 
-import org.drools.base.reteoo.Sink;
 import org.drools.base.rule.Declaration;
 import org.drools.core.common.DefaultEventHandle;
 import org.drools.core.common.InternalFactHandle;

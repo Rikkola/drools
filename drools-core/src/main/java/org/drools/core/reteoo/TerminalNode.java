@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.BaseTerminalNode;
-import org.drools.base.reteoo.Sink;
 
 /**
  * A markup interface for terminal nodes

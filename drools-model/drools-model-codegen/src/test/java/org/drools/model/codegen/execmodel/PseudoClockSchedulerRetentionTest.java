@@ -21,7 +21,7 @@ package org.drools.model.codegen.execmodel;
 import java.lang.reflect.Field;
 import java.util.PriorityQueue;
 
-import org.drools.base.time.impl.TimerJobInstance;
+import org.drools.core.time.impl.TimerJobInstance;
 import org.drools.core.time.impl.PseudoClockScheduler;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;

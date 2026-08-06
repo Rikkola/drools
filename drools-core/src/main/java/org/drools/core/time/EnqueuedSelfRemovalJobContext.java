@@ -20,10 +20,9 @@ package org.drools.core.time;
 
 import java.util.Map;
 
-import org.drools.base.time.JobContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.base.phreak.actions.AbstractPropagationEntry;
-import org.drools.base.time.impl.TimerJobInstance;
+import org.drools.core.time.impl.TimerJobInstance;
 
 public class EnqueuedSelfRemovalJobContext extends SelfRemovalJobContext {
     public EnqueuedSelfRemovalJobContext(JobContext jobContext, Map<Long, TimerJobInstance> timerInstances) {

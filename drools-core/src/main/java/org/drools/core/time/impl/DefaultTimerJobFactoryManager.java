@@ -23,11 +23,8 @@ import java.util.Collections;
 
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
-import org.drools.base.time.Job;
-import org.drools.base.time.JobContext;
-import org.drools.base.time.impl.InternalSchedulerService;
-import org.drools.base.time.impl.TimerJobFactoryManager;
-import org.drools.base.time.impl.TimerJobInstance;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
 
 public class DefaultTimerJobFactoryManager
     implements

@@ -21,9 +21,8 @@ package org.drools.core.time;
 import java.util.Map;
 
 import org.drools.base.base.ValueResolver;
-import org.drools.base.time.JobContext;
 import org.drools.base.time.JobHandle;
-import org.drools.base.time.impl.TimerJobInstance;
+import org.drools.core.time.impl.TimerJobInstance;
 
 public class SelfRemovalJobContext implements JobContext {
 

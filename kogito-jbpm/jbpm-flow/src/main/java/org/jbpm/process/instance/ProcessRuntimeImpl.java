@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.phreak.actions.AbstractPropagationEntry;
-import org.drools.base.time.TimerService;
+import org.drools.core.time.TimerService;
 import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.ReteEvaluator;

@@ -59,8 +59,6 @@ public class SequencerMemoryImpl implements SequencerMemory {
 
     private final LeftTupleSink sink;
 
-    private final ArrayList<SequenceMemory> sequenceStack = new ArrayList<>();
-
     private Sequencer sequencer;
 
     private SequenceNode node;
@@ -87,11 +85,6 @@ public class SequencerMemoryImpl implements SequencerMemory {
     @Override
     public CircularArrayList<Object> getData() {
         return events;
-    }
-
-    @Override
-    public LeftTupleSink getSink() {
-        return sink;
     }
 
     @Override

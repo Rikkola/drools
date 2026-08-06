@@ -52,7 +52,7 @@ import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.rule.accessor.FactHandleFactory;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.drools.core.runtime.process.InternalProcessRuntime;
-import org.drools.base.time.TimerService;
+import org.drools.core.time.TimerService;
 import org.drools.util.bitmask.BitMask;
 import org.drools.kiesession.rulebase.InternalKnowledgeBase;
 import org.drools.kiesession.session.StatefulKnowledgeSessionImpl;
