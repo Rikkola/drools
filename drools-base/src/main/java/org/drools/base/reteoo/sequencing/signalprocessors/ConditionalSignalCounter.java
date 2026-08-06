@@ -19,7 +19,6 @@
 package org.drools.base.reteoo.sequencing.signalprocessors;
 
 import org.drools.base.base.ValueResolver;
-import org.drools.base.util.index.ConstraintTypeOperator;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 
 import java.util.function.Consumer;
@@ -38,35 +37,8 @@ public class ConditionalSignalCounter extends SignalProcessor {
         this.constraint   = constraint;
     }
 
-    public ConditionalSignalCounter(int signalIndex, int counterIndex, ConstraintTypeOperator operator, long cardinal) {
-        this.signalIndex = signalIndex;
-        this.counterIndex = counterIndex;
-        this.constraint        = c -> {
-            switch (operator) {
-                case EQUAL:
-                    return c == cardinal;
-                case NOT_EQUAL:
-                    return c != cardinal;
-                case GREATER_THAN:
-                    return c > cardinal;
-                case GREATER_OR_EQUAL:
-                    return c >= cardinal;
-                case LESS_THAN:
-                    return c < cardinal;
-                case LESS_OR_EQUAL:
-                    return c <= cardinal;
-
-            }
-            throw new IllegalStateException("Unknown operator: " + operator);
-        };
-    }
-
     public int getSignalIndex() {
         return signalIndex;
-    }
-
-    public int getCounterIndex() {
-        return counterIndex;
     }
 
     public SignalProcessor getOutput() {
@@ -79,17 +51,17 @@ public class ConditionalSignalCounter extends SignalProcessor {
 
     @Override
     public void consume(SignalStatus incomingSignalStatus, SequenceMemory memory, ValueResolver valueResolver) {
-        consume(incomingSignalStatus, memory,
+        consume(memory,
                 (SignalStatus status) -> output.consume(status, memory, valueResolver), valueResolver);
     }
 
     @Override
     public void consume(int signalBitIndex, SignalStatus incomingSignalStatus, SequenceMemory memory, ValueResolver valueResolver) {
-        consume(incomingSignalStatus, memory,
+        consume(memory,
                 (SignalStatus status) -> output.consume(signalBitIndex, incomingSignalStatus, memory, valueResolver), valueResolver);
     }
 
-    private void consume(SignalStatus inputSignalStatus, SequenceMemory memory, Consumer<SignalStatus> propagator, ValueResolver valueResolver) {
+    private void consume(SequenceMemory memory, Consumer<SignalStatus> propagator, ValueResolver valueResolver) {
         SignalStatus status = memory.getCounterSignalStatus(counterIndex);
 
         SignalStatus priorStatus   = status;

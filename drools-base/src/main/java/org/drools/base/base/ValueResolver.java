@@ -23,8 +23,6 @@ import org.drools.base.phreak.PropagationEntry;
 import org.drools.base.rule.accessor.GlobalResolver;
 import org.drools.base.time.TimerService;
 
-import java.util.function.Consumer;
-
 public interface ValueResolver {
 
     default Object getGlobal(String identifier) {
@@ -37,12 +35,8 @@ public interface ValueResolver {
 
     RuleBase getRuleBase();
 
-    default void addPropagation(PropagationEntry propagationEntry) {
-        throw new UnsupportedOperationException();
-    }
+    void addPropagation(PropagationEntry propagationEntry);
 
-    default TimerService getTimerService() {
-        throw new UnsupportedOperationException();
-    }
+    TimerService getTimerService();
 
 }

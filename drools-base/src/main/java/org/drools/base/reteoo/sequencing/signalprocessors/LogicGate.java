@@ -68,28 +68,12 @@ public class LogicGate extends SignalProcessor {
         return gateIndex;
     }
 
-    public int[] getFilterIndexes() {
-        return filterIndexes;
-    }
-
-    public PropagationTimer getPropagationTimer() {
-        return propagationTimer;
-    }
-
     public void setPropagationTimer(PropagationTimer propagationTimer) {
         this.propagationTimer = propagationTimer;
     }
 
     public int[] getSignalAdapterIndexes() {
         return signalAdapterIndexes;
-    }
-
-    public void setSignalAdapterIndexes(int[] signalAdapterIndexes) {
-        this.signalAdapterIndexes = signalAdapterIndexes;
-    }
-
-    public LogicGate[] getInputGates() {
-        return inputGates;
     }
 
     public void setInputGates(LogicGate... inputGates) {
