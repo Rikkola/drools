@@ -21,7 +21,6 @@ package org.drools.base.reteoo.sequencing;
 import org.drools.base.base.ValueResolver;
 import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.base.reteoo.DynamicFilter;
-import org.drools.base.reteoo.sequencing.signalprocessors.ConditionalSignalCounter;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.signalprocessors.SignalStatus;
 import org.drools.base.reteoo.sequencing.steps.LogicCircuitStep;
@@ -455,14 +454,7 @@ public class Sequence implements RuleConditionElement {
             SignalAdapter signalAdapter = signalAdapters[signalAdapterIndex];
 
             if (signalAdapter == null) {
-                ConditionalSignalCounter counter = null;
-                for ( ConditionalSignalCounter c : gate.getInputSignalCounters()) {
-                    if ( c.getSignalIndex() == signalAdapterIndex) {
-                        counter = c;
-                        break;
-                    }
-                }
-                signalAdapter = new SignalAdapter(counter == null ? gate : counter, signalBitIndex, this);
+                signalAdapter = new SignalAdapter(gate, signalBitIndex, this);
                 signalAdapters[signalAdapterIndex] = signalAdapter;
             }
 

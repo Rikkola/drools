@@ -40,7 +40,6 @@ import org.drools.base.reteoo.SignalAdapter;
 import org.drools.core.reteoo.TupleFactory;
 import org.drools.core.reteoo.TupleImpl;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
-import org.drools.base.reteoo.sequencing.signalprocessors.ConditionalSignalCounter;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.util.CircularArrayList;
 import org.kie.api.runtime.rule.FactHandle;
@@ -115,18 +114,13 @@ public class SequencerMemoryImpl implements SequencerMemory {
         if (sequenceMemory == null) {
 
             int signalAdapters = 0;
-            int counters       = 0;
 
             for (LogicGate gate : sequence.getGates()) {
-                counters = counters + gate.getInputSignalCounters().length;
-                if (gate.getOutput().getClass() == ConditionalSignalCounter.class) {
-                    ++counters;
-                }
                 signalAdapters = signalAdapters + gate.getSignalAdapterIndexes().length;
             }
 
             long[] gateMemory    = new long[sequence.getGates().length];
-            long[] counterMemory = new long[counters];
+            long[] counterMemory = new long[0];
 
             CircularArrayList<Object> data = newData == null ? new CircularArrayList<>(1000) : newData;
 

@@ -45,10 +45,6 @@ public class LogicGate extends SignalProcessor {
 
     private static final LogicGate[] EMPTY_INPUT_GATES = new LogicGate[0];
 
-    private static final ConditionalSignalCounter[] EMPTY_CONDITIONAL_SIGNAL_COUNTERS = new ConditionalSignalCounter[0];
-
-    private ConditionalSignalCounter[] inputSignalCounters = EMPTY_CONDITIONAL_SIGNAL_COUNTERS;
-
     private PropagationTimer propagationTimer;
 
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
@@ -78,14 +74,6 @@ public class LogicGate extends SignalProcessor {
 
     public void setInputGates(LogicGate... inputGates) {
         this.inputGates = inputGates;
-    }
-
-    public ConditionalSignalCounter[] getInputSignalCounters() {
-        return inputSignalCounters;
-    }
-
-    public void setInputSignalCounters(ConditionalSignalCounter[] inputSignalCounters) {
-        this.inputSignalCounters = inputSignalCounters;
     }
 
     public SignalProcessor getOutput() {
@@ -151,10 +139,6 @@ public class LogicGate extends SignalProcessor {
         }
 
         memory.resetLogicGateMemory(gateIndex, valueResolver);
-
-        for (ConditionalSignalCounter counter : inputSignalCounters) {
-            counter.reset(memory, valueResolver);
-        }
     }
 
     public void reset(SequenceMemory memory, ValueResolver valueResolver) {
