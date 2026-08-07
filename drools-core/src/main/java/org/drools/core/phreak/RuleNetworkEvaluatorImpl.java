@@ -74,6 +74,7 @@ import org.drools.core.reteoo.Tuple;
 import org.drools.core.reteoo.TupleFactory;
 import org.drools.core.reteoo.TupleImpl;
 import org.drools.core.reteoo.TupleToObjectNode;
+import org.drools.base.util.LinkedList;
 
 import static org.drools.core.common.TupleSetsImpl.createLeftTupleTupleSets;
 

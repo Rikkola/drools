@@ -47,6 +47,7 @@ import org.drools.core.reteoo.AccumulateNode.AccumulateContext;
 import org.drools.core.reteoo.AccumulateNode.AccumulateMemory;
 import org.drools.core.reteoo.FromNode.FromMemory;
 import org.drools.core.reteoo.TupleToObjectNode.SubnetworkPathMemory;
+import org.drools.core.reteoo.WindowNode;
 import org.drools.base.util.FastIterator;
 import org.kie.api.definition.rule.Rule;
 import org.slf4j.Logger;
