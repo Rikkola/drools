@@ -46,6 +46,7 @@ import org.drools.core.common.SegmentMemorySupport;
 import org.drools.core.event.AgendaEventSupport;
 import org.drools.core.event.RuleEventListenerSupport;
 import org.drools.core.event.RuleRuntimeEventSupport;
+import org.drools.base.phreak.PropagationEntry;
 import org.drools.core.phreak.RuleNetworkEvaluator;
 import org.drools.core.reteoo.EntryPointNode;
 import org.drools.core.reteoo.TerminalNode;
@@ -684,7 +685,7 @@ public class StatefulKnowledgeSessionForRHS
         delegate.closeLiveQuery(factHandle);
     }
 
-    public void addPropagation(PropagationEntry propagationEntry) {
+    public void addPropagation(PropagationEntry<ReteEvaluator> propagationEntry) {
         delegate.addPropagation(propagationEntry);
     }
 
@@ -704,7 +705,7 @@ public class StatefulKnowledgeSessionForRHS
         return delegate.tryDeactivate();
     }
 
-    public Iterator<? extends PropagationEntry> getActionsIterator() {
+    public Iterator<? extends PropagationEntry<ReteEvaluator>> getActionsIterator() {
         return delegate.getActionsIterator();
     }
 

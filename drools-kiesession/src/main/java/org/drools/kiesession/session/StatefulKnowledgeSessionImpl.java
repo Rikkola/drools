@@ -66,6 +66,7 @@ import org.drools.core.impl.EnvironmentFactory;
 import org.drools.core.management.DroolsManagementAgent;
 import org.drools.core.marshalling.MarshallerReaderContext;
 import org.drools.base.phreak.PropagationEntry;
+import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.core.phreak.actions.ExecuteQuery;
 import org.drools.core.phreak.actions.PropagationEntryWithResult;
 import org.drools.core.phreak.RuleAgendaItem;
@@ -257,7 +258,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     private NamedEntryPointsManager entryPointsManager;
 
-    private Consumer<PropagationEntry> workingMemoryActionListener;
+    private Consumer<PropagationEntry<ReteEvaluator>> workingMemoryActionListener;
 
     private boolean tmsEnabled;
 
@@ -468,12 +469,12 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     @Override
-    public Consumer<PropagationEntry> getWorkingMemoryActionListener() {
+    public Consumer<PropagationEntry<ReteEvaluator>> getWorkingMemoryActionListener() {
         return workingMemoryActionListener;
     }
 
     @Override
-    public void setWorkingMemoryActionListener(Consumer<PropagationEntry> workingMemoryActionListener) {
+    public void setWorkingMemoryActionListener(Consumer<PropagationEntry<ReteEvaluator>> workingMemoryActionListener) {
         this.workingMemoryActionListener = workingMemoryActionListener;
     }
 
@@ -1620,7 +1621,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     @Override
-    public void addPropagation(PropagationEntry propagationEntry) {
+    public void addPropagation(PropagationEntry<ReteEvaluator> propagationEntry) {
         agenda.addPropagation( propagationEntry );
     }
 
@@ -1634,7 +1635,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     @Override
-    public Iterator<? extends PropagationEntry> getActionsIterator() {
+    public Iterator<? extends PropagationEntry<ReteEvaluator>> getActionsIterator() {
         return agenda.getActionsIterator();
     }
 
