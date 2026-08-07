@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
+import org.drools.core.time.InternalSchedulerService;
 import org.drools.core.time.Job;
 import org.drools.core.time.JobContext;
 

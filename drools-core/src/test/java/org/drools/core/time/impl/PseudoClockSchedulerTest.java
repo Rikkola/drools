@@ -19,12 +19,13 @@
 package org.drools.core.time.impl;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
+import org.drools.core.time.Job;
+import org.drools.core.time.JobContext;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +89,7 @@ public class PseudoClockSchedulerTest {
         final Date triggerTime = new Date(1000);
         when( mockTrigger_1.hasNextFireTime() ).thenReturn(triggerTime, triggerTime, triggerTime, null);
         when( mockTrigger_1.nextFireTime() ).thenReturn(triggerTime);
-        //when(mockContext_1.getInternalKnowledgeRuntime()).thenReturn(Optional.empty());
+        when(mockContext_1.getInternalKnowledgeRuntime()).thenReturn(Optional.empty());
 
         Job job = new Job() {
             public void execute(JobContext ctx) {
@@ -114,7 +115,7 @@ public class PseudoClockSchedulerTest {
         final Date triggerTime = new Date(1000);
         when( mockTrigger_1.hasNextFireTime() ).thenReturn(triggerTime, triggerTime, triggerTime, null);
         when( mockTrigger_1.nextFireTime() ).thenReturn(triggerTime);
-        //when(mockContext_1.getInternalKnowledgeRuntime()).thenReturn(Optional.empty());
+        when(mockContext_1.getInternalKnowledgeRuntime()).thenReturn(Optional.empty());
 
         Job job = new Job() {
             public void execute(JobContext ctx) {

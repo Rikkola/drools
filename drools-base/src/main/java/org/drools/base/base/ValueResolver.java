@@ -19,7 +19,6 @@
 package org.drools.base.base;
 
 import org.drools.base.RuleBase;
-import org.drools.base.phreak.PropagationEntry;
 import org.drools.base.rule.accessor.GlobalResolver;
 
 public interface ValueResolver {
@@ -33,7 +32,4 @@ public interface ValueResolver {
     GlobalResolver getGlobalResolver();
 
     RuleBase getRuleBase();
-
-    void addPropagation(PropagationEntry propagationEntry);
-
 }

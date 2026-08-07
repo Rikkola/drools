@@ -19,7 +19,7 @@
 package org.drools.persistence.jpa;
 
 import org.kie.api.runtime.ExecutableRunner;
-import org.drools.core.time.impl.InternalSchedulerService;
+import org.drools.core.time.InternalSchedulerService;
 import org.drools.core.time.Job;
 import org.drools.core.time.JobContext;
 import org.drools.base.time.JobHandle;

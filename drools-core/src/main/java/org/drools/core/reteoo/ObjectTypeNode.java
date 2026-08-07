@@ -456,7 +456,7 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
             JobContext,
             Externalizable {
         public WorkingMemoryReteExpireAction expireAction;
-        public transient ReteEvaluator       reteEvaluator;
+        public transient ReteEvaluator         reteEvaluator;
         public JobHandle                     handle;
 
         public ExpireJobContext() {
@@ -483,9 +483,12 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
             return expireAction;
         }
 
-        @Override
-        public ValueResolver getValueResolver() {
+        public ReteEvaluator getReteEvaluator() {
             return reteEvaluator;
+        }
+
+        public void setReteEvaluator(ReteEvaluator reteEvaluator) {
+            this.reteEvaluator = reteEvaluator;
         }
 
         public JobHandle getHandle() {
