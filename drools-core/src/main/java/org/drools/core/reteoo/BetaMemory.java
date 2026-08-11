@@ -18,7 +18,6 @@
  */
 package org.drools.core.reteoo;
 
-import org.drools.base.util.AbstractLinkedListNode;
 import org.drools.core.common.Memory;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;

@@ -59,7 +59,6 @@ import org.drools.core.phreak.actions.ExecuteQuery;
 import org.drools.core.phreak.RuleNetworkEvaluator;
 import org.drools.core.phreak.RuleNetworkEvaluatorImpl;
 import org.drools.core.phreak.SegmentMemorySupportImpl;
-import org.drools.core.phreak.actions.ExecuteQuery;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.RuntimeComponentFactory;
 import org.drools.core.reteoo.TerminalNode;

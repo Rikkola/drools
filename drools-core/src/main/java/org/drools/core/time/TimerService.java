@@ -20,8 +20,8 @@ package org.drools.core.time;
 
 import java.util.Collection;
 
-import org.drools.core.time.impl.TimerJobInstance;
 import org.drools.core.time.impl.TimerJobFactoryManager;
+import org.drools.core.time.impl.TimerJobInstance;
 
 /**
  * An interface for all timer service implementations used in a drools session.

@@ -20,7 +20,6 @@ package org.drools.core.time;
 
 import java.util.Map;
 
-import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.core.time.impl.TimerJobInstance;

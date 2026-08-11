@@ -402,6 +402,7 @@ public class KiePackagesBuilder {
     }
 
     private void processConsequence( RuleContext ctx, Consequence consequence, String name ) {
+        // @TODO this might be wasteful, as we calculating this else where too, and now I only need the boolean (mdp).
         // This is changed, because we must use the Declarations provided by the RTN, otherwise tuple indexes are not set.
         Declaration[] requiredDeclarations = getRequiredDeclarationsIfPossible( ctx, consequence, name );
         boolean enabledTupleOptimization = requiredDeclarations != null && requiredDeclarations.length > 0;

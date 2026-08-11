@@ -28,7 +28,7 @@ import org.drools.base.reteoo.BaseTerminalNode;
  */
 public interface TerminalNode
     extends
-    BaseTerminalNode, NetworkNode, Sink, PathEndNode {
+        BaseTerminalNode, NetworkNode, Sink, PathEndNode {
 
     LeftTupleSource getLeftTupleSource();
     

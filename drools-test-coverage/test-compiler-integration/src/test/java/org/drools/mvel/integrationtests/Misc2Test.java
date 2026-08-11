@@ -20,6 +20,8 @@ package org.drools.mvel.integrationtests;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

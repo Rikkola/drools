@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.base.definitions.rule.impl.QueryImpl;
 import org.drools.base.definitions.rule.impl.RuleImpl;
-import org.drools.base.util.LinkedList;
 import org.drools.core.common.ActivationGroupImpl;
 import org.drools.core.common.ActivationGroupNode;
 import org.drools.core.common.ActivationsFilter;
@@ -78,7 +77,7 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
     private boolean firing = false;
 
-    private final LinkedList<RuleAgendaItem> eager = new LinkedList<>();
+    private final org.drools.base.util.LinkedList<RuleAgendaItem> eager = new org.drools.base.util.LinkedList<>();
 
     private final Map<QueryImpl, RuleAgendaItem> queries = new ConcurrentHashMap<>();
 

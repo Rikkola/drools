@@ -23,11 +23,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-import org.drools.core.time.TimerService;
 import org.drools.core.common.EndOperationListener;
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.impl.EnvironmentImpl;
+import org.drools.core.time.TimerService;
 import org.jbpm.workflow.instance.impl.CodegenNodeInstanceFactoryRegistry;
 import org.kie.api.KieBase;
 import org.kie.api.command.Command;

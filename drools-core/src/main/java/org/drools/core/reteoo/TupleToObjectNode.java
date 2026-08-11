@@ -105,7 +105,6 @@ public class TupleToObjectNode extends ObjectSource
         return getPathMemSpec(null);
     }
 
-
     /**
      * used during network build time, potentially during rule removal time.
      * @param removingTN
@@ -197,7 +196,6 @@ public class TupleToObjectNode extends ObjectSource
     public void networkUpdated(UpdateContext updateContext) {
         this.tupleSource.networkUpdated(updateContext);
     }
-
 
     protected boolean doRemove(final RuleRemovalContext context,
                                final ReteooBuilder builder) {
