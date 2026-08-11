@@ -47,9 +47,6 @@ import java.util.function.Predicate;
 public class Sequence implements RuleConditionElement {
     private final int sequenceIndex;
 
-    private final SubsequenceStep parentStep;
-
-
     private Pattern[] filters;
 
     private Step[] steps;
@@ -58,27 +55,19 @@ public class Sequence implements RuleConditionElement {
 
     private SequenceController controller;
 
-    private Consumer<SequenceMemory> onStart;
     private Consumer<SequenceMemory> onEnd;
 
     private int outputSize;
 
-    private int subsequenceIndex = -1; // -1 is for when this is not parallel
-
-    public Sequence(int sequenceIndex, SubsequenceStep parentStep, StepFactory... stepFactories) {
+    public Sequence(int sequenceIndex, StepFactory... stepFactories) {
         this.steps = new Step[stepFactories.length];
         this.sequenceIndex = sequenceIndex;
-        this.parentStep = parentStep;
         this.controller = new DefaultController();
 
         for ( int i = 0; i < steps.length; i++ ) {
             steps[i] = stepFactories[i].createStep(i,this);
         }
         populateLogicGates();
-    }
-
-    public Sequence(int sequenceIndex, StepFactory... stepFactories) {
-        this(sequenceIndex, null, stepFactories);
     }
 
     public Pattern[] getFilters() {
@@ -93,28 +82,8 @@ public class Sequence implements RuleConditionElement {
         return outputSize;
     }
 
-    public int getSubsequenceIndex() {
-        return subsequenceIndex;
-    }
-
-    public void setSubsequenceIndex(int subsequenceIndex) {
-        this.subsequenceIndex = subsequenceIndex;
-    }
-
     public void setOutputSize(int outputSize) {
         this.outputSize = outputSize;
-    }
-
-    public Consumer<SequenceMemory> getOnStart() {
-        return onStart;
-    }
-
-    public void setOnStart(Consumer<SequenceMemory> onStart) {
-        this.onStart = onStart;
-    }
-
-    public Consumer<SequenceMemory> getOnEnd() {
-        return onEnd;
     }
 
     public void setOnEnd(Consumer<SequenceMemory> onEnd) {
@@ -146,15 +115,6 @@ public class Sequence implements RuleConditionElement {
 
     public LogicGate[] getGates() {
         return gates;
-    }
-
-
-    public SequenceController getController() {
-        return controller;
-    }
-
-    public void setController(SequenceController controller) {
-        this.controller = controller;
     }
 
     @Override
@@ -201,12 +161,6 @@ public class Sequence implements RuleConditionElement {
         controller.start(memory, valueResolver);
     }
 
-    private void restart(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
-        sequenceMemory.setStep(0);
-        sequenceMemory.getData().resetHeadByOffset(sequenceMemory.getSequencerMemory().getData().size() - sequenceMemory.getEventsStartPosition());
-        getSteps()[0].activate(sequenceMemory, valueResolver);
-    }
-
     public void next(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
          controller.next(sequenceMemory, valueResolver);
     }
@@ -215,13 +169,6 @@ public class Sequence implements RuleConditionElement {
         default void start(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
             sequenceMemory.setStep(0);
             sequenceMemory.sequence.steps[0].activate(sequenceMemory, valueResolver);
-            if(sequenceMemory.sequence.onStart != null) {
-                sequenceMemory.sequence.onStart.accept(sequenceMemory);
-            }
-        }
-
-        default void restart(SequenceMemory memory, ValueResolver valueResolver) {
-
         }
 
         default void next(SequenceMemory memory, ValueResolver valueResolver) {
@@ -295,7 +242,6 @@ public class Sequence implements RuleConditionElement {
 
         private final long[] gateMemory;
 
-        private final long[] counterMemories;
 
         private final SignalStatus[] signalStatuses;
 
@@ -319,7 +265,6 @@ public class Sequence implements RuleConditionElement {
             this.signalAdapters       = signalAdapters;
             this.activeSignalAdapters = activeSignalAdapters;
             this.gateMemory           = gateMemory;
-            this.counterMemories      = counterMemories;
             this.signalStatuses       = new SignalStatus[gateMemory.length + counterMemories.length];
         }
 
@@ -337,15 +282,6 @@ public class Sequence implements RuleConditionElement {
 
         public SequencerMemory getSequencerMemory() {
             return sequencerMemory;
-        }
-
-
-        public SignalStatus getCounterSignalStatus(int index) {
-            return signalStatuses[gateMemory.length + index];
-        }
-
-        public void setCounterSignalStatus(int index, SignalStatus status) {
-            signalStatuses[gateMemory.length + index] = status;
         }
 
         public SignalStatus getLogicGateSignalStatus(int index) {
@@ -372,13 +308,6 @@ public class Sequence implements RuleConditionElement {
             return gateMemory;
         }
 
-        public long[] getCounterMemories() {
-            return counterMemories;
-        }
-
-        public SignalStatus[] getSignalStatuses() {
-            return signalStatuses;
-        }
 
         public int incrementStep() {
             return ++step;
@@ -412,15 +341,6 @@ public class Sequence implements RuleConditionElement {
             return data;
         }
 
-        public int getOutputStartPosition() {
-            if (sequence.getSubsequenceIndex() == -1) {
-                return eventsStartPosition - sequence.getOutputSize();
-            } else {
-                int i = eventsStartPosition - ((sequence.getSubsequenceIndex() + 1) * sequence.getOutputSize());
-                return i;
-            }
-        }
-
         public void setEventsStartPosition(int eventsStartPosition) {
             this.eventsStartPosition = eventsStartPosition;
         }
@@ -445,7 +365,7 @@ public class Sequence implements RuleConditionElement {
             return signalAdapter;
         }
 
-        public void deactivateSignalAdapter(int filterIndex, LogicGate gate, int signalAdapterIndex) {
+        public void deactivateSignalAdapter(int filterIndex, int signalAdapterIndex) {
             SignalAdapter signalAdapter = activeSignalAdapters[signalAdapterIndex];
             if (signalAdapter == null) {
                 // Already deactivated — e.g. FailStackFailureHandler called deactivate()
@@ -466,11 +386,6 @@ public class Sequence implements RuleConditionElement {
         public void resetLogicGateMemory(int gateIndex, ValueResolver valueResolver) {
             gateMemory[gateIndex]     = 0;
             signalStatuses[gateIndex] = null;
-        }
-
-        public void resetSignalCounterMemory(int counterIndex) {
-            signalStatuses[gateMemory.length + counterIndex] = null;
-            counterMemories[counterIndex]                    = 0;
         }
 
         @Override

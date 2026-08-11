@@ -46,10 +46,6 @@ public class ParallelStep extends AbstractStep implements Step {
         return subsequenceSteps;
     }
 
-    public int getOutputSize() {
-        return outputSize;
-    }
-
     @Override
     public void activate(SequenceMemory seqMem, ValueResolver valueResolver) {
         CircularArrayList<Object> data = seqMem.getData();

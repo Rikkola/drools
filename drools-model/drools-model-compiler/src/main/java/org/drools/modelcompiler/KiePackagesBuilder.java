@@ -508,13 +508,6 @@ public class KiePackagesBuilder {
             case FORALL: {
                 return buildForAll( ctx, group, condition );
             }
-            case CONSEQUENCE:
-                if (condition instanceof NamedConsequenceImpl) {
-                    NamedConsequenceImpl consequence = (NamedConsequenceImpl) condition;
-                    return consequence.getName().equals( RuleImpl.DEFAULT_CONSEQUENCE_NAME ) ? null : new NamedConsequence( consequence.getName(), consequence.isBreaking() );
-                } else if (condition instanceof ConditionalNamedConsequenceImpl) {
-                    return buildConditionalConsequence(ctx, (ConditionalNamedConsequenceImpl) condition);
-                }
             case SEQUENCE: {
                 SequenceConditionImpl sc = (SequenceConditionImpl) condition;
                 List<Condition> steps = sc.getSubConditions();
@@ -535,6 +528,13 @@ public class KiePackagesBuilder {
                 ctx.getRule().addSequence(seq);
                 return null;
             }
+            case CONSEQUENCE:
+                if (condition instanceof NamedConsequenceImpl) {
+                    NamedConsequenceImpl consequence = (NamedConsequenceImpl) condition;
+                    return consequence.getName().equals( RuleImpl.DEFAULT_CONSEQUENCE_NAME ) ? null : new NamedConsequence( consequence.getName(), consequence.isBreaking() );
+                } else if (condition instanceof ConditionalNamedConsequenceImpl) {
+                    return buildConditionalConsequence(ctx, (ConditionalNamedConsequenceImpl) condition);
+                }
         }
         throw new UnsupportedOperationException();
     }

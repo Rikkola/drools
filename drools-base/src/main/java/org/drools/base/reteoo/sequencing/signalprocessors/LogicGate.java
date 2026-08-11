@@ -52,10 +52,6 @@ public class LogicGate extends SignalProcessor {
         this.gateIndex = gateIndex;
     }
 
-    public int getGateIndex() {
-        return gateIndex;
-    }
-
     public int[] getSignalAdapterIndexes() {
         return signalAdapterIndexes;
     }
@@ -103,7 +99,7 @@ public class LogicGate extends SignalProcessor {
         boolean matched = predicate.test(currentMatched, allMatched);
 
         if (matched) {
-            status = SignalStatus.MATCHED;//repetition.newMatch();
+            status = SignalStatus.MATCHED;
         }
 
         memory.setLogicGateSignalStatus(gateIndex, status);
@@ -130,7 +126,7 @@ public class LogicGate extends SignalProcessor {
         output.reset(memory, valueResolver);
     }
 
-    public void activate(SequenceMemory memory, ValueResolver valueResolver) {
+    public void activate(SequenceMemory memory) {
         if (memory.getLogicGateSignalStatus()[gateIndex] == null) {
             memory.getLogicGateSignalStatus()[gateIndex] = SignalStatus.UNMATCHED;
         }
@@ -142,7 +138,7 @@ public class LogicGate extends SignalProcessor {
 
     public void deactivate(SequenceMemory memory, ValueResolver valueResolver) {
         for (int i = 0; i < filterIndexes.length; i++) {
-            memory.deactivateSignalAdapter(filterIndexes[i], this, signalAdapterIndexes[i]);
+            memory.deactivateSignalAdapter(filterIndexes[i], signalAdapterIndexes[i]);
         }
 
         memory.resetLogicGateMemory(gateIndex, valueResolver);

@@ -139,7 +139,6 @@ public interface Step {
                     // Parallel output size must be the same size as the largest output.
                     for (int i = 0; i < subsequences.length; i++ ) {
                         Sequence s = subsequences[i];
-                        s.setSubsequenceIndex(i);
                         if (outputSize < s.getOutputSize() ) {
                             outputSize = s.getOutputSize();
                         }
