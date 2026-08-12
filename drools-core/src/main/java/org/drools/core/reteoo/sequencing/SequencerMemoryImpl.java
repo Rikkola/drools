@@ -137,7 +137,11 @@ public class SequencerMemoryImpl implements SequencerMemory {
     @Override
     public void match(ValueResolver valueResolver) {
         boolean wasEmpty = nodeMemory.getStagedChildTuples().isEmpty();
-        TupleImpl child = TupleFactory.createLeftTuple(lt, sink,  lt.getPropagationContext(), false);
+        // leftTupleMemoryEnabled=true so the child is linked to the anchor left-tuple via
+        // setFirstChild/setLastChild. Without this link, deleteChildren() cannot find and
+        // clean up the child when the anchor is retracted after sequence completion, causing
+        // a stale agenda activation to fire a second time (N1 bug).
+        TupleImpl child = TupleFactory.createLeftTuple(lt, sink,  lt.getPropagationContext(), true);
         nodeMemory.getStagedChildTuples().addInsert(child);
 
         long          nodePosMaskBit = nodeMemory.getNodePosMaskBit();

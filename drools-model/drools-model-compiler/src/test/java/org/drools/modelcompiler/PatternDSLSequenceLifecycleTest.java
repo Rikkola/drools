@@ -190,6 +190,64 @@ public class PatternDSLSequenceLifecycleTest {
     }
 
     // -------------------------------------------------------------------
+    // retractStepEventDoesNotUndoStep
+    // Insert anchor → step-1 arrives (sequence advances to waiting for step-2)
+    // → retract the step-1 fact → insert step-2 fact → rule must FIRE.
+    //
+    // AlphaAdapter.retractRightTuple() is a no-op: the sequence engine does
+    // not track step-fact lifecycle, only the anchor tuple lifecycle.
+    // Once a step is consumed the sequence stays advanced regardless of what
+    // happens to the step fact afterwards.
+    // -------------------------------------------------------------------
+    @Test
+    public void retractStepEventDoesNotUndoStep() {
+        ksession = makeKSession();
+
+        ksession.insert(new Person("anchor"));
+        ksession.fireAllRules();
+
+        FactHandle toyHandle = ksession.insert(new Toy("ball"));
+        ksession.fireAllRules();                    // step-1 consumed; sequence now at step-2
+
+        ksession.retract(toyHandle);               // retract the step-1 fact — no-op for the sequencer
+        ksession.fireAllRules();
+
+        ksession.insert(new Relationship("go", "done"));
+        ksession.fireAllRules();                    // step-2 arrives — sequence is still at step-2, fires
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    // -------------------------------------------------------------------
+    // updateStepEventDoesNotUndoStep
+    // Insert anchor → step-1 arrives (sequence advances to waiting for step-2)
+    // → update the step-1 fact → insert step-2 fact → rule must FIRE.
+    //
+    // AlphaAdapter.modifyRightTuple() is a no-op for the same reason as
+    // retractRightTuple(): step-fact modifications are not tracked by the
+    // sequence engine. The sequence stays advanced.
+    // -------------------------------------------------------------------
+    @Test
+    public void updateStepEventDoesNotUndoStep() {
+        ksession = makeKSession();
+
+        ksession.insert(new Person("anchor"));
+        ksession.fireAllRules();
+
+        Toy toy = new Toy("ball");
+        FactHandle toyHandle = ksession.insert(toy);
+        ksession.fireAllRules();                    // step-1 consumed; sequence now at step-2
+
+        ksession.update(toyHandle, toy);            // update the step-1 fact — no-op for the sequencer
+        ksession.fireAllRules();
+
+        ksession.insert(new Relationship("go", "done"));
+        ksession.fireAllRules();                    // step-2 arrives — sequence fires
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    // -------------------------------------------------------------------
 
     private KieSession makeKSession() {
         Rule rule = rule("lifecycle-rule").build(

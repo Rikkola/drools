@@ -52,8 +52,11 @@ public class CircularArrayList<E> {
     }
 
     public void addEmpty(int size) {
-        Arrays.fill(array, head, head+size, null);
-        head = head + size;
+        // Use modulo to avoid raw-index ArrayIndexOutOfBoundsException once head >= capacity.
+        // Arrays.fill(array, head, head+size, null) is wrong when head wraps around.
+        for (int i = 0; i < size; i++) {
+            array[head++ % capacity] = null;
+        }
     }
 
     public E getHead() {

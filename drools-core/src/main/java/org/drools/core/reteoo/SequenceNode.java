@@ -489,7 +489,12 @@ public class SequenceNode extends LeftTupleSource
                     tuple.clearStaged();
                     tuple = next;
                 }
-                memory.getStagedChildTuples().clearInsert();
+                // resetAll() instead of clearInsert() so that insertFirst is set to null.
+                // clearInsert() traverses the list calling clearStaged() on each item but does NOT
+                // null out insertFirst. A dangling insertFirst pointer would cause the same child
+                // tuple to be re-inserted on the next network evaluation (e.g. on anchor retract
+                // after sequence completion), producing a spurious second activation (N1 bug).
+                memory.getStagedChildTuples().resetAll();
             }
 
             memory.getSegmentMemory().updateCleanNodeMask(memory.getNodePosMaskBit());
@@ -504,7 +509,8 @@ public class SequenceNode extends LeftTupleSource
                 SequencerMemory sequencerMemory = (SequencerMemory) leftTuple.getContextObject();
                 SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(sequencerMemory.getSequencer().getSequence());
                 node.getSequencer().stop(sequenceMemory, reteEvaluator);
-                deleteChildren(trgLeftTuples, leftTuple);
+                SequenceNodeMemory nodeMemoryForUpdate = reteEvaluator.getNodeMemory(node);
+                deleteChildren(nodeMemoryForUpdate.getStagedChildTuples(), trgLeftTuples, leftTuple);
 
                 node.getSequencer().start(sequencerMemory, reteEvaluator);
                 leftTuple.getMemory().removeAdd(leftTuple);
@@ -521,25 +527,34 @@ public class SequenceNode extends LeftTupleSource
                 TupleImpl next = leftTuple.getStagedNext();
 
                 SequencerMemory sequencerMemory = (SequencerMemory) leftTuple.getContextObject();
+                SequenceNodeMemory nodeMemory = reteEvaluator.getNodeMemory(node);
+
                 SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(sequencerMemory.getSequencer().getSequence());
                 node.getSequencer().stop(sequenceMemory, reteEvaluator);
                 leftTuple.getMemory().remove(leftTuple);
                 leftTuple.setContextObject(null);
 
-                deleteChildren(trgLeftTuples, leftTuple);
+                deleteChildren(nodeMemory.getStagedChildTuples(), trgLeftTuples, leftTuple);
 
                 leftTuple.clearStaged();
                 leftTuple = next;
             }
         }
 
-        private static void deleteChildren(TupleSets trgLeftTuples, TupleImpl leftTuple) {
+        private static void deleteChildren(TupleSets stagedChildTuples, TupleSets trgLeftTuples, TupleImpl leftTuple) {
             if (leftTuple.getFirstChild() != null) {
                 TupleImpl childLeftTuple = leftTuple.getFirstChild();
                 while (childLeftTuple != null) {
                     TupleImpl nextChild = childLeftTuple.getHandleNext();
                     childLeftTuple.unlinkFromLeftParent();
-                    trgLeftTuples.addDelete(childLeftTuple);
+                    // If this child is still staged as a pending insert (sequence completed but
+                    // doNode hasn't flushed it yet), cancel it rather than sending a delete
+                    // downstream — a delete for a tuple that was never propagated is invalid.
+                    if (childLeftTuple.getStagedType() == Tuple.INSERT) {
+                        stagedChildTuples.removeInsert(childLeftTuple);
+                    } else {
+                        trgLeftTuples.addDelete(childLeftTuple);
+                    }
                     childLeftTuple = nextChild;
                 }
             }

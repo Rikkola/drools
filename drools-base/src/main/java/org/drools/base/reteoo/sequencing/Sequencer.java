@@ -65,7 +65,13 @@ public class Sequencer {
 
     public void stop(SequenceMemory memory, ValueResolver valueResolver) {
         while (memory != null) {
-            memory.getSequence().getSteps()[memory.getStep()].deactivate(memory, valueResolver);
+            Sequence sequence = memory.getSequence();
+            int step = memory.getStep();
+            if (step < sequence.getSteps().length) {
+                sequence.getSteps()[step].deactivate(memory, valueResolver);
+            }
+            // Mark terminal so a subsequent stop() (e.g. retract after completion) is a no-op.
+            memory.setStep(sequence.getSteps().length);
             memory = memory.getParent();
         }
     }

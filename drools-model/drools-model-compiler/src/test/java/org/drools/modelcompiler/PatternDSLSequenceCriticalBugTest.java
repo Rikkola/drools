@@ -56,12 +56,13 @@ import static org.drools.model.PatternDSL.when;
  * <p>C2 (circular buffer overflow) is written test-first: it FAILS on the current branch
  * and PASSES after the C2 fix is applied.</p>
  *
- * <p>C1, C3, and C4 bugs are NOT directly triggerable via PatternDSL — they manifest only
- * through internal APIs (SubsequenceStep, raw SequenceNode wiring, or nested-sequence DSL
- * not yet wired in v1). Those three tests verify that the REACHABLE DSL path behaves
- * correctly and document where phreak-level tests are needed for the raw-API paths.
- * See docs/notes/2026-08-04-sequence-coverage-gaps.md for the gap inventory
- * (created in Task 4 of this plan, after the first JaCoCo coverage run).</p>
+ * <p>C1 and C3 bugs are NOT directly triggerable via PatternDSL — they manifest only
+ * through internal APIs (SubsequenceStep, raw SequenceNode wiring).
+ * Those tests verify the REACHABLE DSL path and document where phreak-level tests are needed.
+ * See docs/notes/2026-08-04-sequence-coverage-gaps.md for the gap inventory.</p>
+ *
+ * <p>C4 IS directly triggerable: two sequence() calls in one rule.build() both compile
+ * to sequenceIndex=0, overwriting each other in sequenceMemories[0].</p>
  */
 public class PatternDSLSequenceCriticalBugTest {
 
@@ -232,19 +233,64 @@ public class PatternDSLSequenceCriticalBugTest {
 
     // -------------------------------------------------------------------
     // C4 — KiePackagesBuilder always assigns sequenceIndex=0 to all sequences
-    //       (KiePackagesBuilder.java:532)
+    //       (KiePackagesBuilder.java:526)
     //
-    // The sequenceIndex collision only occurs within a SINGLE rule that contains
-    // multiple nested/parallel sub-sequences (where both would be stored in the
-    // same SequencerMemoryImpl.sequenceMemories[] array at index 0). Two SEPARATE
-    // rules each have their own SequenceNode, Sequencer, and SequencerMemoryImpl,
-    // so their sequenceIndex=0 values never collide.
+    // Two sequence() items in the SAME rule.build() each compile to Sequence(0, ...)
+    // but each gets its own SequenceNode in RETE, and therefore its own Sequencer
+    // and SequencerMemoryImpl. Their sequenceMemories[] arrays are never shared,
+    // so sequenceIndex=0 on both does NOT cause a collision here.
     //
-    // This test verifies the REACHABLE positive path: two separate rules each
-    // with a sequence() step run independently without interference.
+    // The actual C4 collision requires two Sequence objects inside the SAME
+    // Sequencer — which only happens with sub-sequences (SubsequenceStep) or
+    // ParallelStep, where a parent Sequence contains a child Sequence and both
+    // live in the same SequencerMemoryImpl.sequenceMemories[] array.
+    // That path is only reachable via phreak-level test until nested-sequence
+    // DSL is wired — see the coverage gap doc.
     //
-    // The real collision path requires either nested-sequence DSL (not yet wired
-    // in v1) or a phreak-level test — see coverage gap doc for the action item.
+    // This test still has value: it verifies that two chained sequence() blocks
+    // in one rule work end-to-end (integration of two SequenceNodes in series).
+    // -------------------------------------------------------------------
+    @Test
+    public void twoSequencesInOneRuleBothComplete() {
+        Variable<Person>       personV = declarationOf(Person.class);
+        Variable<Toy>          toyV    = declarationOf(Toy.class);
+        Variable<Relationship> relV    = declarationOf(Relationship.class);
+
+        Rule rule = rule("c4-two-seq-rule").build(
+                pattern(personV),
+                sequence(
+                        pattern(toyV).expr("is-ball", t -> t.getName().equals("ball"))
+                ),
+                sequence(
+                        pattern(relV).expr("is-go", r -> r.getStart().equals("go"))
+                ),
+                execute(() -> results.add("fired"))
+        );
+
+        KieBase kbase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule));
+        ksession = kbase.newKieSession();
+
+        ksession.insert(new Person("anchor"));
+        ksession.fireAllRules();                        // both sequencers start
+
+        ksession.insert(new Toy("ball"));
+        ksession.fireAllRules();                        // first sequence completes
+
+        // Before fix: sequenceMemories[0] was overwritten by sequence-2 when sequence-1
+        // completed and sequence-2 activated; sequence-1's memory is gone and the
+        // Relationship step is never reached, so the rule never fires.
+        // After fix: sequence-1 has index 0, sequence-2 has index 1; both resolve
+        // correctly and the rule fires once.
+        ksession.insert(new Relationship("go", "done"));
+        ksession.fireAllRules();                        // second sequence completes
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    // -------------------------------------------------------------------
+    // C4 (precondition) — two separate rules each with one sequence() do NOT
+    // collide, because each has its own SequenceNode and SequencerMemoryImpl.
+    // sequenceIndex=0 is fine when there is only one sequence per Sequencer.
     // -------------------------------------------------------------------
     @Test
     public void twoRulesWithSequencesTrackIndependently() {
