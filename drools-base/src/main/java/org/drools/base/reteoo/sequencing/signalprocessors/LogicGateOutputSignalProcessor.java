@@ -79,6 +79,6 @@ public class LogicGateOutputSignalProcessor extends SignalProcessor {
 
     @Override
     protected void reset(SequenceMemory memory, ValueResolver valueResolver) {
-        // Do nothing
+        throw new UnsupportedOperationException();
     }
 }

@@ -493,7 +493,7 @@ public class SequenceNode extends LeftTupleSource
                 // clearInsert() traverses the list calling clearStaged() on each item but does NOT
                 // null out insertFirst. A dangling insertFirst pointer would cause the same child
                 // tuple to be re-inserted on the next network evaluation (e.g. on anchor retract
-                // after sequence completion), producing a spurious second activation (N1 bug).
+                // after sequence completion), producing a spurious second activation.
                 memory.getStagedChildTuples().resetAll();
             }
 

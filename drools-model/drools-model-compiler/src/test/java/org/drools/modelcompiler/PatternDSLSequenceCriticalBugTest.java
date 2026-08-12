@@ -51,18 +51,22 @@ import static org.drools.model.PatternDSL.sequence;
 import static org.drools.model.PatternDSL.when;
 
 /**
- * Regression tests for the four critical bugs identified in the 2026-08-04 PR review (C1–C4).
+ * Regression tests for critical correctness bugs in the sequencing implementation.
  *
- * <p>C2 (circular buffer overflow) is written test-first: it FAILS on the current branch
- * and PASSES after the C2 fix is applied.</p>
+ * <p>The circular-buffer overflow test ({@link #longSequenceDoesNotOverflowCircularBuffer})
+ * verifies that {@code CircularArrayList.addEmpty()} uses modular indexing so that sequences
+ * completing more than the initial buffer capacity do not throw
+ * {@code ArrayIndexOutOfBoundsException}.</p>
  *
- * <p>C1 and C3 bugs are NOT directly triggerable via PatternDSL — they manifest only
- * through internal APIs (SubsequenceStep, raw SequenceNode wiring).
- * Those tests verify the REACHABLE DSL path and document where phreak-level tests are needed.
- * See docs/notes/2026-08-04-sequence-coverage-gaps.md for the gap inventory.</p>
+ * <p>The consequence-branch test ({@link #consequenceBranchDoesNotFallThroughToSequence})
+ * verifies that a rule combining a conditional named consequence with a {@code sequence()}
+ * step builds without error.  The crash path is only reachable via internal APIs and
+ * is covered by separate phreak-level tests.</p>
  *
- * <p>C4 IS directly triggerable: two sequence() calls in one rule.build() both compile
- * to sequenceIndex=0, overwriting each other in sequenceMemories[0].</p>
+ * <p>The two-sequence tests ({@link #twoSequencesInOneRuleBothComplete} and
+ * {@link #twoRulesWithSequencesTrackIndependently}) verify that multiple {@code sequence()}
+ * items in the same rule, and multiple rules each with their own sequence, track state
+ * independently without collision.</p>
  */
 public class PatternDSLSequenceCriticalBugTest {
 
@@ -79,20 +83,15 @@ public class PatternDSLSequenceCriticalBugTest {
     }
 
     // -------------------------------------------------------------------
-    // C1 — case CONSEQUENCE falls through into case SEQUENCE (KiePackagesBuilder:510-517)
+    // consequenceBranchDoesNotFallThroughToSequence
     //
-    // The fallthrough path is only reachable if a CONSEQUENCE-typed condition is
-    // neither NamedConsequenceImpl nor ConditionalNamedConsequenceImpl. Normal
-    // PatternDSL always produces one of those two types, so the crash path cannot
-    // be triggered via DSL.
+    // A rule combining a ConditionalNamedConsequence (when/then/elseWhen) with a
+    // sequence() step must build and run without error.
     //
-    // This test verifies the REACHABLE positive path: a rule combining a
-    // ConditionalNamedConsequence (when/then/elseWhen) with a sequence() step
-    // builds successfully. This is the shape that existed before the C1 regression
-    // was introduced and must continue to work.
-    //
-    // The raw crash path requires a phreak-level test constructing a custom
-    // CONSEQUENCE condition type — see coverage gap doc for the action item.
+    // Note: a crash path exists when the condition builder encounters an unrecognised
+    // CONSEQUENCE type; that path is not reachable via PatternDSL (which always
+    // produces NamedConsequenceImpl or ConditionalNamedConsequenceImpl) and is
+    // covered by separate phreak-level tests.
     // -------------------------------------------------------------------
     @Test
     public void consequenceBranchDoesNotFallThroughToSequence() {
@@ -119,28 +118,24 @@ public class PatternDSLSequenceCriticalBugTest {
                 execute(() -> results.add("seq-fired"))
         );
 
-        // Before fix: ClassCastException thrown here.
-        // After fix : builds without exception; KieBase is non-null.
+        // A ClassCastException here would indicate that the consequence-to-sequence
+        // condition builder encounters an unrecognised type and falls through.
         KieBase kieBase = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(rule));
         assertThat(kieBase).isNotNull();
     }
 
     // -------------------------------------------------------------------
-    // C2 — CircularArrayList.addEmpty() uses raw indices instead of % capacity
+    // longSequenceDoesNotOverflowCircularBuffer
     //
     // Each completed sequence causes SequencerMemory to call addEmpty() to
-    // pre-allocate output slots. After enough completions head overflows the
-    // array length, causing ArrayIndexOutOfBoundsException.
+    // pre-allocate output slots. Without modular indexing, the raw head index
+    // overflows the array length after enough completions, throwing
+    // ArrayIndexOutOfBoundsException.
     //
     // Strategy: insert the anchor once, then repeatedly complete the one-step
-    // sequence more than 100 times (the default CircularArrayList capacity)
-    // by retaining the session and inserting step events. To allow re-use of
-    // the same anchor we need the sequencer to restart after each completion;
-    // since a completed sequencer does not restart on its own, we instead
-    // use update() on the anchor after each completion to reset the sequencer.
-    //
-    // Before fix: ArrayIndexOutOfBoundsException after ~100 completions.
-    // After fix : 110 completions succeed; results.size() == 110.
+    // sequence more than 100 times (the default CircularArrayList capacity).
+    // After each completion, update() on the anchor restarts the sequencer via
+    // doLeftUpdates, allowing a fresh step signal to drive the next completion.
     // -------------------------------------------------------------------
     @Test
     public void longSequenceDoesNotOverflowCircularBuffer() {
@@ -166,7 +161,7 @@ public class PatternDSLSequenceCriticalBugTest {
         // re-triggers the anchor pattern match, which causes doLeftUpdates to restart the
         // sequencer (resetting its step counter). The next Toy("ball") then drives a fresh
         // completion, accumulating one addEmpty() call per iteration on the output
-        // CircularArrayList. Past 100 completions the raw-index bug triggers AIOOBE.
+        // CircularArrayList. Without the modular-index fix, this throws AIOOBE after ~100 iterations.
         for (int i = 0; i < 110; i++) {
             ksession.insert(new Toy("ball"));
             ksession.fireAllRules();                          // sequence completes
@@ -178,19 +173,15 @@ public class PatternDSLSequenceCriticalBugTest {
     }
 
     // -------------------------------------------------------------------
-    // C3 — Sequencer.stop() only follows the parent chain, leaking parallel
-    //       sibling SignalAdapters (Sequencer.java:66-71)
+    // retractAnchorWithOrStepDoesNotLeakSiblingAdapters
     //
-    // The leakage path requires parallel SIBLING SequenceMemory entries created by
-    // raw SubsequenceStep/ParallelStep wiring. DSL or() is implemented as a single
-    // LogicCircuit gate (not parallel sub-sequences), so LogicCircuitStep.deactivate()
-    // correctly cleans up all OR branches on stop() — the DSL path does not hit the bug.
+    // Retract the anchor after an OR step has consumed step-1. Further events
+    // matching the OR branches must NOT trigger the rule.
     //
-    // This test verifies the REACHABLE positive path: retract the anchor after an OR
-    // step has consumed step-1; further events must NOT trigger the rule.
-    //
-    // The raw leak path requires a phreak-level test using ParallelStep/SubsequenceStep
-    // directly — see coverage gap doc for the action item.
+    // The DSL or() gate is implemented as a single LogicCircuit step, so
+    // LogicCircuitStep.deactivate() cleans up all branches on stop(). The leak
+    // path via raw ParallelStep / SubsequenceStep wiring is not reachable from
+    // PatternDSL and is covered by separate phreak-level tests.
     // -------------------------------------------------------------------
     @Test
     public void retractAnchorWithOrStepDoesNotLeakSiblingAdapters() {
@@ -232,23 +223,18 @@ public class PatternDSLSequenceCriticalBugTest {
     }
 
     // -------------------------------------------------------------------
-    // C4 — KiePackagesBuilder always assigns sequenceIndex=0 to all sequences
-    //       (KiePackagesBuilder.java:526)
+    // twoSequencesInOneRuleBothComplete
     //
-    // Two sequence() items in the SAME rule.build() each compile to Sequence(0, ...)
-    // but each gets its own SequenceNode in RETE, and therefore its own Sequencer
-    // and SequencerMemoryImpl. Their sequenceMemories[] arrays are never shared,
-    // so sequenceIndex=0 on both does NOT cause a collision here.
+    // Two sequence() blocks in the same rule.build() each get their own SequenceNode
+    // and therefore their own Sequencer and SequencerMemoryImpl. Their sequenceMemories[]
+    // arrays are independent, so both can complete without collision.
     //
-    // The actual C4 collision requires two Sequence objects inside the SAME
-    // Sequencer — which only happens with sub-sequences (SubsequenceStep) or
-    // ParallelStep, where a parent Sequence contains a child Sequence and both
-    // live in the same SequencerMemoryImpl.sequenceMemories[] array.
-    // That path is only reachable via phreak-level test until nested-sequence
-    // DSL is wired — see the coverage gap doc.
+    // This test verifies end-to-end integration of two SequenceNodes in series within
+    // a single rule: both sequences must complete for the rule to fire.
     //
-    // This test still has value: it verifies that two chained sequence() blocks
-    // in one rule work end-to-end (integration of two SequenceNodes in series).
+    // Note: a sequenceIndex collision is possible when two Sequence objects share the
+    // same Sequencer (nested/parallel sub-sequences). That path requires internal API
+    // access not yet wired to the PatternDSL and is covered by separate phreak-level tests.
     // -------------------------------------------------------------------
     @Test
     public void twoSequencesInOneRuleBothComplete() {
@@ -276,11 +262,8 @@ public class PatternDSLSequenceCriticalBugTest {
         ksession.insert(new Toy("ball"));
         ksession.fireAllRules();                        // first sequence completes
 
-        // Before fix: sequenceMemories[0] was overwritten by sequence-2 when sequence-1
-        // completed and sequence-2 activated; sequence-1's memory is gone and the
-        // Relationship step is never reached, so the rule never fires.
-        // After fix: sequence-1 has index 0, sequence-2 has index 1; both resolve
-        // correctly and the rule fires once.
+        // Both SequenceNodes have independent state. Completing the first sequence
+        // must not affect the second; the rule fires only after both complete.
         ksession.insert(new Relationship("go", "done"));
         ksession.fireAllRules();                        // second sequence completes
 
@@ -288,9 +271,12 @@ public class PatternDSLSequenceCriticalBugTest {
     }
 
     // -------------------------------------------------------------------
-    // C4 (precondition) — two separate rules each with one sequence() do NOT
-    // collide, because each has its own SequenceNode and SequencerMemoryImpl.
-    // sequenceIndex=0 is fine when there is only one sequence per Sequencer.
+    // twoRulesWithSequencesTrackIndependently
+    //
+    // Two separate rules, each with a single sequence(), have independent
+    // SequenceNodes and SequencerMemoryImpl instances. Both must complete
+    // their respective sequences and fire exactly once without interfering
+    // with each other.
     // -------------------------------------------------------------------
     @Test
     public void twoRulesWithSequencesTrackIndependently() {

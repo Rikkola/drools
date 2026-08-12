@@ -381,9 +381,8 @@ public class PatternDSLSequenceAdvancedTest {
     // Retract anchor AFTER full sequence completion — must not throw, must not
     // fire again.
     //
-    // Before the N1 fix: Sequencer.stop() called getSteps()[step] with
-    // step == steps.length, throwing ArrayIndexOutOfBoundsException.
-    // After fix: stop() guards step < steps.length and sets a terminal marker.
+    // Sequencer.stop() guards the current step index against the steps array
+    // length. Retracting the anchor after completion is a no-op.
     // -------------------------------------------------------------------------
     @Test
     public void retractAnchorAfterCompletionIsNoOp() {
@@ -421,10 +420,10 @@ public class PatternDSLSequenceAdvancedTest {
     // is still mid-sequence (step 1 consumed, waiting for step 2).
     //
     // After anchor-A fires, anchor-B's step 2 must still complete independently.
-    // Known limitation: DynamicFilter slots are currently shared (see
-    // twoAnchorsConcurrentlyBugOnlyOneFires in the lifecycle test). This test
-    // documents the EXPECTED behaviour once per-tuple isolation is fixed.
-    // Marked with a TODO comment so it can be tightened when isolation lands.
+    // Note: DynamicFilter slots in SequenceNodeMemory are currently shared across
+    // anchor tuples, so only one of the two concurrent sequencers advances. The
+    // assertion uses hasSizeGreaterThanOrEqualTo(1) and the TODO below tracks
+    // the work needed to assert hasSize(2) once per-tuple isolation is in place.
     // -------------------------------------------------------------------------
     @Test
     public void firstAnchorCompletesWhileSecondIsMidSequence() {

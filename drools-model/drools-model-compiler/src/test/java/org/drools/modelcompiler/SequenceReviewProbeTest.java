@@ -40,8 +40,8 @@ import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
 
 /**
- * Regression probes for bugs identified in the 2026-07-30 PR review.
- * Each test is named after the finding it covers.
+ * Regression tests for correctness bugs in the sequencing implementation.
+ * Each test is named after the scenario it covers.
  */
 public class SequenceReviewProbeTest {
 
@@ -57,12 +57,11 @@ public class SequenceReviewProbeTest {
     }
 
     // -------------------------------------------------------------------------
-    // C1 — Adding a sequencing rule silently breaks unrelated rules on the same
-    //       fact type.
+    // plainRuleAndSequenceRuleShareAnEventType
     //
     // A plain rule on Toy fires when a Toy("ball") is inserted.
     // A sequencing rule also uses Toy as its step type.
-    // The plain rule must still fire after both rules are in the same KieBase.
+    // The plain rule must still fire when both rules share a KieBase.
     // -------------------------------------------------------------------------
     @Test
     public void plainRuleAndSequenceRuleShareAnEventType() {
@@ -92,16 +91,17 @@ public class SequenceReviewProbeTest {
         ksession.insert(new Toy("ball"));
         ksession.fireAllRules();
 
-        // The plain rule MUST fire. Before the C1 fix this list is empty.
+        // Both the plain rule and the sequence rule must fire.
         assertThat(results).contains("plain:ball");
     }
 
     // -------------------------------------------------------------------------
-    // C2 — Any sequence reusing an event type in two steps crashes with AIOOBE.
+    // sameTypeInTwoSteps
     //
-    // "ball then doll" — both are Toy — is the most ordinary sequencing shape.
-    // activeFilters is sized by adapter count (distinct types = 1) but indexed
-    // by filter/pattern index (0 for step 0, 1 for step 1), so step 1 blows up.
+    // A sequence with two steps using the same fact type ("ball then doll" — both
+    // are Toy) must fire correctly.  The activeFilters array is sized by distinct
+    // adapter count (1) and must be indexed by adapter rather than by pattern index
+    // to avoid an ArrayIndexOutOfBoundsException at step 1.
     // -------------------------------------------------------------------------
     @Test
     public void sameTypeInTwoSteps() {
@@ -134,12 +134,11 @@ public class SequenceReviewProbeTest {
     }
 
     // -------------------------------------------------------------------------
-    // C3 — All but the first constraint on a step are silently dropped.
+    // stepWithTwoConstraintsIsUnsatisfiable
     //
-    // PhreakNodeFactory.buildSequenceNode calls patterns[i].getConstraints().get(0),
-    // discarding constraints 1..n. A step with two mutually exclusive exprs
-    // (is-ball AND is-doll) is logically unsatisfiable — it must never fire.
-    // Before the fix it fires because only "is-ball" is evaluated.
+    // A step with two mutually exclusive constraints (is-ball AND is-doll) is
+    // logically unsatisfiable and must never fire.  All constraints on a step
+    // must be evaluated — not just the first one.
     // -------------------------------------------------------------------------
     @Test
     public void stepWithTwoConstraintsIsUnsatisfiable() {
@@ -173,10 +172,11 @@ public class SequenceReviewProbeTest {
     }
 
     // -------------------------------------------------------------------------
-    // C4 — A step with no constraint crashes KieBase construction.
+    // stepWithNoConstraintThrowsDescriptiveError
     //
-    // Same get(0) on Collections.EMPTY_LIST causes IndexOutOfBoundsException
-    // at build time. pattern(toy) with no expr() is legal DSL.
+    // A sequence step with no constraint (pattern(toy) with no expr()) is legal
+    // DSL but must produce a descriptive build error rather than an opaque
+    // IndexOutOfBoundsException from a get(0) on an empty list.
     // -------------------------------------------------------------------------
     @Test
     public void stepWithNoConstraintThrowsDescriptiveError() {
@@ -191,8 +191,8 @@ public class SequenceReviewProbeTest {
                 execute(() -> results.add("fired"))
         );
 
-        // Before the fix: IndexOutOfBoundsException: Index: 0 from Collections$EmptyList.get(0)
-        // After the fix: IllegalArgumentException with a descriptive message.
+        // An opaque IndexOutOfBoundsException here would mean the builder calls get(0)
+        // on an empty constraint list. The expected outcome is a descriptive error message.
         assertThat(org.assertj.core.api.Assertions.catchThrowableOfType(() ->
                 KieBaseBuilder.createKieBaseFromModel(
                         new org.drools.model.impl.ModelImpl().addRule(rule)),

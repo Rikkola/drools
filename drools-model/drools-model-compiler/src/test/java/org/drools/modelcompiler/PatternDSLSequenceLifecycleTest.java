@@ -106,12 +106,12 @@ public class PatternDSLSequenceLifecycleTest {
 
     // -------------------------------------------------------------------
     // twoAnchorsConcurrentlyBugOnlyOneFires
-    // Known bug: DynamicFilter slots in SequenceNodeMemory are shared across
+    //
+    // DynamicFilter slots in SequenceNodeMemory are currently shared across
     // anchor tuples. When two anchors activate the same SequenceNode, the
     // second anchor's start() overwrites the first's signal adapters, so
     // only one of the two concurrent sequencers can advance.
-    // Rule fires once instead of twice.
-    // See also the TODO inside the test body.
+    // The rule fires once instead of twice.
     // -------------------------------------------------------------------
     @Test
     public void twoAnchorsConcurrentlyBugOnlyOneFires() {
@@ -127,10 +127,10 @@ public class PatternDSLSequenceLifecycleTest {
         ksession.insert(new Relationship("go", "done"));
         ksession.fireAllRules();                    // step-2 consumed by BOTH sequencers
 
-        // Known limitation (pre-existing bug): DynamicFilter slots in SequenceNodeMemory
-        // are shared across all anchor tuples. When anchor-B's sequencer starts, it
-        // overwrites the signal adapters registered by anchor-A, so only one of the two
-        // concurrent sequencers can advance. The rule fires once instead of twice.
+        // Known limitation: DynamicFilter slots in SequenceNodeMemory are shared across
+        // all anchor tuples. When anchor-B's sequencer starts, it overwrites the signal
+        // adapters registered by anchor-A, so only one of the two concurrent sequencers
+        // can advance. The rule fires once instead of twice.
         // TODO: fix per-tuple DynamicFilter isolation and update this assertion to hasSize(2).
         assertThat(results).hasSize(1);
     }
