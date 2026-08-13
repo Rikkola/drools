@@ -34,6 +34,7 @@ import org.drools.modelcompiler.domain.SensorEvents.SensorActivated;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.FactHandle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.drools.model.DSL.declarationOf;
@@ -192,5 +193,83 @@ public class PatternDSLSequenceCompositeTest {
         insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));   // Step 1 still active; ack is ignored.
 
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void orBranchRetractAfterStepConsumedIsNoOp() {
+        // Once an OR branch fires and the step advances, retracting the matched
+        // fact is a no-op: the OR step has already been deactivated and its filters
+        // are no longer listening. The sequence stays at the next step (ack) regardless.
+        // Inserting the other OR branch after the retract also does nothing — the OR
+        // step is gone. Only the ack event completes the sequence.
+        final List<String> localResults = new ArrayList<>();
+
+        Rule orRule =
+                rule("or-retract-noop").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                or(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> localResults.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(orRule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));                   // anchor fires; OR step activates
+
+        FactHandle hbHandle = ksession.insert(new HeartbeatOk("sensor-1"));
+        ksession.fireAllRules();                                          // OR branch fires; step deactivates, ack step activates
+
+        ksession.retract(hbHandle);
+        ksession.fireAllRules();                                          // no-op: OR step already deactivated
+
+        insertAndFire(new AlarmRaised("sensor-1", "high"));               // no-op: OR step gone, no listener
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));     // ack step matches; rule fires
+
+        assertThat(localResults).containsExactly("acknowledged");
+    }
+
+    @Test
+    public void orBranchRetractAndReinsertAfterStepConsumedIsNoOp() {
+        // Once the OR step is consumed and deactivated, retracting the matched
+        // fact and re-inserting it have no effect on the sequence.
+        // The sequence is already at the ack step; only ack completes it.
+        final List<String> localResults = new ArrayList<>();
+
+        Rule orRule =
+                rule("or-reinsert-noop").build(
+                        pattern(station),
+                        sequence(
+                                pattern(sensorActivated).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                or(
+                                        pattern(heartbeat).expr("ok", h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarm).expr("hi", al -> al.getSeverity().equals("high"))
+                                ),
+                                pattern(ack).expr("ack", a -> a.getOperator().equals("alice"))
+                        ),
+                        execute(() -> localResults.add("acknowledged"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(orRule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));                   // anchor fires; OR step activates
+
+        FactHandle hbHandle = ksession.insert(new HeartbeatOk("sensor-1"));
+        ksession.fireAllRules();                                          // OR branch fires; step deactivated, ack step activates
+
+        ksession.retract(hbHandle);
+        ksession.fireAllRules();                                          // no-op: OR step already deactivated
+
+        insertAndFire(new HeartbeatOk("sensor-1"));                       // no-op: no listener for OR branch any more
+        insertAndFire(new OperatorAcknowledged("sensor-1", "alice"));     // ack step matches; rule fires
+
+        assertThat(localResults).containsExactly("acknowledged");
     }
 }
