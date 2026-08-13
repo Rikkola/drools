@@ -28,7 +28,9 @@ import org.drools.model.impl.ModelImpl;
 import org.drools.modelcompiler.domain.Person;
 import org.drools.modelcompiler.domain.Relationship;
 import org.drools.modelcompiler.domain.SensorEvents.AlarmRaised;
+import org.drools.modelcompiler.domain.SensorEvents.CalibrationPassed;
 import org.drools.modelcompiler.domain.SensorEvents.HeartbeatOk;
+import org.drools.modelcompiler.domain.SensorEvents.MaintenanceScheduled;
 import org.drools.modelcompiler.domain.SensorEvents.MonitoringStation;
 import org.drools.modelcompiler.domain.SensorEvents.OperatorAcknowledged;
 import org.drools.modelcompiler.domain.SensorEvents.SensorActivated;
@@ -585,5 +587,46 @@ public class PatternDSLSequenceAdvancedTest {
         // Sequence does not fire: step facts were inserted before the sequencer
         // started. This is a known limitation of the current AlphaAdapter design.
         assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void orGateWithFiveInputsFiresOnAnyBranch() {
+        // or() with 5 inputs forces LogicGateOutputSignalProcessor.consume() into the
+        // default loop branch (cases 1-4 are inlined; 5+ falls to default).
+        // The last branch (MaintenanceScheduled) is triggered deliberately to confirm
+        // the full loop runs without short-circuiting.
+        final Variable<MonitoringStation>    stationV     = declarationOf(MonitoringStation.class);
+        final Variable<SensorActivated>      activatedV   = declarationOf(SensorActivated.class);
+        final Variable<HeartbeatOk>          heartbeatV   = declarationOf(HeartbeatOk.class);
+        final Variable<AlarmRaised>          alarmV       = declarationOf(AlarmRaised.class);
+        final Variable<CalibrationPassed>    calibV       = declarationOf(CalibrationPassed.class);
+        final Variable<OperatorAcknowledged> ackV         = declarationOf(OperatorAcknowledged.class);
+        final Variable<MaintenanceScheduled> maintenanceV = declarationOf(MaintenanceScheduled.class);
+
+        Rule fiveInputRule =
+                rule("five-input-or").build(
+                        pattern(stationV),
+                        sequence(
+                                pattern(activatedV).expr("anchor", a -> a.getSensorId().equals("sensor-1")),
+                                or(
+                                        pattern(heartbeatV).expr("hb",   h -> h.getSensorId().equals("sensor-1")),
+                                        pattern(alarmV).expr("alarm",    al -> al.getSeverity().equals("high")),
+                                        pattern(calibV).expr("calib",    c -> c.getSensorId().equals("sensor-1")),
+                                        pattern(ackV).expr("ack",        a -> a.getOperator().equals("alice")),
+                                        pattern(maintenanceV).expr("maint", m -> m.getSensorId().equals("sensor-1"))
+                                ),
+                                pattern(activatedV).expr("final", a -> a.getSensorId().equals("sensor-2"))
+                        ),
+                        execute(() -> results.add("done"))
+                );
+
+        ksession = KieBaseBuilder.createKieBaseFromModel(new ModelImpl().addRule(fiveInputRule)).newKieSession();
+
+        insertAndFire(new MonitoringStation("station-1"));
+        insertAndFire(new SensorActivated("sensor-1"));             // anchor fires; OR step activates
+        insertAndFire(new MaintenanceScheduled("sensor-1"));        // 5th OR branch triggers default loop path
+        insertAndFire(new SensorActivated("sensor-2"));             // final step; consequence fires
+
+        assertThat(results).containsExactly("done");
     }
 }
