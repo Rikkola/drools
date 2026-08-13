@@ -23,7 +23,6 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 
 public class TerminatingSignalProcessor extends SignalProcessor {
     private static final TerminatingSignalProcessor MATCH = new TerminatingSignalProcessor(true);
-    private static final TerminatingSignalProcessor UNMATCH = new TerminatingSignalProcessor(false);
 
     private boolean match;
 
@@ -38,11 +37,6 @@ public class TerminatingSignalProcessor extends SignalProcessor {
     public static TerminatingSignalProcessor getMatch() {
         return MATCH;
     }
-
-    public static TerminatingSignalProcessor getUnmatch() {
-        return UNMATCH;
-    }
-
 
     @Override
     public void consume(SignalStatus signalStatus, SequenceMemory memory, ValueResolver valueResolver) {

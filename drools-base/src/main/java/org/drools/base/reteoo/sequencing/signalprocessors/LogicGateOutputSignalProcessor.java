@@ -79,6 +79,8 @@ public class LogicGateOutputSignalProcessor extends SignalProcessor {
 
     @Override
     protected void reset(SequenceMemory memory, ValueResolver valueResolver) {
-        throw new UnsupportedOperationException();
+        // No-op: LogicGateOutputSignalProcessor is a fan-out node whose reset is driven
+        // by each downstream LogicGate resetting itself via resetPrior(). There is no
+        // state held here that needs clearing.
     }
 }
