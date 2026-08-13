@@ -88,6 +88,18 @@ public final class SensorEvents {
         }
     }
 
+    public static final class MaintenanceScheduled {
+        private final String sensorId;
+
+        public MaintenanceScheduled(String sensorId) {
+            this.sensorId = sensorId;
+        }
+
+        public String getSensorId() {
+            return sensorId;
+        }
+    }
+
     public static final class OperatorAcknowledged {
         private final String sensorId;
         private final String operator;
