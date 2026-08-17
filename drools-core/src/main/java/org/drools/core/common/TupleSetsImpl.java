@@ -304,7 +304,6 @@ public class TupleSetsImpl implements TupleSets {
         return clone;
     }
 
-    @Override
     public void clear() {
         clear( getInsertFirst() );
         clear( getDeleteFirst() );
