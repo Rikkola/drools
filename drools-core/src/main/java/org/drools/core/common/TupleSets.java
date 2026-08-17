@@ -30,10 +30,6 @@ public interface TupleSets {
 
     void resetAll();
 
-    void clearInsert();
-
-    void clearDelete();
-
     /**
      * clear also ensures all contained LeftTuples are cleared
      * reset does not touch any contained tuples
