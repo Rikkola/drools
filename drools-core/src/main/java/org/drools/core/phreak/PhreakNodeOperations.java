@@ -18,7 +18,6 @@
  */
 package org.drools.core.phreak;
 
-import org.drools.base.util.FastIterator;
 import org.drools.core.base.DroolsQueryImpl;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.ReteEvaluator;

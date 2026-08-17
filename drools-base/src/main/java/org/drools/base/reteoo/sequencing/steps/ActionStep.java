@@ -40,5 +40,7 @@ public class ActionStep extends AbstractStep implements Step {
 
     @Override
     public void deactivate(SequenceMemory memory, ValueResolver valueResolver) {
+        // no-op: ActionStep is instantaneous — activate() fires the consumer and immediately
+        // calls next(), so the step is never in a lingering active state that requires teardown.
     }
 }

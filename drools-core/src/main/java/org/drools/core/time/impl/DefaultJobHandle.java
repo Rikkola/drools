@@ -33,7 +33,7 @@ public class DefaultJobHandle extends AbstractJobHandle<DefaultJobHandle> implem
 
     private long              id;
 
-    private TimerJobInstance timerJobInstance;
+    private TimerJobInstance  timerJobInstance;
 
     public DefaultJobHandle(long id) {
         this.id = id;

@@ -297,7 +297,7 @@ public class ProtobufOutputMarshaller {
         _ab.setFocusStack( _fsb.build() );
 
         // serialize all dormant activations
-        org.drools.base.util.Iterator it = ActivationIterator.iterator(wm);
+        org.drools.base.util.Iterator it = ActivationIterator.iterator( wm );
         List<InternalMatch> dormant = new ArrayList<>();
         for (InternalMatch item = (InternalMatch) it.next(); item != null; item = (InternalMatch) it.next() ) {
             if ( !item.isQueued() ) {
@@ -356,7 +356,7 @@ public class ProtobufOutputMarshaller {
     private static ProtobufMessages.NodeMemory writeQueryElementNodeMemory(final int nodeId,
                                                                            final Memory memory,
                                                                            final InternalWorkingMemory wm) {
-        org.drools.base.util.Iterator<TupleImpl> it = LeftTupleIterator.iterator(wm, ((QueryElementNodeMemory) memory).getNode());
+        org.drools.base.util.Iterator<TupleImpl> it = LeftTupleIterator.iterator(wm, ((QueryElementNodeMemory) memory).getNode() );
 
         ProtobufMessages.NodeMemory.QueryElementNodeMemory.Builder _query = ProtobufMessages.NodeMemory.QueryElementNodeMemory.newBuilder();
         for ( TupleImpl leftTuple = it.next(); leftTuple != null; leftTuple = it.next() ) {
@@ -681,7 +681,7 @@ public class ProtobufOutputMarshaller {
         }
 
         if (internalMatch instanceof TruthMaintenanceSystemInternalMatch) {
-            LinkedList<LogicalDependency<M>> list = ((TruthMaintenanceSystemInternalMatch) internalMatch).getLogicalDependencies();
+            org.drools.base.util.LinkedList<LogicalDependency<M>> list = ((TruthMaintenanceSystemInternalMatch) internalMatch).getLogicalDependencies();
             if (list != null && !list.isEmpty()) {
                 for (LogicalDependency<?> node = list.getFirst(); node != null; node = node.getNext()) {
                     _activation.addLogicalDependency(((BeliefSet) node.getJustified()).getFactHandle().getId());

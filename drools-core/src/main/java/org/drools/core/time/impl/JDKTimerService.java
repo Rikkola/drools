@@ -47,7 +47,7 @@ public class JDKTimerService implements TimerService, SessionClock, InternalSche
 
     protected ScheduledThreadPoolExecutor   scheduler;
 
-    protected TimerJobFactoryManager jobFactoryManager = DefaultTimerJobFactoryManager.INSTANCE;
+    protected TimerJobFactoryManager        jobFactoryManager = DefaultTimerJobFactoryManager.INSTANCE;
 
     public JDKTimerService() {
         this(1);
@@ -96,10 +96,10 @@ public class JDKTimerService implements TimerService, SessionClock, InternalSche
             JDKJobHandle jobHandle = new JDKJobHandle(idCounter.getAndIncrement());
 
             TimerJobInstance jobInstance = jobFactoryManager.createTimerJobInstance(job,
-                                                                                    ctx,
-                                                                                    trigger,
-                                                                                    jobHandle,
-                                                                                    this);
+                    ctx,
+                    trigger,
+                    jobHandle,
+                    this);
             jobHandle.setTimerJobInstance(jobInstance);
             internalSchedule(jobInstance);
 
