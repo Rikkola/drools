@@ -41,11 +41,11 @@ public class SegmentPropagator {
         }
 
         LeftTupleSource source = ( LeftTupleSource )  sourceSegment.getTipNode();
-        
+
         if ( sourceSegment.isEmpty() ) {
             RuntimeSegmentUtilities.createChildSegments(reteEvaluator, sourceSegment, source.getSinkPropagator());
         }
-                
+
         processPeers(sourceSegment, leftTuples);
 
         Iterator<SegmentMemory> peersIterator = sourceSegment.getPeersWithDataDrivenPathMemoriesIterator();

@@ -53,7 +53,7 @@ public class D {
             cs[i++] = new D(object );
         }
         return cs;
-    }        
+    }
 
     public Object getObject() {
         return object;

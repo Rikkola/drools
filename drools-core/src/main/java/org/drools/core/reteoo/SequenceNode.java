@@ -113,7 +113,7 @@ public class SequenceNode extends LeftTupleSource
         this.leftInput.networkUpdated(updateContext);
     }
 
-    
+
     /**
      * Produce a debug string.
      *
@@ -223,7 +223,7 @@ public class SequenceNode extends LeftTupleSource
         private TupleMemory       leftTupleMemory;
 
         private TupleSets         stagedChildTuples;
-        
+
         private SegmentMemory     memory;
 
         private LinkedList<DynamicFilter>[] activeFilters;
@@ -298,7 +298,7 @@ public class SequenceNode extends LeftTupleSource
         public void setSegmentMemory(SegmentMemory smem) {
             this.memory = smem;
         }
-        
+
         public SegmentMemory getSegmentMemory() {
             return this.memory;
         }
@@ -479,7 +479,7 @@ public class SequenceNode extends LeftTupleSource
             if (srcLeftTuples.getInsertFirst() != null) {
                 doLeftInserts(node, memory, sink, srcLeftTuples);
             }
-            
+
             srcLeftTuples.resetAll();
 
             if (memory.getStagedChildTuples().getInsertFirst() != null) {
