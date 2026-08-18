@@ -48,7 +48,7 @@ public class PseudoClockSchedulerTest {
 
     private PseudoClockScheduler scheduler = new PseudoClockScheduler();
 
-    @Test
+    @Test 
     public void removeExistingJob() {
         final Date triggerTime = new Date(1000);
         when( mockTrigger_1.hasNextFireTime() ).thenReturn(triggerTime);
@@ -63,7 +63,7 @@ public class PseudoClockSchedulerTest {
     }
 
 
-    @Test
+    @Test 
     public void removeExistingJobWhenMultipleQueued() {
         final Date triggerTime_1 = new Date(1000);
         final Date triggerTime_2 = new Date(2000);
@@ -84,7 +84,7 @@ public class PseudoClockSchedulerTest {
         verify( mockTrigger_2, atLeastOnce()).hasNextFireTime();
     }
 
-    @Test
+    @Test 
     public void timerIsSetToJobTriggerTimeForExecution() {
         final Date triggerTime = new Date(1000);
         when( mockTrigger_1.hasNextFireTime() ).thenReturn(triggerTime, triggerTime, triggerTime, null);
@@ -110,7 +110,7 @@ public class PseudoClockSchedulerTest {
         verify( mockTrigger_1, times(1) ).nextFireTime();
     }
 
-    @Test
+    @Test 
     public void timerIsResetWhenJobThrowsExceptions() {
         final Date triggerTime = new Date(1000);
         when( mockTrigger_1.hasNextFireTime() ).thenReturn(triggerTime, triggerTime, triggerTime, null);
