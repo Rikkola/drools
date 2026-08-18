@@ -443,9 +443,6 @@ public class SequenceNode extends LeftTupleSource
         }
 
         public int getType() {
-            // AlphaAdapter does not have its own NodeTypeEnums entry yet.
-            // SequenceNode is returned as a safe placeholder; switch(getType()) on ObjectSource
-            // nodes does not reach this adapter through normal dispatch paths.
             return NodeTypeEnums.SequenceNode;
         }
 
@@ -489,11 +486,7 @@ public class SequenceNode extends LeftTupleSource
                     tuple.clearStaged();
                     tuple = next;
                 }
-                // resetAll() instead of clear() so that insertFirst is set to null without
-                // traversing the list. clear() calls clearStaged() on each item but does NOT
-                // null out insertFirst. A dangling insertFirst pointer would cause the same child
-                // tuple to be re-inserted on the next network evaluation (e.g. on anchor retract
-                // after sequence completion), producing a spurious second activation.
+                
                 memory.getStagedChildTuples().resetAll();
             }
 

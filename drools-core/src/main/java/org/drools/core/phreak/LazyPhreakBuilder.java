@@ -86,10 +86,20 @@ import org.kie.api.definition.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.drools.core.phreak.BuildtimeSegmentUtilities.*;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.JOIN_NODE_BIT;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.NOT_NODE_BIT;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.REACTIVE_EXISTS_NODE_BIT;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.canBeDisabled;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.isNonTerminalTipNode;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.isRootNode;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.isSet;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.nextNodePosMask;
+import static org.drools.core.phreak.BuildtimeSegmentUtilities.updateNodeTypesMask;
 import static org.drools.core.phreak.EagerPhreakBuilder.deleteLeftTuple;
 import static org.drools.core.phreak.EagerPhreakBuilder.Add.attachAdapterAndPropagate;
-import static org.drools.core.phreak.RuntimeSegmentUtilities.*;
+import static org.drools.core.phreak.RuntimeSegmentUtilities.createSubnetworkSegmentMemory;
+import static org.drools.core.phreak.RuntimeSegmentUtilities.getOrCreateSegmentMemory;
+import static org.drools.core.phreak.RuntimeSegmentUtilities.getQuerySegmentMemory;
 
 class LazyPhreakBuilder implements PhreakBuilder {
 
