@@ -82,7 +82,7 @@ public class SegmentMemory extends LinkedList<SegmentMemory>
     public boolean isOnlyLiaSegment() {
         return getRootNode() == getTipNode();
     }
-
+    
     public SegmentPrototype getSegmentPrototype() {
         return proto;
     }

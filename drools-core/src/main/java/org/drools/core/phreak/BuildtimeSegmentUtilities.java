@@ -402,7 +402,7 @@ public class BuildtimeSegmentUtilities {
         return allLinkedTestMask;
     }
 
-    private static long processBetaNode(SegmentPrototypeRegistry prototypeRegistry,
+    private static long processBetaNode(SegmentPrototypeRegistry prototypeRegistry, 
                                         BetaNode betaNode,
                                         TerminalNode removingTn,
                                         SegmentPrototype smem,

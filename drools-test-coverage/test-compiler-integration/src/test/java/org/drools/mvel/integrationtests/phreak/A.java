@@ -32,7 +32,7 @@ public class A {
         super();
         this.object = object;
     }
-
+    
     public static A a(Integer object) {
         return new A( object );
     }
@@ -44,7 +44,7 @@ public class A {
             as[i++] = new A( object );
         }
         return as;
-    }
+    }        
 
     public Object getObject() {
         return object;

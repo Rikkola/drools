@@ -439,7 +439,7 @@ public class StatefulKnowledgeSessionForRHS
     public NodeMemories getNodeMemories() {
         return delegate.getNodeMemories();
     }
-
+    
     public SegmentMemorySupport getSegmentMemorySupport() {
         return delegate.getSegmentMemorySupport();
     }
@@ -504,7 +504,7 @@ public class StatefulKnowledgeSessionForRHS
     public GlobalResolver getGlobalResolver() {
         return delegate.getGlobalResolver();
     }
-
+    
     @Override
     public RuleNetworkEvaluator getRuleNetworkEvaluator() {
         return delegate.getRuleNetworkEvaluator();

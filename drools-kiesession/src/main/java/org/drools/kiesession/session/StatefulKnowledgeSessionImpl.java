@@ -180,12 +180,12 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     protected Long    id;
 
     private RuleNetworkEvaluator ruleNetworkEvaluator;
-
+    
     /** The actual memory for the <code>JoinNode</code>s. */
     private NodeMemories nodeMemories;
 
     private SegmentMemorySupport segmentMemorySupport;
-
+    
     /** Global values which are associated with this memory. */
     protected GlobalResolver globalResolver;
 
@@ -261,8 +261,8 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     private Consumer<PropagationEntry<ReteEvaluator>> workingMemoryActionListener;
 
     private boolean tmsEnabled;
-
-
+    
+    
 
     // ------------------------------------------------------------
     // Constructors
@@ -358,11 +358,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         this.entryPointsManager = (NamedEntryPointsManager) RuntimeComponentFactory.get().getEntryPointFactory().createEntryPointsManager(kBase, this, handleFactory);
 
         this.segmentMemorySupport = new SegmentMemorySupportImpl(nodeMemories, kBase.getSegmentPrototypeRegistry(), entryPointsManager.getDefaultEntryPoint());
-
+        
         this.sequential = conf.isSequential();
 
         this.globalResolver = RuntimeComponentFactory.get().createGlobalResolver(this, this.environment);
-
+        
         this.ruleNetworkEvaluator = new RuleNetworkEvaluatorImpl(this, nodeMemories, segmentMemorySupport);
 
         if (initInitFactHandle) {
@@ -411,7 +411,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     public RuleNetworkEvaluator getRuleNetworkEvaluator() {
         return ruleNetworkEvaluator;
     }
-
+    
     public WorkingMemoryEntryPoint getEntryPoint(String name) {
         return this.entryPointsManager.getEntryPoint(name);
     }
@@ -1375,11 +1375,11 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         return nodeMemories;
     }
 
-
+    
     public SegmentMemorySupport getSegmentMemorySupport() {
         return segmentMemorySupport;
     }
-
+    
     public RuleRuntimeEventSupport getRuleRuntimeEventSupport() {
         return this.ruleRuntimeEventSupport;
     }
