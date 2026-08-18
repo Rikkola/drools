@@ -41,7 +41,6 @@ import org.drools.core.reteoo.CoreComponentFactory;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.PathMemory;
 import org.drools.core.reteoo.SequenceNode;
-import org.drools.base.reteoo.DynamicFilterProto;
 import org.drools.core.reteoo.SequenceNode.SequenceNodeMemory;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.base.reteoo.sequencing.Sequence;
@@ -72,7 +71,6 @@ public class AbstractPhreakSequencerSubsequenceTest {
     Sequence           seq0;
     Sequence           seq1;
     Sequence           seq2;
-    Sequence           seq3;
     SequenceNode       snode;
 
     Pattern bpattern;
@@ -83,11 +81,6 @@ public class AbstractPhreakSequencerSubsequenceTest {
     RuleImpl                   rule;
     InternalKnowledgePackage   pkg;
     SessionsAwareKnowledgeBase kbase;
-
-    DynamicFilterProto bfilter;
-    DynamicFilterProto cfilter;
-    DynamicFilterProto dfilter;
-    DynamicFilterProto efilter;
 
     public void initKBaseWithEmptyRule() {
         CompositeBaseConfiguration conf = (CompositeBaseConfiguration) RuleBaseFactory.newKnowledgeBaseConfiguration();
@@ -154,7 +147,7 @@ public class AbstractPhreakSequencerSubsequenceTest {
     }
 
     void createSession() {
-        SessionConfiguration       sessionConf = kbase.getSessionConfiguration();
+        SessionConfiguration sessionConf = kbase.getSessionConfiguration();
         sessionConf.setOption(ThreadSafeOption.NO);
         sessionConf.setClockType(ClockType.PSEUDO_CLOCK);
 
@@ -192,8 +185,6 @@ public class AbstractPhreakSequencerSubsequenceTest {
     }
 
     public void getLeafSequences(SequencerMemory sqncrMemory, SequenceMemory sqncMemory, List<SequenceMemory> leafSequences) {
-        int sqncStep = sqncMemory.getStep();
-
         Sequence sqnc = sqncMemory.getSequence();
         if (sqncMemory.getStep() >= sqnc.getSteps().length ) {
             return;

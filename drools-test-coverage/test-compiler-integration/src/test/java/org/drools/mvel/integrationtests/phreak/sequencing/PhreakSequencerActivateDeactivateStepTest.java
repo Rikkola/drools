@@ -18,12 +18,7 @@
  */
 package org.drools.mvel.integrationtests.phreak.sequencing;
 
-import org.drools.base.reteoo.sequencing.SequencerMemory;
-import org.drools.base.reteoo.sequencing.steps.ParallelStep;
-import org.drools.base.reteoo.sequencing.steps.Step.StepType;
-import org.drools.base.reteoo.sequencing.steps.SubsequenceStep;
 import org.drools.base.rule.Pattern;
-import org.drools.core.common.InternalFactHandle;
 import org.drools.base.reteoo.DynamicFilter;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 import org.drools.base.reteoo.SignalAdapter;
@@ -39,9 +34,6 @@ import org.drools.mvel.integrationtests.phreak.C;
 import org.drools.mvel.integrationtests.phreak.D;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -110,10 +102,10 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
         SignalAdapter signal0 = sequenceMemory.getSignalAdapters()[0];
         SignalAdapter signal1 = sequenceMemory.getSignalAdapters()[1];
 
-        InternalFactHandle fhB0 = (InternalFactHandle) session.insert(new B(0, "b"));
+        session.insert(new B(0, "b"));
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // still step 0
 
-        InternalFactHandle fhC0 = (InternalFactHandle) session.insert(new C(0, "c"));
+        session.insert(new C(0, "c"));
         // Next step, check everything was for LogicCircuit was de-activated and LogicCircuit1 was activated;
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(1); // Now step 1
 
@@ -134,18 +126,16 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
 
         assertThat(sequenceMemory.getSignalAdapters()).usingRecursiveComparison().isEqualTo(new SignalAdapter[] {signal0, signal1, signal2, signal3 });
         assertThat(sequenceMemory.getActiveSignalAdapters()).usingRecursiveComparison().isEqualTo(new SignalAdapter[] {null, null, signal2, signal3 }); // 0 and 1 are no longer active
-
-        // @formatter:on
     }
 
     @Test
     public void testDeactivateAfterEndStep() {
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0); // step 0
-        InternalFactHandle fhB0 = (InternalFactHandle) session.insert(new B(0, "b"));
-        InternalFactHandle fhC0 = (InternalFactHandle) session.insert(new C(0, "c"));
+        session.insert(new B(0, "b"));
+        session.insert(new C(0, "c"));
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(1); // step 1
-        InternalFactHandle fhC1 = (InternalFactHandle) session.insert(new C(0, "c"));
-        InternalFactHandle fhD0 = (InternalFactHandle) session.insert(new D(0, "d"));
+        session.insert(new C(0, "c"));
+        session.insert(new D(0, "d"));
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // Now step -1, which means it's finished.
 
@@ -156,14 +146,6 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
         assertThat(nodeMemory.getActiveFilters()[2].size()).isEqualTo(0);
     }
 
-    /**
-     * Regression test for the doLeftUpdates bug: the method iterated getDeleteFirst()
-     * instead of getUpdateFirst(), so an update to the driving tuple (A) was silently
-     * dropped and the sequence was never restarted.
-     *
-     * Expected: after advancing to step 1 then updating A, the sequence restarts at step 0.
-     * With the bug: the update list is never drained — the sequence stays at step 1.
-     */
     @Test
     public void testUpdateOnDrivingTupleRestartsSequence() {
         // Advance to step 1: insert B then C to satisfy gate 1
@@ -177,8 +159,6 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
         session.update(fhA0, a);
         session.fireAllRules();
 
-        // With the bug, the update list is never consumed and the sequence stays at step 1.
-        // The correct behaviour is a restart to step 0.
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(0);
     }
 }

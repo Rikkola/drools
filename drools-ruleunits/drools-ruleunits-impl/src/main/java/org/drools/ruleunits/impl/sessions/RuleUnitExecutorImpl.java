@@ -77,7 +77,6 @@ import org.kie.api.KieBase;
 import org.kie.api.runtime.Calendars;
 import org.kie.api.runtime.Channel;
 import org.kie.api.runtime.KieRuntime;
-import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.api.runtime.rule.FactHandle;
@@ -251,10 +250,6 @@ public class RuleUnitExecutorImpl implements ReteEvaluator {
     @Override
     public RuleSessionConfiguration getRuleSessionConfiguration() {
         return sessionConfiguration.as(RuleSessionConfiguration.KEY);
-    }
-
-    public KieSessionConfiguration getKieSessionConfiguration() {
-        return sessionConfiguration;
     }
 
     @Override

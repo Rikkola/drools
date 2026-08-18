@@ -80,25 +80,25 @@ public class PhreakSequencerEventsMemoryTest extends AbstractPhreakSequencerSubs
     public void testSequenceEventsMemory() {
         CircularArrayList<Object> events = sequencerMemory.getData();
         assertThat(events.size()).isEqualTo(0);
-        InternalFactHandle fhB0 = (InternalFactHandle) session.insert(new B(0, "b"));
+        session.insert(new B(0, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, sequencerMemory.getSequenceMemory(seq1)});
 
-        InternalFactHandle fhB1 = (InternalFactHandle) session.insert(new B(1, "b"));
+        session.insert(new B(1, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0}); // It's 0, because the subsequence of 1 input finished and it rewound.
 
-        InternalFactHandle fhB2 = (InternalFactHandle) session.insert(new B(2, "b"));
+        session.insert(new B(2, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, 2, null, sequencerMemory.getSequenceMemory(seq2)});
 
-        InternalFactHandle fhB3 = (InternalFactHandle) session.insert(new B(3, "b"));
+         session.insert(new B(3, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, 2, null, sequencerMemory.getSequenceMemory(seq2), 3}); // This subsequence has two inputs, so its still in the subsequence.
 
-        InternalFactHandle fhB4 = (InternalFactHandle) session.insert(new B(4, "b"));
+        session.insert(new B(4, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, 2, "x"}); // The subsequence has finished and it's rewound.
 
-        InternalFactHandle fhB5 = (InternalFactHandle) session.insert(new B(5, "b"));
+        session.insert(new B(5, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, 2, "x", 5}); // everything has finished and it's added the last input
 
-        InternalFactHandle fhB6 = (InternalFactHandle) session.insert(new B(6, "b"));
+        session.insert(new B(6, "b"));
         assertThat(to(events)).isEqualTo(new Object[] {0, 2, "x", 5}); // nothing is added as the sequence is finished.
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1); // terminated

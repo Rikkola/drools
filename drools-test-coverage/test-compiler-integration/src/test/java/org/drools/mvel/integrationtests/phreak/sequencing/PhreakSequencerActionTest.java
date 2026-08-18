@@ -83,8 +83,8 @@ public class PhreakSequencerActionTest extends AbstractPhreakSequencerSubsequenc
     public void testAction() {
         CircularArrayList<Object> events = sequencerMemory.getData();
         assertThat(events.size()).isEqualTo(0);
-        InternalFactHandle fhB0 = (InternalFactHandle) session.insert(b(0));
-        InternalFactHandle fhB1 = (InternalFactHandle) session.insert(b(1));
+        session.insert(b(0));
+        session.insert(b(1));
         assertThat(recorder).containsExactly(b(0), "spacer", b(1));
     }
 
