@@ -18,10 +18,7 @@
  */
 package org.drools.mvel.integrationtests.phreak;
 
-import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Position;
-import org.kie.api.definition.type.Role;
-import org.kie.api.definition.type.Role.Type;
 
 public class A {
 

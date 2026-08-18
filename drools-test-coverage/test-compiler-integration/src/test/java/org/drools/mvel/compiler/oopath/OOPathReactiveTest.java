@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.drools.base.base.ClassObjectType;
-import org.drools.base.util.FastIterator;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.EntryPointNode;
