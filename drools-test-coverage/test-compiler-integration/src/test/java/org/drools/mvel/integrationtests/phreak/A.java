@@ -25,6 +25,9 @@ public class A {
     @Position(0)
     Integer object;
 
+    @Position(1)
+    String text;
+
     public A(Integer object) {
         super();
         this.object = object;
