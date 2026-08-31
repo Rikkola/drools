@@ -23,4 +23,7 @@ public class Gates {
 
     public static boolean or(long a, long b)  {return (a & b) != 0;}
 
+    /** True when no input signals have fired — used for absence detection. */
+    public static boolean not(long a, long b) { return a == 0L; }
+
 }

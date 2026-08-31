@@ -44,4 +44,11 @@ public interface SequencerMemory {
     DynamicFilter getActiveDynamicFilter(int filterIndex);
 
     void removeActiveFilter(DynamicFilter filter);
+
+    /**
+     * Returns true if any fact currently in the working memory matches the
+     * filter at the given index.  Used by AbsenceStep for point-in-time absence
+     * detection at step-activation time.
+     */
+    boolean hasActiveMatch(int filterIndex, BaseTuple leftTuple, ValueResolver valueResolver);
 }

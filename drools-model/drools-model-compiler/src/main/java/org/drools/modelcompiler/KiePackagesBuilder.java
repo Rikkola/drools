@@ -139,6 +139,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGateOutputSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.SignalIndex;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
+import org.drools.base.reteoo.sequencing.steps.AbsenceStep;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.model.view.SelfPatternBiding;
 import org.drools.modelcompiler.attributes.LambdaEnabled;
@@ -542,12 +543,39 @@ public class KiePackagesBuilder {
                 List<Pattern> filters = new ArrayList<>();
                 Step.StepFactory[] stepFactories = new Step.StepFactory[n];
                 int[] gateCounter = new int[]{0};
+                // signalAdapterCounter is a compact index for signal adapter slots.
+                // It increments for every PATTERN in a positive step but NOT for NOT-step
+                // patterns, because absence steps don't register signal adapters.
+                int[] signalAdapterCounter = new int[]{0};
 
                 for (int i = 0; i < n; i++) {
-                    List<LogicGate> stepGates = new ArrayList<>();
-                    LogicGate root = buildStepGate(ctx, group, steps.get(i), filters, stepGates, gateCounter, seqIdx);
-                    root.setOutput(TerminatingSignalProcessor.get());
-                    stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
+                    Condition step = steps.get(i);
+                    if (step.getType() == Condition.Type.NOT) {
+                        // Absence step: compile the inner pattern to a filter slot,
+                        // wrap in AbsenceStep.Factory.  The absence variable is NOT
+                        // registered in sequenceVarIndexes — you can't bind a variable
+                        // to something that was absent.
+                        // signalAdapterCounter is NOT incremented — absence steps have
+                        // no signal adapter and therefore take no slot in the signal array.
+                        List<Condition> inner = step.getSubConditions();
+                        if (inner.size() != 1 || inner.get(0).getType() != Condition.Type.PATTERN) {
+                            throw new UnsupportedOperationException(
+                                "sequence not() step must contain exactly one simple pattern");
+                        }
+                        int idx = filters.size();
+                        PatternImpl notPattern = (PatternImpl) inner.get(0);
+                        RuleConditionElement built = buildPattern(ctx, group, notPattern);
+                        if (!(built instanceof Pattern)) {
+                            throw new IllegalStateException("NOT step pattern must compile to Pattern, got " + built);
+                        }
+                        filters.add((Pattern) built);
+                        stepFactories[i] = new AbsenceStep.Factory(idx);
+                    } else {
+                        List<LogicGate> stepGates = new ArrayList<>();
+                        LogicGate root = buildStepGate(ctx, group, step, filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
+                        root.setOutput(TerminatingSignalProcessor.get());
+                        stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
+                    }
                 }
 
                 Sequence seq = new Sequence(0, stepFactories);
@@ -612,11 +640,12 @@ public class KiePackagesBuilder {
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
                                     Condition node, List<Pattern> filters,
                                     List<LogicGate> stepGates, int[] gateCounter,
-                                    int seqIdx) {
+                                    int seqIdx, int[] signalAdapterCounter) {
         Condition.Type type = node.getType();
 
         if (type == Condition.Type.PATTERN) {
-            int idx = filters.size();
+            int filterIdx         = filters.size();
+            int signalAdapterIdx  = signalAdapterCounter[0]++;
             PatternImpl patternImpl = (PatternImpl) node;
             RuleConditionElement built = buildPattern(ctx, group, patternImpl);
             if (!(built instanceof Pattern)) {
@@ -628,13 +657,13 @@ public class KiePackagesBuilder {
             // fact from SequencerMemory.getData() at rule-fire time.
             Variable stepVar = patternImpl.getPatternVariable();
             if (stepVar != null) {
-                ctx.addSequenceVarIndex(stepVar, seqIdx, idx);
+                ctx.addSequenceVarIndex(stepVar, seqIdx, filterIdx);
             }
             LogicGate leaf = new LogicGate(
                     Gates::and,
                     gateCounter[0]++,
-                    new int[]{idx},
-                    new int[]{idx},
+                    new int[]{filterIdx},
+                    new int[]{signalAdapterIdx},
                     0);
             stepGates.add(leaf);
             return leaf;
@@ -648,7 +677,7 @@ public class KiePackagesBuilder {
         }
         LogicGate[] inputs = new LogicGate[children.size()];
         for (int i = 0; i < children.size(); i++) {
-            inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter, seqIdx);
+            inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
         }
         LogicGate parent = new LogicGate(
                 pred,

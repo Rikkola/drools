@@ -19,13 +19,16 @@
 package org.drools.core.reteoo.sequencing;
 
 import org.drools.base.base.ValueResolver;
+import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.reteoo.DynamicFilter;
+import org.drools.base.reteoo.DynamicFilterProto;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.Sequencer;
 import org.drools.base.reteoo.sequencing.SequencerMemory;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.reteoo.LeftTupleSink;
+import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.PathMemory;
 import org.drools.core.reteoo.SegmentMemory;
 import org.drools.core.reteoo.SequenceNode;
@@ -36,7 +39,10 @@ import org.drools.core.reteoo.TupleImpl;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.util.CircularArrayList;
+import org.drools.core.common.InternalFactHandle;
+import org.drools.core.common.ObjectStore;
 
+import java.util.Iterator;
 
 public class SequencerMemoryImpl implements SequencerMemory {
 
@@ -148,5 +154,32 @@ public class SequencerMemoryImpl implements SequencerMemory {
     @Override
     public void removeActiveFilter(DynamicFilter filter) {
         nodeMemory.removeActiveFilter(filter);
+    }
+
+    @Override
+    public boolean hasActiveMatch(int filterIndex, BaseTuple leftTuple, ValueResolver valueResolver) {
+        // Build the DynamicFilter without activating it in the signal chain.
+        // We only need the constraint from the proto; we do NOT call getActiveDynamicFilter()
+        // because that adds the filter to activeFilters, wiring future inserts unnecessarily.
+        // proto is always non-null: PhreakNodeFactory fills every slot or throws.
+        DynamicFilterProto proto = node.getDynamicFilters()[filterIndex];
+        DynamicFilter filter = new DynamicFilter(proto);
+        ReteEvaluator reteEvaluator = (ReteEvaluator) valueResolver;
+        ObjectStore objectStore = reteEvaluator.getDefaultEntryPoint().getObjectStore();
+
+        // Resolve the concrete Java class for this filter's pattern type so we
+        // iterate only the right-typed fact handles rather than all WM objects.
+        // AlphaAdapter.getParent() walks up to the ObjectTypeNode.
+        SequenceNode.AlphaAdapter adapter = node.getAlphaAdapters()[proto.getAdapterIndex()];
+        Class<?> filterClass = ((org.drools.base.base.ClassObjectType) ((ObjectTypeNode) adapter.getParent()).getObjectType()).getClassType();
+
+        Iterator<InternalFactHandle> it = objectStore.iterateFactHandles(filterClass);
+        while (it.hasNext()) {
+            InternalFactHandle fh = it.next();
+            if (filter.test(fh, leftTuple, valueResolver)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

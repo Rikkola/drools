@@ -75,13 +75,19 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
         }
     }
 
-    private boolean test(FactHandle factHandle, ValueResolver valueResolver, BaseTuple tuple) {
-        if (constraint instanceof BetaConstraint) {
-            BetaConstraint<ContextEntry> betaConstraint = (BetaConstraint<ContextEntry>) constraint;
-            ContextEntry ctx = betaConstraint.createContext();
-            ctx.updateFromTuple(valueResolver, tuple);
-            return betaConstraint.isAllowedCachedLeft(ctx, factHandle);
-        }
-        throw new IllegalStateException("test() called with a non-beta constraint: " + constraint.getClass());
+    /**
+     * Returns true if the given fact handle passes this filter's constraint.
+     * Used by AbsenceStep to check for point-in-time WM matches at activation.
+     */
+    public boolean test(final FactHandle factHandle, final BaseTuple anchorTuple, final ValueResolver valueResolver) {
+       if( constraint instanceof BetaConstraint ) {
+           BetaConstraint<ContextEntry> betaConstraint = (BetaConstraint<ContextEntry>) constraint;
+           ContextEntry ctx = betaConstraint.createContext();
+           ctx.updateFromTuple(valueResolver, anchorTuple);
+
+           return betaConstraint.isAllowedCachedLeft(ctx, factHandle);
+       }
+
+       return constraint.isAllowed(factHandle, valueResolver);
     }
 }

@@ -93,6 +93,10 @@ public class SequenceNode extends LeftTupleSource
         this.alphaAdapters = adapters;
     }
 
+    public AlphaAdapter[] getAlphaAdapters() {
+        return alphaAdapters;
+    }
+
     public DynamicFilterProto[] getDynamicFilters() {
         return dynamicFilters;
     }
