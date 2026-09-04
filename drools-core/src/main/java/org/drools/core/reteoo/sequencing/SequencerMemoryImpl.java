@@ -56,17 +56,20 @@ public class SequencerMemoryImpl implements SequencerMemory {
 
     private Sequencer sequencer;
 
+    private SequenceNode node;
+
     private SequenceNodeMemory nodeMemory;
 
     private SequenceMemory childSequenceMemory;
 
-    public SequencerMemoryImpl(Sequencer sequencer, TupleImpl lt, LeftTupleSink sink, SequenceNodeMemory nodeMemory) {
+    public SequencerMemoryImpl(Sequencer sequencer, TupleImpl lt, LeftTupleSink sink, SequenceNode node, SequenceNodeMemory nodeMemory) {
         this.sequencer        = sequencer;
         this.lt               = lt;
         int filterCount = sequencer.getSequence().getFilters().length;
         this.events           = new CircularArrayList<>(Object.class, Math.max(filterCount, 4));
         this.sink             = sink;
         this.sequenceMemories = new SequenceMemory[sequencer.getSequences().length];
+        this.node       = node;
         this.nodeMemory = nodeMemory;
     }
 

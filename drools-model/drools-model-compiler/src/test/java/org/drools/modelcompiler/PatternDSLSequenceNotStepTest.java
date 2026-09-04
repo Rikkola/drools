@@ -110,6 +110,56 @@ public class PatternDSLSequenceNotStepTest {
     }
 
     @Test
+    public void notStepAsFirstStepFiresWhenNoBlockerExists() {
+        Rule rule = rule("not-first-step").build(
+                pattern(person),
+                sequence(
+                        not(pattern(number).expr("isNeg", n -> n < 0)),
+                        pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+                ),
+                execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("bat"));
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    @Test
+    public void notStepAsLastStepFiresWhenNoBlockerExists() {
+        Rule rule = rule("not-last-step").build(
+                pattern(person),
+                sequence(
+                        pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                        not(pattern(number).expr("isNeg", n -> n < 0))
+                ),
+                execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("ball"));
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    @Test
+    public void standaloneNotStepFiresWhenNoBlockerExists() {
+        Rule rule = rule("not-standalone-step").build(
+                pattern(person),
+                sequence(not(pattern(number).expr("isNeg", n -> n < 0))),
+                execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+
+        assertThat(results).containsExactly("fired");
+    }
+
+    @Test
     public void notStepPatternVariableConstraintWorks() {
         Variable<Toy> notToyV = declarationOf(Toy.class);
 

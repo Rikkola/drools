@@ -67,7 +67,7 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
         } else {
             for (SignalAdapter current = signalAdapters.getFirst(); current != null; ) {
                 SignalAdapter next = current.getNext();
-                if (test(factHandle, valueResolver, current.getAnchorTuple())) {
+                if (test(factHandle, current.getAnchorTuple(), valueResolver)) {
                     current.receive(valueResolver, factHandle);
                 }
                 current = next;
