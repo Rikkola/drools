@@ -174,6 +174,13 @@ public class Sequence implements RuleConditionElement {
             int step = sequenceMemory.getStep();
 
             sequence.steps[step].deactivate(sequenceMemory, valueResolver);
+
+            if (sequenceMemory.isStepVetoed()) {
+                // Absence guard was triggered — kill the sequence silently.
+                return;
+            }
+
+            sequenceMemory.setStepVetoed(false); // reset for the next step
             step = sequenceMemory.incrementStep();
 
             if (step < sequenceMemory.getSequence().getSteps().length) {
@@ -209,6 +216,8 @@ public class Sequence implements RuleConditionElement {
 
         private final boolean[] gateMatched;
 
+        private boolean stepVetoed;
+
         private CircularArrayList<Object> data;
 
         public SequenceMemory(SequencerMemory sequencerMemory, Sequence sequence, CircularArrayList<Object> data,
@@ -229,6 +238,14 @@ public class Sequence implements RuleConditionElement {
 
         public SequencerMemory getSequencerMemory() {
             return sequencerMemory;
+        }
+
+        public boolean isStepVetoed() {
+            return stepVetoed;
+        }
+
+        public void setStepVetoed(boolean vetoed) {
+            this.stepVetoed = vetoed;
         }
 
         public boolean isLogicGateMatched(int index) {

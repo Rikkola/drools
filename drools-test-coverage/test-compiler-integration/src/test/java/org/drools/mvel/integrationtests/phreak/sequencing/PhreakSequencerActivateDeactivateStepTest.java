@@ -144,6 +144,15 @@ public class PhreakSequencerActivateDeactivateStepTest extends AbstractPhreakSeq
     }
 
     @Test
+    public void sequenceMemoryVetoFlagDefaultsFalseAndCanBeSet() {
+        // Use an existing SequenceMemory from the test infrastructure
+        Sequence.SequenceMemory mem = sequencerMemory.getSequenceMemory(seq0);
+        assertThat(mem.isStepVetoed()).isFalse();
+        mem.setStepVetoed(true);
+        assertThat(mem.isStepVetoed()).isTrue();
+    }
+
+    @Test
     public void testUpdateOnDrivingTupleRestartsSequence() {
         // Advance to step 1: insert B then C to satisfy gate 1
         session.insert(new BEvent(0, "b"));
