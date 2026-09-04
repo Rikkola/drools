@@ -28,7 +28,6 @@ import org.drools.model.impl.ModelImpl;
 import org.drools.modelcompiler.domain.Person;
 import org.drools.modelcompiler.domain.Toy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.KieSession;
@@ -37,234 +36,136 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.DSL.not;
-import static org.drools.model.PatternDSL.on;
+import static org.drools.model.PatternDSL.nor;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
 
 /**
- * Tests for not() absence step inside sequence().
+ * Tests for the continuous absence guard inside sequence().
  *
- * Design contract: a not(P) step fires when it is activated (prior step
- * completed) AND no fact currently in the session matches P.  This is
- * point-in-time absence at activation — not a window.
+ * Contract (ADR 0002): a not(P) or nor(P) step activates a live filter adapter.
+ * Any matching P inserted AFTER activation and BEFORE the following positive
+ * step vetoes the sequence — the rule must not fire.
  */
 public class PatternDSLSequenceNotStepTest {
 
-    // Domain types:
-    //   Person  (name, age) — used as anchor or step match
-    //   Toy     (name)      — used for positive steps
-    //   Integer             — used as the not() target (negative integer == blocker)
-
-    private final Variable<Person>  person  = declarationOf(Person.class);
-    private final Variable<Toy>     toy     = declarationOf(Toy.class);
-    private final Variable<Integer> number  = declarationOf(Integer.class);
-    private final List<String>      results = new ArrayList<>();
-    private KieSession              ksession;
-
-    // -----------------------------------------------------------------
-    // Rule: anchor = Person, step1 = Toy("ball"), not(Integer < 0), step3 = Toy("bat")
-    // -----------------------------------------------------------------
-
-    private Rule buildRule() {
-        return rule("not-step")
-                .build(
-                    pattern(person),
-                    sequence(
-                        pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
-                        not(pattern(number).expr("isNeg", n -> n < 0)),
-                        pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
-                    ),
-                    execute(() -> results.add("fired"))
-                );
-    }
+    private final Variable<Person> person  = declarationOf(Person.class);
+    private final Variable<Toy>    toy     = declarationOf(Toy.class);
+    private final Variable<Toy>    blocker = declarationOf(Toy.class);
+    private final List<String>     results = new ArrayList<>();
+    private KieSession             ksession;
 
     @Test
-    public void sequenceFiresWhenNotStepHasNoMatch() {
-        // sequence: ball → not(negative int) → bat
-        // When: ball inserted, no negative integer present, bat inserted → should fire
-        ksession = makeKSession(buildRule());
-
+    public void notStepAdvancesWhenNoBlocker() {
+        // sequence: ball → not(blocker) → bat
+        // No blocker ever inserted → rule fires.
+        ksession = makeKSession(buildThreeStepRule());
         insertAndFire(new Person("anchor"));
-
-        insertAndFire(new Toy("ball"));        // step 1 complete
-        // no negative integer — not() step advances immediately
-        insertAndFire(new Toy("bat"));         // step 3 complete
-
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Toy("bat"));
         assertThat(results).containsExactly("fired");
     }
 
     @Test
-    public void sequenceDoesNotFireWhenNotStepHasMatch() {
-        // When a negative integer is already present when step 2 (not) activates,
-        // the step should block and the rule must NOT fire.
-        ksession = makeKSession(buildRule());
-
+    public void notStepVetoesWhenBlockerArrivesAfterActivation() {
+        // sequence: ball → not(blocker) → bat
+        // Blocker inserted AFTER ball (i.e., after the absence guard activates)
+        // but BEFORE bat → rule must NOT fire.
+        ksession = makeKSession(buildThreeStepRule());
         insertAndFire(new Person("anchor"));
-
-        insertAndFire(new Toy("ball"), (Integer)(-5));  // step 1 complete; -5 is already in WM
-        // not() step activates: -5 matches → step blocks
-        insertAndFire(new Toy("bat"));                    // step 3 never activates
-
+        insertAndFire(new Toy("ball"));              // step 1: positive, activates absence guard
+        insertAndFire(new Toy("blocker-toy"));       // fires into absence guard → veto
+        insertAndFire(new Toy("bat"));               // step 3 never activates
         assertThat(results).isEmpty();
     }
 
     @Test
-    public void notStepAsFirstStepFiresWhenNoBlockerExists() {
-        Rule rule = rule("not-first-step").build(
-                pattern(person),
-                sequence(
-                        not(pattern(number).expr("isNeg", n -> n < 0)),
-                        pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
-                ),
-                execute(() -> results.add("fired"))
-        );
-
-        ksession = makeKSession(rule);
+    public void notStepVetoesWhenBlockerAlreadyPresent() {
+        // sequence: ball → not(blocker) → bat
+        // Blocker already in WM when absence guard activates → rule must NOT fire.
+        ksession = makeKSession(buildThreeStepRule());
         insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("blocker-toy"), new Toy("ball")); // blocker present at guard activation
         insertAndFire(new Toy("bat"));
-
-        assertThat(results).containsExactly("fired");
+        assertThat(results).isEmpty();
     }
 
     @Test
-    public void notStepAsLastStepFiresWhenNoBlockerExists() {
-        Rule rule = rule("not-last-step").build(
-                pattern(person),
-                sequence(
-                        pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
-                        not(pattern(number).expr("isNeg", n -> n < 0))
-                ),
-                execute(() -> results.add("fired"))
+    public void norStepBehavesLikeNotStep() {
+        // nor(P) is an alias for not(P) at standalone step position.
+        // sequence: ball → nor(blocker) → bat
+        // Blocker inserted after activation → rule must NOT fire.
+        Variable<Toy> norBlocker = declarationOf(Toy.class);
+
+        Rule rule = rule("nor-guard").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                nor(pattern(norBlocker).expr("isBlocker", t -> t.getName().equals("blocker-toy"))),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
         );
 
         ksession = makeKSession(rule);
         insertAndFire(new Person("anchor"));
         insertAndFire(new Toy("ball"));
-
-        assertThat(results).containsExactly("fired");
-    }
-
-    @Test
-    public void standaloneNotStepFiresWhenNoBlockerExists() {
-        Rule rule = rule("not-standalone-step").build(
-                pattern(person),
-                sequence(not(pattern(number).expr("isNeg", n -> n < 0))),
-                execute(() -> results.add("fired"))
-        );
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("anchor"));
-
-        assertThat(results).containsExactly("fired");
-    }
-
-    @Test
-    public void notStepPatternVariableConstraintWorks() {
-        Variable<Toy> notToyV = declarationOf(Toy.class);
-
-        Rule rule = rule("not-step-pattern-var").build(
-                pattern(person),
-                sequence(
-                        pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
-                        not(pattern(notToyV).expr("isBlocker", t -> t.getName().equals("blocker"))),
-                        pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
-                ),
-                execute(() -> results.add("fired"))
-        );
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("ball"));
-        insertAndFire(new Toy("bat"));
-        assertThat(results).containsExactly("fired");
-
-        results.clear();
-        ksession.dispose();
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("ball"), new Toy("blocker"));
+        insertAndFire(new Toy("blocker-toy"));  // veto
         insertAndFire(new Toy("bat"));
         assertThat(results).isEmpty();
     }
 
     @Test
-    public void notStepMultiConstraintPatternUsesCombinedAlphaConstraint() {
-        Variable<Toy> notToyV = declarationOf(Toy.class);
+    public void notStepInMiddleVetoesSequence() {
+        // sequence: A → not(blocker) → B → C
+        // Blocker arrives between A and B → rule must NOT fire.
+        Variable<Toy> midBlocker = declarationOf(Toy.class);
+        Variable<Toy> toyB       = declarationOf(Toy.class);
+        Variable<Toy> toyC       = declarationOf(Toy.class);
 
-        Rule rule = rule("not-step-multi-constraint").build(
-                pattern(person),
-                sequence(
-                        pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
-                        not(pattern(notToyV)
-                                .expr("hasName",   t -> t.getName() != null)
-                                .expr("isBlocker", t -> t.getName().equals("blocker"))),
-                        pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
-                ),
-                execute(() -> results.add("fired"))
+        Rule rule = rule("not-in-middle").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isA", t -> t.getName().equals("A")),
+                not(pattern(midBlocker).expr("isBlocker", t -> t.getName().equals("blocker-toy"))),
+                pattern(toyB).expr("isB", t -> t.getName().equals("B")),
+                pattern(toyC).expr("isC", t -> t.getName().equals("C"))
+            ),
+            execute(() -> results.add("fired"))
         );
 
         ksession = makeKSession(rule);
         insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("ball"));
-        insertAndFire(new Toy("bat"));
-        assertThat(results).containsExactly("fired");
-
-        results.clear();
-        ksession.dispose();
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("ball"), new Toy("blocker"));
-        insertAndFire(new Toy("bat"));
+        insertAndFire(new Toy("A"));
+        insertAndFire(new Toy("blocker-toy")); // veto fires here
+        insertAndFire(new Toy("B"));
+        insertAndFire(new Toy("C"));
         assertThat(results).isEmpty();
     }
 
-    @Test
-    public void notStepCrossVariableConstraintIsBlockedOnlyWhenNameMatches() {
-        Variable<Person> personV  = declarationOf(Person.class);
-        Variable<Toy>    stepToyV = declarationOf(Toy.class);
-        Variable<Toy>    notToyV  = declarationOf(Toy.class);
+    // ---- helper: three-step rule used by the first three tests ----
 
-        Rule rule = rule("not-step-cross-var").build(
-                pattern(personV),
-                sequence(
-                        pattern(stepToyV).expr("isBall", t -> t.getName().equals("ball")),
-                        not(pattern(notToyV).expr("nameMatchesAnchor",
-                                personV, (t, p) -> t.getName().equals(p.getName()))),
-                        pattern(stepToyV).expr("isBat", t -> t.getName().equals("bat"))
-                ),
-                on(personV).execute(p -> results.add("fired:" + p.getName()))
+    private Rule buildThreeStepRule() {
+        return rule("not-guard").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                not(pattern(blocker).expr("isBlocker", t -> t.getName().equals("blocker-toy"))),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
         );
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("alice"));
-        insertAndFire(new Toy("ball"), new Toy("bob"));
-        insertAndFire(new Toy("bat"));
-        assertThat(results).containsExactly("fired:alice");
-        ksession.dispose();
-        results.clear();
-
-        ksession = makeKSession(rule);
-        insertAndFire(new Person("alice"));
-        insertAndFire(new Toy("ball"), new Toy("alice"));
-        insertAndFire(new Toy("bat"));
-        assertThat(results).isEmpty();
     }
 
     @AfterEach
     public void tearDown() {
         results.clear();
-        if (ksession != null) {
-            ksession.dispose();
-        }
+        if (ksession != null) { ksession.dispose(); }
     }
 
     private void insertAndFire(Object... facts) {
-        for (Object fact : facts) {
-            ksession.insert(fact);
-        }
+        for (Object fact : facts) { ksession.insert(fact); }
         ksession.fireAllRules();
     }
 

@@ -94,6 +94,7 @@ import org.drools.model.view.BindViewItem2;
 import org.drools.model.view.BindViewItem3;
 import org.drools.model.view.BindViewItem4;
 import org.drools.model.view.CombinedExprViewItem;
+import org.drools.model.view.ExistentialExprViewItem;
 import org.drools.model.view.ExprViewItem;
 import org.drools.model.view.ViewItem;
 import org.drools.model.view.ViewItemBuilder;
@@ -1905,6 +1906,15 @@ public class PatternDSL extends DSL {
     }
 
     // -- rule --
+
+    /**
+     * Alias for {@code not()} at a sequence step position.
+     * Activates a continuous absence guard: vetoes the sequence if any
+     * matching fact is present when the guard activates.
+     */
+    public static ExistentialExprViewItem nor(ViewItemBuilder<?> expression) {
+        return new ExistentialExprViewItem(Condition.Type.NOT, expression.get());
+    }
 
     public static SequenceViewItem sequence(SequenceStep... steps) {
         if (steps == null || steps.length == 0) {
