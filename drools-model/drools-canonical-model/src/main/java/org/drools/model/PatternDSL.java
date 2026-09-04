@@ -1909,8 +1909,9 @@ public class PatternDSL extends DSL {
 
     /**
      * Alias for {@code not()} at a sequence step position.
-     * Activates a continuous absence guard: vetoes the sequence if any
-     * matching fact is present when the guard activates.
+     * Activates a continuous absence guard: the step blocks if a matching fact is
+     * present when the guard activates OR if a matching fact is inserted while the
+     * guard is active before the following positive step closes the observation window.
      */
     public static ExistentialExprViewItem nor(ViewItemBuilder<?> expression) {
         return new ExistentialExprViewItem(Condition.Type.NOT, expression.get());

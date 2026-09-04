@@ -42,16 +42,14 @@ public class VetoSignalProcessor extends SignalProcessor {
         // Called by LogicGate.propagate() after the gate predicate fires.
         // signalBitIndex is not needed for the veto action.
         memory.setStepVetoed(true);
+        // Deactivate all adapters for the current step so no further signals fire.
         int step = memory.getStep();
         memory.getSequence().getSteps()[step].deactivate(memory, valueResolver);
     }
 
     @Override
     public void consume(int signalBitIndex, SequenceMemory memory, ValueResolver valueResolver) {
-        memory.setStepVetoed(true);
-        // Deactivate all adapters for the current step so no further signals fire.
-        int step = memory.getStep();
-        memory.getSequence().getSteps()[step].deactivate(memory, valueResolver);
+        consume(memory, valueResolver);
     }
 
     @Override
