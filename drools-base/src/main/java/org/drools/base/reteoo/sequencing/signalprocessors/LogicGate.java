@@ -37,6 +37,8 @@ public class LogicGate extends SignalProcessor {
 
     private int[] signalAdapterIndexes;
 
+    private boolean vetoGate;
+
     private static final LogicGate[] EMPTY_INPUT_GATES = new LogicGate[0];
 
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
@@ -59,6 +61,18 @@ public class LogicGate extends SignalProcessor {
 
     public int[] getSignalAdapterIndexes() {
         return signalAdapterIndexes;
+    }
+
+    public boolean isVetoGate() {
+        return vetoGate;
+    }
+
+    public void setVetoGate(boolean vetoGate) {
+        this.vetoGate = vetoGate;
+    }
+
+    public int[] getFilterIndexes() {
+        return filterIndexes;
     }
 
     public void setInputGates(LogicGate... inputGates) {

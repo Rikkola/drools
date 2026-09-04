@@ -39,7 +39,11 @@ public class VetoSignalProcessor extends SignalProcessor {
 
     @Override
     public void consume(SequenceMemory memory, ValueResolver valueResolver) {
-        throw new UnsupportedOperationException("VetoSignalProcessor requires a signalBitIndex");
+        // Called by LogicGate.propagate() after the gate predicate fires.
+        // signalBitIndex is not needed for the veto action.
+        memory.setStepVetoed(true);
+        int step = memory.getStep();
+        memory.getSequence().getSteps()[step].deactivate(memory, valueResolver);
     }
 
     @Override

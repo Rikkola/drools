@@ -139,7 +139,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGateOutputSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.SignalIndex;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
-import org.drools.base.reteoo.sequencing.steps.AbsenceStep;
+import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.model.view.SelfPatternBiding;
 import org.drools.modelcompiler.attributes.LambdaEnabled;
@@ -551,25 +551,60 @@ public class KiePackagesBuilder {
                 for (int i = 0; i < n; i++) {
                     Condition step = steps.get(i);
                     if (step.getType() == Condition.Type.NOT) {
-                        // Absence step: compile the inner pattern to a filter slot,
-                        // wrap in AbsenceStep.Factory.  The absence variable is NOT
-                        // registered in sequenceVarIndexes — you can't bind a variable
-                        // to something that was absent.
-                        // signalAdapterCounter is NOT incremented — absence steps have
-                        // no signal adapter and therefore take no slot in the signal array.
+                        // Continuous absence guard (ADR 0002).
+                        // Fold the absence pattern with the following positive step into one LogicCircuit.
+                        // The absence leaf gate fires into VetoSignalProcessor (live veto on insert).
+                        // The positive step's gate tree fires into TerminatingSignalProcessor as normal.
+                        // DefaultController.next() checks sequenceMemory.isStepVetoed() before advancing.
+                        if (i + 1 >= n) {
+                            // Should have been caught by ViewPatternBuilder; defensive check.
+                            throw new IllegalArgumentException(
+                                "sequence(): trailing not() or nor() requires a following positive step. See ADR 0002.");
+                        }
+
+                        // Build the absence pattern filter slot.
                         List<Condition> inner = step.getSubConditions();
                         if (inner.size() != 1 || inner.get(0).getType() != Condition.Type.PATTERN) {
                             throw new UnsupportedOperationException(
-                                "sequence not() step must contain exactly one simple pattern");
+                                "sequence not()/nor() step must contain exactly one simple pattern");
                         }
-                        int idx = filters.size();
-                        PatternImpl notPattern = (PatternImpl) inner.get(0);
-                        RuleConditionElement built = buildPattern(ctx, group, notPattern);
-                        if (!(built instanceof Pattern)) {
-                            throw new IllegalStateException("NOT step pattern must compile to Pattern, got " + built);
+                        int absenceFilterIdx      = filters.size();
+                        int absenceAdapterIdx     = signalAdapterCounter[0]++;
+                        PatternImpl absencePattern = (PatternImpl) inner.get(0);
+                        RuleConditionElement builtAbsence = buildPattern(ctx, group, absencePattern);
+                        if (!(builtAbsence instanceof Pattern)) {
+                            throw new IllegalStateException("NOT step pattern must compile to Pattern, got " + builtAbsence);
                         }
-                        filters.add((Pattern) built);
-                        stepFactories[i] = new AbsenceStep.Factory(idx);
+                        filters.add((Pattern) builtAbsence);
+
+                        // Build the absence leaf gate: single filter input, outputs to VetoSignalProcessor.
+                        // Uses Gates::and predicate (allMatched = one bit; predicate fires when that bit is set).
+                        // The veto side-channel is the output — it does NOT wire into a parent AND composite.
+                        LogicGate absenceLeaf = new LogicGate(
+                            Gates::and,
+                            gateCounter[0]++,
+                            new int[]{absenceFilterIdx},
+                            new int[]{absenceAdapterIdx},
+                            0);
+                        absenceLeaf.setOutput(VetoSignalProcessor.get());
+                        absenceLeaf.setVetoGate(true);
+
+                        // Build the following positive step's gate tree normally.
+                        List<LogicGate> positiveGates = new ArrayList<>();
+                        Condition positiveStep = steps.get(i + 1);
+                        LogicGate positiveRoot = buildStepGate(ctx, group, positiveStep, filters,
+                                                                positiveGates, gateCounter, seqIdx, signalAdapterCounter);
+                        positiveRoot.setOutput(TerminatingSignalProcessor.get());
+
+                        // Combine both into one LogicCircuit: absence leaf + all positive gates.
+                        List<LogicGate> allGates = new ArrayList<>();
+                        allGates.add(absenceLeaf);
+                        allGates.addAll(positiveGates);
+                        stepFactories[i] = Step.of(new LogicCircuit(allGates.toArray(new LogicGate[0])));
+
+                        // The positive step at i+1 has been consumed — mark it as null sentinel.
+                        stepFactories[i + 1] = null;
+                        i++; // skip the consumed positive step
                     } else {
                         List<LogicGate> stepGates = new ArrayList<>();
                         LogicGate root = buildStepGate(ctx, group, step, filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
@@ -578,7 +613,10 @@ public class KiePackagesBuilder {
                     }
                 }
 
-                Sequence seq = new Sequence(0, stepFactories);
+                Step.StepFactory[] compactFactories = Arrays.stream(stepFactories)
+                    .filter(f -> f != null)
+                    .toArray(Step.StepFactory[]::new);
+                Sequence seq = new Sequence(0, compactFactories);
                 seq.setFilters(filters.toArray(new Pattern[0]));
                 ctx.getRule().addSequence(seq);
                 return null;
