@@ -544,8 +544,9 @@ public class KiePackagesBuilder {
                 Step.StepFactory[] stepFactories = new Step.StepFactory[n];
                 int[] gateCounter = new int[]{0};
                 // signalAdapterCounter is a compact index for signal adapter slots.
-                // It increments for every PATTERN in a positive step but NOT for NOT-step
-                // patterns, because absence steps don't register signal adapters.
+                // It increments for every PATTERN in a step — including the absence leaf gate
+                // pattern, which registers a live signal adapter so arriving blockers can fire
+                // the VetoSignalProcessor.
                 int[] signalAdapterCounter = new int[]{0};
 
                 for (int i = 0; i < n; i++) {
