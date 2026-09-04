@@ -33,6 +33,7 @@ import org.kie.api.KieBase;
 import org.kie.api.runtime.KieSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
 import static org.drools.model.DSL.not;
@@ -156,6 +157,37 @@ public class PatternDSLSequenceNotStepTest {
             ),
             execute(() -> results.add("fired"))
         );
+    }
+
+    @Test
+    public void trailingNotWithoutCompleteWithinIsRejected() {
+        Variable<Toy> toyV = declarationOf(Toy.class);
+
+        assertThatThrownBy(() ->
+            rule("trailing-not").build(
+                pattern(person),
+                sequence(
+                    pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                    not(pattern(toyV).expr("isBlocker", t -> t.getName().equals("blocker-toy")))
+                ),
+                execute(() -> {})
+            )
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("ADR 0002");
+    }
+
+    @Test
+    public void standaloneNotIsRejected() {
+        Variable<Toy> toyV = declarationOf(Toy.class);
+
+        assertThatThrownBy(() ->
+            rule("standalone-not").build(
+                pattern(person),
+                sequence(not(pattern(toyV).expr("isBlocker", t -> t.getName().equals("blocker-toy")))),
+                execute(() -> {})
+            )
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("ADR 0002");
     }
 
     @AfterEach

@@ -185,6 +185,30 @@ public class ViewPatternBuilder implements ViewBuilder {
 
         if (ruleItem instanceof SequenceViewItem) {
             SequenceViewItem sv = (SequenceViewItem) ruleItem;
+            org.drools.model.SequenceStep[] rawSteps = sv.getSteps();
+            if (rawSteps.length > 0) {
+                org.drools.model.SequenceStep last = rawSteps[rawSteps.length - 1];
+                if (last instanceof ExistentialExprViewItem) {
+                    ExistentialExprViewItem ex = (ExistentialExprViewItem) last;
+                    if (ex.getType() == Condition.Type.NOT) {
+                        throw new IllegalArgumentException(
+                            "sequence(): trailing not() or nor() requires a following positive step " +
+                            "or a completeWithin(...) deadline. " +
+                            "Trailing absence with completeWithin is planned but not yet implemented. " +
+                            "See ADR 0002.");
+                    }
+                }
+                if (last instanceof CombinedExprViewItem) {
+                    CombinedExprViewItem comb = (CombinedExprViewItem) last;
+                    if (comb.getType() == Condition.Type.NOT) {
+                        throw new IllegalArgumentException(
+                            "sequence(): trailing not() or nor() requires a following positive step " +
+                            "or a completeWithin(...) deadline. " +
+                            "Trailing absence with completeWithin is planned but not yet implemented. " +
+                            "See ADR 0002.");
+                    }
+                }
+            }
             List<Condition> steps = Arrays.stream(sv.getSteps())
                     .map(s -> ruleItem2Condition((RuleItem) s))
                     .collect(toList());
