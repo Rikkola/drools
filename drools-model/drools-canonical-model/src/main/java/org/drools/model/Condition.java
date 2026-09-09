@@ -39,7 +39,9 @@ public interface Condition {
         PATTERN( false ), EVAL( false ), QUERY( false ),
         ACCUMULATE( false ), GROUP_BY( false ), TEMPORAL( false ),
         RECEIVER( false ), SENDER( false ),
-        OR( true ), AND( true ), NOT( false ), EXISTS( false ), FORALL( false ), SEQUENCE( false ), CONSEQUENCE( false );
+        OR( true ), AND( true ), NOT( false ), EXISTS( false ), FORALL( false ), SEQUENCE( false ), CONSEQUENCE( false ),
+        NOR( true ),
+        XOR( true );
 
         private final boolean composite;
 

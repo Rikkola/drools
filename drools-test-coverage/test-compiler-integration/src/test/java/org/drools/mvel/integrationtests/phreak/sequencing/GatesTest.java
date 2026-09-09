@@ -64,4 +64,33 @@ public class GatesTest {
         // 32 signal adapters + 32 input gates = 64 total — should not throw.
         new LogicGate((a, b) -> a == b, 0, indexes, indexes, 32);
     }
+    // XOR: true when exactly one bit of allMatched is set in currentMatched.
+    @Test
+    public void testXorNoneMatched() {
+        assertThat(Gates.xor(0b00L, 0b11L)).isFalse();
+    }
+
+    @Test
+    public void testXorOneMatchedLow() {
+        assertThat(Gates.xor(0b01L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void testXorOneMatchedHigh() {
+        assertThat(Gates.xor(0b10L, 0b11L)).isTrue();
+    }
+
+    @Test
+    public void testXorBothMatched() {
+        assertThat(Gates.xor(0b11L, 0b11L)).isFalse();
+    }
+
+    @Test
+    public void testXorThreeInputsExactlyOne() {
+        assertThat(Gates.xor(0b001L, 0b111L)).isTrue();
+        assertThat(Gates.xor(0b010L, 0b111L)).isTrue();
+        assertThat(Gates.xor(0b100L, 0b111L)).isTrue();
+        assertThat(Gates.xor(0b011L, 0b111L)).isFalse();
+        assertThat(Gates.xor(0b111L, 0b111L)).isFalse();
+    }
 }

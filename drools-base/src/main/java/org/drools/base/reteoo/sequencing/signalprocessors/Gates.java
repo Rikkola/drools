@@ -26,4 +26,10 @@ public class Gates {
     /** True when no input signals have fired — used for absence detection. */
     public static boolean not(long a, long b) { return a == 0L; }
 
+    /** True when exactly one input signal has fired. */
+    public static boolean xor(long a, long b) {
+        long v = a & b;
+        return v != 0L && (v & (v - 1)) == 0L;
+    }
+
 }
