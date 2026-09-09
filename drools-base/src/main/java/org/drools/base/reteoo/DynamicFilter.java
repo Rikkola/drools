@@ -81,14 +81,13 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
      * (continuous absence guard).
      */
     public boolean test(final FactHandle factHandle, final BaseTuple anchorTuple, final ValueResolver valueResolver) {
-       if( constraint instanceof BetaConstraint ) {
-           BetaConstraint<ContextEntry> betaConstraint = (BetaConstraint<ContextEntry>) constraint;
-           ContextEntry ctx = betaConstraint.createContext();
-           ctx.updateFromTuple(valueResolver, anchorTuple);
-
-           return betaConstraint.isAllowedCachedLeft(ctx, factHandle);
+       if( constraint.getRequiredDeclarations().length == 0 ) {
+           return constraint.isAllowed(factHandle, valueResolver);
        }
 
-       return constraint.isAllowed(factHandle, valueResolver);
+       BetaConstraint<ContextEntry> betaConstraint = (BetaConstraint<ContextEntry>) constraint;
+       ContextEntry ctx = betaConstraint.createContext();
+       ctx.updateFromTuple(valueResolver, anchorTuple);
+       return betaConstraint.isAllowedCachedLeft(ctx, factHandle);
     }
 }
