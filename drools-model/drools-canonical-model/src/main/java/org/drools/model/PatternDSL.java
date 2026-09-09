@@ -1928,8 +1928,12 @@ public class PatternDSL extends DSL {
 
     /**
      * Exclusive-or step: exactly one of the listed patterns must match.
-     * The step vetoes if none or more than one pattern matches before the following positive step.
+     * <p>
+     * Intended semantics (runtime not yet implemented): the step advances only when exactly
+     * one of the listed patterns has matched before the following positive step fires; zero
+     * or two-or-more matches leave the step in UNMATCHED state.
      * Requires a following positive step to close the observation window (ADR 0002).
+     * </p>
      */
     public static CombinedExprViewItem xor(SequenceStep first, SequenceStep second, SequenceStep... rest) {
         return new CombinedExprViewItem(Condition.Type.XOR, prependStep(first, second, rest));
