@@ -39,6 +39,7 @@ import static org.drools.model.DSL.execute;
 import static org.drools.model.DSL.not;
 import static org.drools.model.PatternDSL.nor;
 import static org.drools.model.PatternDSL.pattern;
+import static org.drools.model.PatternDSL.xor;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
 
@@ -157,6 +158,27 @@ public class PatternDSLSequenceNotStepTest {
             ),
             execute(() -> results.add("fired"))
         );
+    }
+
+    @Test
+    public void trailingNorWithoutCompleteWithinIsRejected() {
+        Variable<Toy> toyA = declarationOf(Toy.class);
+        Variable<Toy> toyB = declarationOf(Toy.class);
+
+        assertThatThrownBy(() ->
+            rule("trailing-nor").build(
+                pattern(person),
+                sequence(
+                    pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                    nor(
+                        pattern(toyA).expr("isBlockerA", t -> t.getName().equals("blockerA")),
+                        pattern(toyB).expr("isBlockerB", t -> t.getName().equals("blockerB"))
+                    )
+                ),
+                execute(() -> {})
+            )
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("ADR 0002");
     }
 
     @Test

@@ -1917,6 +1917,24 @@ public class PatternDSL extends DSL {
         return new ExistentialExprViewItem(Condition.Type.NOT, expression.get());
     }
 
+    /**
+     * Multi-pattern absence guard. Any matching fact from any listed pattern vetoes the step.
+     * Requires a following positive step to close the observation window (ADR 0002).
+     * With a single argument, behaves identically to {@code not(pattern)}.
+     */
+    public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.NOR, prependStep(first, rest));
+    }
+
+    /**
+     * Exclusive-or step: exactly one of the listed patterns must match.
+     * The step vetoes if none or more than one pattern matches before the following positive step.
+     * Requires a following positive step to close the observation window (ADR 0002).
+     */
+    public static CombinedExprViewItem xor(SequenceStep first, SequenceStep second, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.XOR, prependStep(first, second, rest));
+    }
+
     public static SequenceViewItem sequence(SequenceStep... steps) {
         if (steps == null || steps.length == 0) {
             throw new IllegalArgumentException("sequence() requires at least one step");
@@ -1931,6 +1949,25 @@ public class PatternDSL extends DSL {
 
     public static CombinedExprViewItem and(ViewItemBuilder<?> first, ViewItemBuilder<?>... rest) {
         return new CombinedExprViewItem(Condition.Type.AND, viewItems(first, rest));
+    }
+
+    private static ViewItem[] prependStep(SequenceStep first, SequenceStep[] rest) {
+        ViewItem[] all = new ViewItem[1 + rest.length];
+        all[0] = (ViewItem) first;
+        for (int i = 0; i < rest.length; i++) {
+            all[i + 1] = (ViewItem) rest[i];
+        }
+        return all;
+    }
+
+    private static ViewItem[] prependStep(SequenceStep first, SequenceStep second, SequenceStep[] rest) {
+        ViewItem[] all = new ViewItem[2 + rest.length];
+        all[0] = (ViewItem) first;
+        all[1] = (ViewItem) second;
+        for (int i = 0; i < rest.length; i++) {
+            all[i + 2] = (ViewItem) rest[i];
+        }
+        return all;
     }
 
     private static ViewItem[] viewItems(ViewItemBuilder<?> first, ViewItemBuilder<?>[] rest) {

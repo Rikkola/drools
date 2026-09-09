@@ -200,9 +200,11 @@ public class ViewPatternBuilder implements ViewBuilder {
                 }
                 if (last instanceof CombinedExprViewItem) {
                     CombinedExprViewItem comb = (CombinedExprViewItem) last;
-                    if (comb.getType() == Condition.Type.NOT) {
+                    if (comb.getType() == Condition.Type.NOT
+                            || comb.getType() == Condition.Type.NOR
+                            || comb.getType() == Condition.Type.XOR) {
                         throw new IllegalArgumentException(
-                            "sequence(): trailing not() or nor() requires a following positive step " +
+                            "sequence(): trailing not()/nor()/xor() requires a following positive step " +
                             "or a completeWithin(...) deadline. " +
                             "Trailing absence with completeWithin is planned but not yet implemented. " +
                             "See ADR 0002.");
