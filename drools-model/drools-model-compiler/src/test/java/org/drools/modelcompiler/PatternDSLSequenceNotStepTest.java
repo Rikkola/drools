@@ -212,6 +212,133 @@ public class PatternDSLSequenceNotStepTest {
          .hasMessageContaining("ADR 0002");
     }
 
+    @Test
+    public void norTwoPatternsBothAbsent_fires() {
+        // nor(blockerA, blockerB): neither inserted → rule fires
+        Variable<Toy> blockerA = declarationOf(Toy.class);
+        Variable<Toy> blockerB = declarationOf(Toy.class);
+
+        Rule rule = rule("nor-both-absent").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                nor(
+                    pattern(blockerA).expr("isA", t -> t.getName().equals("blockerA")),
+                    pattern(blockerB).expr("isB", t -> t.getName().equals("blockerB"))
+                ),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Toy("bat"));
+        assertThat(results).containsExactly("fired");
+    }
+
+    @Test
+    public void norTwoPatternsFirstVetoes() {
+        // nor(blockerA, blockerB): blockerA inserted after ball → veto
+        Variable<Toy> blockerA = declarationOf(Toy.class);
+        Variable<Toy> blockerB = declarationOf(Toy.class);
+
+        Rule rule = rule("nor-first-vetoes").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                nor(
+                    pattern(blockerA).expr("isA", t -> t.getName().equals("blockerA")),
+                    pattern(blockerB).expr("isB", t -> t.getName().equals("blockerB"))
+                ),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Toy("blockerA")); // hits first veto gate → veto
+        insertAndFire(new Toy("bat"));
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void norTwoPatternsSecondVetoes() {
+        // nor(blockerA, blockerB): blockerB inserted after ball → veto
+        Variable<Toy> blockerA = declarationOf(Toy.class);
+        Variable<Toy> blockerB = declarationOf(Toy.class);
+
+        Rule rule = rule("nor-second-vetoes").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                nor(
+                    pattern(blockerA).expr("isA", t -> t.getName().equals("blockerA")),
+                    pattern(blockerB).expr("isB", t -> t.getName().equals("blockerB"))
+                ),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("ball"));
+        insertAndFire(new Toy("blockerB")); // hits second veto gate → veto
+        insertAndFire(new Toy("bat"));
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void norTwoPatternsBlockerAlreadyPresent_vetoes() {
+        // nor(blockerA, blockerB): blockerA already in WM at activation → veto
+        Variable<Toy> blockerA = declarationOf(Toy.class);
+        Variable<Toy> blockerB = declarationOf(Toy.class);
+
+        Rule rule = rule("nor-preexisting").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                nor(
+                    pattern(blockerA).expr("isA", t -> t.getName().equals("blockerA")),
+                    pattern(blockerB).expr("isB", t -> t.getName().equals("blockerB"))
+                ),
+                pattern(toy).expr("isBat", t -> t.getName().equals("bat"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("blockerA"), new Toy("ball")); // blockerA already in WM when guard activates
+        insertAndFire(new Toy("bat"));
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void trailingXorWithoutCompleteWithinIsRejected() {
+        Variable<Toy> toyA = declarationOf(Toy.class);
+        Variable<Toy> toyB = declarationOf(Toy.class);
+
+        assertThatThrownBy(() ->
+            rule("trailing-xor").build(
+                pattern(person),
+                sequence(
+                    pattern(toy).expr("isBall", t -> t.getName().equals("ball")),
+                    xor(
+                        pattern(toyA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                        pattern(toyB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                    )
+                ),
+                execute(() -> {})
+            )
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("ADR 0002");
+    }
+
     @AfterEach
     public void tearDown() {
         results.clear();

@@ -39,6 +39,8 @@ public class LogicGate extends SignalProcessor {
 
     private boolean vetoGate;
 
+    private boolean statusCanRevert;
+
     private static final LogicGate[] EMPTY_INPUT_GATES = new LogicGate[0];
 
     public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes, int[] signalAdapterIndexes, int nbrOfInputGates) {
@@ -58,6 +60,14 @@ public class LogicGate extends SignalProcessor {
 
         this.gateIndex = gateIndex;
     }
+
+    public LogicGate(LongBiPredicate predicate, int gateIndex, int[] filterIndexes,
+                     int[] signalAdapterIndexes, int nbrOfInputGates, boolean statusCanRevert) {
+        this(predicate, gateIndex, filterIndexes, signalAdapterIndexes, nbrOfInputGates);
+        this.statusCanRevert = statusCanRevert;
+    }
+
+    public boolean isStatusCanRevert() { return statusCanRevert; }
 
     public int[] getSignalAdapterIndexes() {
         return signalAdapterIndexes;
@@ -98,6 +108,8 @@ public class LogicGate extends SignalProcessor {
         if (matched && !memory.isLogicGateMatched(gateIndex)) {
             memory.setLogicGateMatched(gateIndex, true);
             propagate(memory, valueResolver);
+        } else if (!matched && statusCanRevert) {
+            memory.setLogicGateMatched(gateIndex, false);
         }
     }
 

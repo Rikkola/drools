@@ -551,10 +551,10 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition step = steps.get(i);
-                    if (step.getType() == Condition.Type.NOT) {
+                    if (step.getType() == Condition.Type.NOT || step.getType() == Condition.Type.NOR) {
                         // Continuous absence guard (ADR 0002).
-                        // Fold the absence pattern with the following positive step into one LogicCircuit.
-                        // The absence leaf gate fires into VetoSignalProcessor (live veto on insert).
+                        // Fold the absence pattern(s) with the following positive step into one LogicCircuit.
+                        // Each absence leaf gate fires into VetoSignalProcessor (live veto on insert).
                         // The positive step's gate tree fires into TerminatingSignalProcessor as normal.
                         // DefaultController.next() checks sequenceMemory.isStepVetoed() before advancing.
                         if (i + 1 >= n) {
@@ -563,32 +563,42 @@ public class KiePackagesBuilder {
                                 "sequence(): trailing not() or nor() requires a following positive step. See ADR 0002.");
                         }
 
-                        // Build the absence pattern filter slot.
+                        // Build the absence pattern filter slot(s).
                         List<Condition> inner = step.getSubConditions();
-                        if (inner.size() != 1 || inner.get(0).getType() != Condition.Type.PATTERN) {
-                            throw new UnsupportedOperationException(
-                                "sequence not()/nor() step must contain exactly one simple pattern");
+                        // Validate: all children must be simple PATTERNs.
+                        for (Condition child : inner) {
+                            if (child.getType() != Condition.Type.PATTERN) {
+                                throw new UnsupportedOperationException(
+                                    "sequence not()/nor() children must all be simple patterns; got " + child.getType());
+                            }
                         }
-                        int absenceFilterIdx      = filters.size();
-                        int absenceAdapterIdx     = signalAdapterCounter[0]++;
-                        PatternImpl absencePattern = (PatternImpl) inner.get(0);
-                        RuleConditionElement builtAbsence = buildPattern(ctx, group, absencePattern);
-                        if (!(builtAbsence instanceof Pattern)) {
-                            throw new IllegalStateException("NOT step pattern must compile to Pattern, got " + builtAbsence);
-                        }
-                        filters.add((Pattern) builtAbsence);
 
-                        // Build the absence leaf gate: single filter input, outputs to VetoSignalProcessor.
-                        // Uses Gates::and predicate (allMatched = one bit; predicate fires when that bit is set).
-                        // The veto side-channel is the output — it does NOT wire into a parent AND composite.
-                        LogicGate absenceLeaf = new LogicGate(
-                            Gates::and,
-                            gateCounter[0]++,
-                            new int[]{absenceFilterIdx},
-                            new int[]{absenceAdapterIdx},
-                            0);
-                        absenceLeaf.setOutput(VetoSignalProcessor.get());
-                        absenceLeaf.setVetoGate(true);
+                        List<LogicGate> allGates = new ArrayList<>();
+
+                        // Build one veto gate per absence pattern.
+                        for (Condition child : inner) {
+                            int absenceFilterIdx  = filters.size();
+                            int absenceAdapterIdx = signalAdapterCounter[0]++;
+                            PatternImpl absencePattern = (PatternImpl) child;
+                            RuleConditionElement builtAbsence = buildPattern(ctx, group, absencePattern);
+                            if (!(builtAbsence instanceof Pattern)) {
+                                throw new IllegalStateException("NOT/NOR step pattern must compile to Pattern, got " + builtAbsence);
+                            }
+                            filters.add((Pattern) builtAbsence);
+
+                            // Build the absence leaf gate: single filter input, outputs to VetoSignalProcessor.
+                            // Uses Gates::and predicate (allMatched = one bit; predicate fires when that bit is set).
+                            // The veto side-channel is the output — it does NOT wire into a parent AND composite.
+                            LogicGate absenceLeaf = new LogicGate(
+                                Gates::and,
+                                gateCounter[0]++,
+                                new int[]{absenceFilterIdx},
+                                new int[]{absenceAdapterIdx},
+                                0);
+                            absenceLeaf.setOutput(VetoSignalProcessor.get());
+                            absenceLeaf.setVetoGate(true);
+                            allGates.add(absenceLeaf);
+                        }
 
                         // Build the following positive step's gate tree normally.
                         List<LogicGate> positiveGates = new ArrayList<>();
@@ -597,9 +607,7 @@ public class KiePackagesBuilder {
                                                                 positiveGates, gateCounter, seqIdx, signalAdapterCounter);
                         positiveRoot.setOutput(TerminatingSignalProcessor.get());
 
-                        // Combine both into one LogicCircuit: absence leaf + all positive gates.
-                        List<LogicGate> allGates = new ArrayList<>();
-                        allGates.add(absenceLeaf);
+                        // Combine: absence leaf(ves) + all positive gates into one LogicCircuit.
                         allGates.addAll(positiveGates);
                         stepFactories[i] = Step.of(new LogicCircuit(allGates.toArray(new LogicGate[0])));
 
@@ -673,8 +681,9 @@ public class KiePackagesBuilder {
     }
 
     private static final String DEFERRED_GATE_ERROR =
-            "sequence(...) does not yet support condition type %s. Absence-based " +
-            "gates (nor, nand, xor, xnor, not) and other composites are deferred ";
+            "sequence(...) does not yet support condition type %s as a composite step gate. " +
+            "nor() is supported as a top-level step (multi-pattern absence guard). " +
+            "xor() step runtime semantics are planned but not yet implemented.";
 
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
                                     Condition node, List<Pattern> filters,
