@@ -93,6 +93,10 @@ public class LogicGate extends SignalProcessor {
         this.output = output;
     }
 
+    public int getGateIndex() {
+        return gateIndex;
+    }
+
     @Override
     public void consume(SequenceMemory memory, ValueResolver valueResolver) {
         throw new UnsupportedOperationException();
@@ -109,7 +113,14 @@ public class LogicGate extends SignalProcessor {
             memory.setLogicGateMatched(gateIndex, true);
             propagate(memory, valueResolver);
         } else if (!matched && statusCanRevert) {
-            memory.setLogicGateMatched(gateIndex, false);
+            if (memory.isLogicGateMatched(gateIndex)) {
+                // Gate was previously MATCHED and is now reverting — clear the parent gate's
+                // contribution bit so the parent AND/OR gate no longer sees this gate as matched.
+                memory.setLogicGateMatched(gateIndex, false);
+                if (output instanceof LogicGateOutputSignalProcessor) {
+                    ((LogicGateOutputSignalProcessor) output).clearParentBit(memory);
+                }
+            }
         }
     }
 
@@ -123,7 +134,12 @@ public class LogicGate extends SignalProcessor {
             gate.reset(memory, valueResolver);
         }
 
-        memory.resetLogicGateMemory(gateIndex, valueResolver);
+        // statusCanRevert gates (e.g. XOR) must NOT clear their own gateMemory on propagate:
+        // they need to accumulate further signals to detect a second match and roll back.
+        // Their gateMemory is cleared only on full reset() (step deactivation).
+        if (!statusCanRevert) {
+            memory.resetLogicGateMemory(gateIndex, valueResolver);
+        }
     }
 
     public void reset(SequenceMemory memory, ValueResolver valueResolver) {

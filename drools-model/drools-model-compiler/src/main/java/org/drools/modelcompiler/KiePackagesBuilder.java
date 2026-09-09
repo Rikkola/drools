@@ -551,6 +551,14 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition step = steps.get(i);
+                    if (step.getType() == Condition.Type.XOR) {
+                        throw new UnsupportedOperationException(
+                                "sequence(): bare xor() at the top level is not allowed " +
+                                "(the gate's UNMATCHED rollback would propagate through the step's " +
+                                "terminator and call sequence.next() a second time). " +
+                                "Wrap inside and(...) with a positive trigger, e.g. " +
+                                "and(xor(a, b), positiveTrigger). See ADR 0001.");
+                    }
                     if (step.getType() == Condition.Type.NOT || step.getType() == Condition.Type.NOR) {
                         // Continuous absence guard (ADR 0002).
                         // Fold the absence pattern(s) with the following positive step into one LogicCircuit.
@@ -681,9 +689,7 @@ public class KiePackagesBuilder {
     }
 
     private static final String DEFERRED_GATE_ERROR =
-            "sequence(...) does not yet support condition type %s as a composite step gate. " +
-            "nor() is supported as a top-level step (multi-pattern absence guard). " +
-            "xor() step runtime semantics are planned but not yet implemented.";
+            "sequence(...) does not yet support condition type %s as a composite step gate.";
 
     private LogicGate buildStepGate(RuleContext ctx, GroupElement group,
                                     Condition node, List<Pattern> filters,
@@ -727,12 +733,14 @@ public class KiePackagesBuilder {
         for (int i = 0; i < children.size(); i++) {
             inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
         }
+        boolean statusCanRevert = (type == Condition.Type.XOR);
         LogicGate parent = new LogicGate(
                 pred,
                 gateCounter[0]++,
                 new int[0],
                 new int[0],
-                inputs.length);
+                inputs.length,
+                statusCanRevert);
         parent.setInputGates(inputs);
         for (int k = 0; k < inputs.length; k++) {
             inputs[k].setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(parent, k + 1)));
@@ -745,6 +753,7 @@ public class KiePackagesBuilder {
         switch (t) {
             case AND: return Gates::and;
             case OR:  return Gates::or;
+            case XOR: return Gates::xor;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));

@@ -23,6 +23,8 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGateOutputSignalProcessor;
+import org.drools.base.reteoo.sequencing.signalprocessors.SignalIndex;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
@@ -31,7 +33,6 @@ import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
 import org.drools.mvel.integrationtests.phreak.D;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * NOR multi-pattern: folded into N individual veto gates + positive terminal gate.
  * Any blocker inserted vetoes the sequence.
  *
- * XOR multi-pattern: runtime semantics deferred.
+ * XOR multi-pattern: exactly one of the XOR children must match before the positive trigger
+ * (wrapped in and(xor(...), trigger)). Gate reverts to UNMATCHED if a second child matches.
  */
 public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubsequenceTest {
 
@@ -126,21 +128,116 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
     }
 
+    // -------------------------------------------------------------------------
+    // XOR runtime tests
+    //
+    // Circuit for and(xor(B, C), D):
+    //   gate 0: B leaf  (filter 0)  → LogicGateOutputSignalProcessor(gate_2, bit 1)
+    //   gate 1: C leaf  (filter 1)  → LogicGateOutputSignalProcessor(gate_2, bit 2)
+    //   gate 2: XOR composite       → LogicGateOutputSignalProcessor(gate_4, bit 1), statusCanRevert=true
+    //   gate 3: D leaf  (filter 2)  → LogicGateOutputSignalProcessor(gate_4, bit 2)
+    //   gate 4: AND composite       → TerminatingSignalProcessor
+    // -------------------------------------------------------------------------
+
+    private LogicCircuit buildXorAndCircuit() {
+        LogicGateOutputSignalProcessor xorToAnd;
+        LogicGateOutputSignalProcessor dToAnd;
+
+        // XOR children: B and C leaves
+        LogicGate bLeaf = new LogicGate(Gates::and, 0, new int[]{0}, new int[]{0}, 0);
+        LogicGate cLeaf = new LogicGate(Gates::and, 1, new int[]{1}, new int[]{1}, 0);
+
+        // XOR composite (gate 2): 2 input gates, statusCanRevert=true
+        LogicGate xorGate = new LogicGate(Gates::xor, 2, new int[0], new int[0], 2, true);
+        xorGate.setInputGates(bLeaf, cLeaf);
+
+        // AND children: XOR and D leaf
+        LogicGate dLeaf = new LogicGate(Gates::and, 3, new int[]{2}, new int[]{2}, 0);
+
+        // AND composite (gate 4): 2 input gates
+        LogicGate andGate = new LogicGate(Gates::and, 4, new int[0], new int[0], 2);
+        andGate.setInputGates(xorGate, dLeaf);
+        andGate.setOutput(TerminatingSignalProcessor.get());
+
+        // Wire XOR children to XOR composite
+        bLeaf.setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(xorGate, 1)));
+        cLeaf.setOutput(new LogicGateOutputSignalProcessor(SignalIndex.of(xorGate, 2)));
+
+        // Wire XOR and D leaf to AND composite
+        xorToAnd = new LogicGateOutputSignalProcessor(SignalIndex.of(andGate, 1));
+        dToAnd   = new LogicGateOutputSignalProcessor(SignalIndex.of(andGate, 2));
+        xorGate.setOutput(xorToAnd);
+        dLeaf.setOutput(dToAnd);
+
+        return new LogicCircuit(bLeaf, cLeaf, xorGate, dLeaf, andGate);
+    }
+
     @Test
-    @Disabled("xor() runtime semantics planned but not yet implemented — see plans/2026-09-05-nor-xor-multipattern.md")
     public void xorTwoPatterns_exactlyOne_fires() {
-        // Planned: exactly one match in XOR step allows advance
+        // and(xor(B, C), D): exactly B inserted, then D → sequence advances (step terminates)
+        initKBaseWithEmptyRule();
+        LogicCircuit circuit = buildXorAndCircuit();
+        seq0 = new Sequence(0, Step.of(circuit));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));   // XOR: 1 match (bit 1) → XOR MATCHED
+        session.fireAllRules();
+
+        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // AND not yet complete
+
+        session.insert(new D(0, "d"));   // AND: both bits set → fires TerminatingSignalProcessor
+        session.fireAllRules();
+
+        assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);    // sequence terminated
     }
 
     @Test
-    @Disabled("xor() runtime semantics planned but not yet implemented — see plans/2026-09-05-nor-xor-multipattern.md")
     public void xorTwoPatterns_none_doesNotFire() {
-        // Planned: 0 matches in XOR step does not advance
+        // and(xor(B, C), D): no B or C; D arrives → AND never fires (XOR bit never set)
+        initKBaseWithEmptyRule();
+        LogicCircuit circuit = buildXorAndCircuit();
+        seq0 = new Sequence(0, Step.of(circuit));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new D(0, "d"));   // AND bit 2 set, but XOR bit 1 never set
+        session.fireAllRules();
+
+        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // step still active
     }
 
     @Test
-    @Disabled("xor() runtime semantics planned but not yet implemented — see plans/2026-09-05-nor-xor-multipattern.md")
     public void xorTwoPatterns_both_doesNotFire() {
-        // Planned: 2 matches in XOR step reverts gate and does not advance
+        // and(xor(B, C), D): both B and C inserted → XOR reverts to UNMATCHED → AND bit 1 cleared
+        // → D arrives but AND never fires
+        initKBaseWithEmptyRule();
+        LogicCircuit circuit = buildXorAndCircuit();
+        seq0 = new Sequence(0, Step.of(circuit));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
+
+        session.insert(new B(0, "b"));   // XOR: 1 match → MATCHED, AND bit 1 set
+        session.fireAllRules();
+
+        session.insert(new C(0, "c"));   // XOR: 2 matches → REVERTS, AND bit 1 cleared
+        session.fireAllRules();
+
+        session.insert(new D(0, "d"));   // D arrives, but XOR is UNMATCHED → AND never fires
+        session.fireAllRules();
+
+        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // step still active
     }
 }

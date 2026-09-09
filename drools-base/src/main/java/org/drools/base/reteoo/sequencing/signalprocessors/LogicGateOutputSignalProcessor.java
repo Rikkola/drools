@@ -46,4 +46,15 @@ public class LogicGateOutputSignalProcessor extends SignalProcessor {
         // by each downstream LogicGate resetting itself via resetPrior(). There is no
         // state held here that needs clearing.
     }
+
+    /**
+     * Clears this gate's bit contribution from the parent gate's memory.
+     * Called when a statusCanRevert child (e.g. XOR) rolls back from MATCHED to UNMATCHED,
+     * so the parent AND/OR gate no longer sees this gate's contribution.
+     */
+    public void clearParentBit(SequenceMemory memory) {
+        long[] gateMemory = memory.getLogicGateMemory();
+        gateMemory[gate.getGateIndex()] = gateMemory[gate.getGateIndex()] & ~(1L << (index - 1));
+        memory.setLogicGateMatched(gate.getGateIndex(), false);
+    }
 }
