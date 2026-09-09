@@ -112,8 +112,8 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
     }
 
     @Test
-    public void norTwoPatterns_secondPatternPreexisting_vetoes() {
-        // Second blocker C inserted -> hits absenceLeaf2 -> vetoes.
+    public void norTwoPatterns_secondPatternVetoes() {
+        // Second blocker C inserted after activation -> hits absenceLeaf2 -> vetoes.
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
