@@ -24,8 +24,10 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 /**
  * Output processor for the absence leaf gate inside a folded composite step.
  * When the absence pattern fires (a matching fact is inserted), this processor
- * poisons the step: sets the vetoed flag and deactivates all step signal adapters
- * so no further signals can arrive.
+ * resets the sequence: deactivates the current step, resets to step 0, and
+ * re-activates step 0 so the sequence starts listening again from the beginning.
+ * Uses a re-entry guard via {@link SequenceMemory#isStepVetoed()} to prevent infinite
+ * recursion if {@code activate()} encounters a pre-existing blocker.
  */
 public class VetoSignalProcessor extends SignalProcessor {
 
@@ -39,12 +41,17 @@ public class VetoSignalProcessor extends SignalProcessor {
 
     @Override
     public void consume(SequenceMemory memory, ValueResolver valueResolver) {
-        // Called by LogicGate.propagate() after the gate predicate fires.
-        // signalBitIndex is not needed for the veto action.
-        memory.setStepVetoed(true);
-        // Deactivate all adapters for the current step so no further signals fire.
+        if (memory.isStepVetoed()) {
+            // Re-entry guard: activate() found a pre-existing blocker and re-triggered us.
+            // The step is already being reset — do nothing.
+            return;
+        }
         int step = memory.getStep();
         memory.getSequence().getSteps()[step].deactivate(memory, valueResolver);
+        memory.setStep(0);
+        memory.setStepVetoed(true); // guard against re-entry from LogicCircuitStep.activate()
+        memory.getSequence().getSteps()[0].activate(memory, valueResolver);
+        memory.setStepVetoed(false); // clear: activation completed without recursion
     }
 
     @Override
@@ -54,6 +61,6 @@ public class VetoSignalProcessor extends SignalProcessor {
 
     @Override
     protected void reset(SequenceMemory memory, ValueResolver valueResolver) {
-        // Nothing to reset — veto is a one-way transition for this step.
+        // Nothing to reset — reset-to-step-0 is performed directly in consume().
     }
 }

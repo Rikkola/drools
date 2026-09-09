@@ -146,16 +146,19 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
 
     @Test
     public void norVeto_thenCompletes() {
-        // Blocker B fires the veto (reset to step 0). Then D fires — sequence completes.
+        // Blocker B fires the veto (reset to step 0). Retract B, then D fires — sequence completes.
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));   // veto + reset
+        org.kie.api.runtime.rule.FactHandle fhB = session.insert(new B(0, "b"));  // veto + reset
         session.fireAllRules();
 
         assertThat(sequenceMemory.getStep()).isEqualTo(0); // still alive at step 0
 
-        session.insert(new D(0, "d"));   // positive trigger: should complete sequence
+        session.retract(fhB);                // remove the blocker
+        session.fireAllRules();
+
+        session.insert(new D(0, "d"));       // positive trigger: should complete sequence
         session.fireAllRules();
 
         // Sequence completed: getCurrentStep returns -1 (step pointer past end)
