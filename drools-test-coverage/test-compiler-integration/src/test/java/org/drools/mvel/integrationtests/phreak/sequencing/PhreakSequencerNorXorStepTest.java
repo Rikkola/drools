@@ -109,8 +109,8 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isTrue();
-        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
+        assertThat(sequenceMemory.isStepVetoed()).isFalse();
+        assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 
     @Test
@@ -124,8 +124,8 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         session.insert(new C(0, "c"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isTrue();
-        assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
+        assertThat(sequenceMemory.isStepVetoed()).isFalse();
+        assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 
     @Test
