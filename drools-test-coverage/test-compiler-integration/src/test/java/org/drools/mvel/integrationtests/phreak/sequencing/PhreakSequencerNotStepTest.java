@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   - absenceLeaf gate: filterIndex=0 (bpattern), outputs to VetoSignalProcessor
  *   - positiveLeaf gate: filterIndex=1 (cpattern), outputs to TerminatingSignalProcessor
  *
- * Veto tests: insert B("b") → hits filter 0 → VetoSignalProcessor fires.
+ * Veto tests: insert B("b") → hits filter 0 → VetoSignalProcessor fires → sequence resets to step 0.
  * Advance test: insert C("c") → hits filter 1 → TerminatingSignalProcessor fires.
  */
 public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequenceTest {
@@ -92,35 +92,42 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
     }
 
     @Test
-    public void absenceGuardVetoesOnLiveInsert() {
-        // B inserted after activation → absence gate fires → veto flag set.
+    public void absenceGuardResetsOnLiveInsert() {
+        // B inserted after activation → absence gate fires → sequence resets to step 0.
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
         assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
-        // Insert B — the live signal adapter fires into VetoSignalProcessor.
+        // Insert B — the live signal adapter fires into VetoSignalProcessor → reset to step 0.
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isTrue();
-        // Step did not advance to completion — sequence is still active (step 0), not terminated
+        // After reset: veto flag is cleared, step is 0, sequence is still active.
+        assertThat(sequenceMemory.isStepVetoed()).isFalse();
+        assertThat(sequenceMemory.getStep()).isEqualTo(0);
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
     }
 
     @Test
-    public void absenceGuardDeactivatesAdaptersOnVeto() {
-        // After veto, all active signal adapters must be nulled out by deactivate.
+    public void absenceGuardReactivatesAdaptersAfterReset() {
+        // After reset, step 0 is re-activated so signal adapters are re-registered (not null).
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isTrue();
-        // All active signal adapters should be null after veto-triggered deactivate.
+        // After reset, step 0 re-activated: at least one adapter must be active.
+        assertThat(sequenceMemory.isStepVetoed()).isFalse();
+        assertThat(sequenceMemory.getStep()).isEqualTo(0);
+        boolean anyActive = false;
         for (SignalAdapter adapter : sequenceMemory.getActiveSignalAdapters()) {
-            assertThat(adapter).isNull();
+            if (adapter != null) {
+                anyActive = true;
+                break;
+            }
         }
+        assertThat(anyActive).isTrue();
     }
 }
