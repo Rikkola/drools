@@ -30,6 +30,7 @@ import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.mvel.integrationtests.phreak.B;
 import org.drools.mvel.integrationtests.phreak.C;
+import org.drools.mvel.integrationtests.phreak.D;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -129,5 +130,77 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
             }
         }
         assertThat(anyActive).isTrue();
+    }
+    /**
+     * Regression test for: not() in a sequence leaves the blocker fact in WM after reset,
+     * causing immediate re-veto on the next activation cycle.
+     *
+     * Sequence: step 0 = wait for B  →  step 1 = not(C) + positive D
+     *
+     * Run 1: insert B (advance to step 1), insert C (veto fires, reset to step 0) — OK.
+     * Run 2: insert B again (advance to step 1). The C fact is still in WM.
+     *        LogicCircuitStep.activate() must NOT fire the veto on the pre-existing C.
+     *        The sequence should stay at step 1 and wait for a new D or a new C, not
+     *        silently re-veto and reset again.
+     *
+     * Expected (correct): step == 1 after advancing on the second run.
+     * Actual (buggy):     step == 0 because activate() re-fires the veto immediately.
+     */
+    @Test
+    public void absenceGuardDoesNotRevetoOnPreExistingBlockerAfterReset() {
+        initKBaseWithEmptyRule();
+
+        // Step 0: gate on B (filter 0) → TerminatingSignalProcessor (advances sequence)
+        LogicGate step0Gate = new LogicGate(Gates::and, 0,
+                                            new int[]{0},  // filter index 0 = bpattern
+                                            new int[]{0},  // signal adapter index 0
+                                            0);
+        step0Gate.setOutput(TerminatingSignalProcessor.get());
+        LogicCircuit circuit0 = new LogicCircuit(step0Gate);
+
+        // Step 1, absence leaf: gate on C (filter 1) → VetoSignalProcessor
+        LogicGate absenceLeaf = new LogicGate(Gates::and, 1,
+                                              new int[]{1},  // filter index 1 = cpattern
+                                              new int[]{1},  // signal adapter index 1
+                                              0);
+        absenceLeaf.setOutput(VetoSignalProcessor.get());
+        absenceLeaf.setVetoGate(true);
+
+        // Step 1, positive leaf: gate on D (filter 2) → TerminatingSignalProcessor
+        LogicGate positiveLeaf = new LogicGate(Gates::and, 2,
+                                               new int[]{2},  // filter index 2 = dpattern
+                                               new int[]{2},  // signal adapter index 2
+                                               0);
+        positiveLeaf.setOutput(TerminatingSignalProcessor.get());
+
+        LogicCircuit circuit1 = new LogicCircuit(absenceLeaf, positiveLeaf);
+
+        seq0 = new Sequence(0, Step.of(circuit0), Step.of(circuit1));
+        seq0.setFilters(new Pattern[]{bpattern, cpattern, dpattern});
+        rule.addSequence(seq0);
+        kbase.addPackage(pkg);
+
+        createSession();
+        SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
+
+        // --- Run 1: advance to step 1, then veto with C ---
+        session.insert(new B(0, "b"));
+        session.fireAllRules();
+        assertThat(sequenceMemory.getStep()).as("after B: should advance to step 1").isEqualTo(1);
+
+        session.insert(new C(0, "c"));
+        session.fireAllRules();
+        // Veto fires, sequence resets to step 0.
+        assertThat(sequenceMemory.getStep()).as("after C veto: should reset to step 0").isEqualTo(0);
+
+        // --- Run 2: advance to step 1 again — C is still in WM ---
+        session.insert(new B(0, "b"));
+        session.fireAllRules();
+
+        // Bug: activate() finds the old C in WM and fires the veto again → step == 0.
+        // Correct behaviour: activate() must not check pre-existing WM facts → step == 1.
+        assertThat(sequenceMemory.getStep())
+                .as("after second B with stale C in WM: activate() must not re-veto — step should be 1")
+                .isEqualTo(1);
     }
 }

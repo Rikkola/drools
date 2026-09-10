@@ -23,11 +23,9 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 
 /**
  * Output processor for the absence leaf gate inside a folded composite step.
- * When the absence pattern fires (a matching fact is inserted), this processor
- * resets the sequence: deactivates the current step, resets to step 0, and
- * re-activates step 0 so the sequence starts listening again from the beginning.
- * Uses a re-entry guard via {@link SequenceMemory#isStepVetoed()} to prevent infinite
- * recursion if {@code activate()} encounters a pre-existing blocker.
+ * When the absence pattern fires (a matching fact is inserted while the step is active),
+ * this processor resets the sequence: deactivates the current step, resets to step 0,
+ * and re-activates step 0 so the sequence starts listening again from the beginning.
  */
 public class VetoSignalProcessor extends SignalProcessor {
 
@@ -41,17 +39,10 @@ public class VetoSignalProcessor extends SignalProcessor {
 
     @Override
     public void consume(SequenceMemory memory, ValueResolver valueResolver) {
-        if (memory.isStepVetoed()) {
-            // Re-entry guard: activate() found a pre-existing blocker and re-triggered us.
-            // The step is already being reset — do nothing.
-            return;
-        }
         int step = memory.getStep();
         memory.getSequence().getSteps()[step].deactivate(memory, valueResolver);
         memory.setStep(0);
-        memory.setStepVetoed(true); // guard against re-entry from LogicCircuitStep.activate()
         memory.getSequence().getSteps()[0].activate(memory, valueResolver);
-        memory.setStepVetoed(false); // clear: activation completed without recursion
     }
 
     @Override

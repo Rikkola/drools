@@ -21,7 +21,6 @@ package org.drools.base.reteoo.sequencing.steps;
 import org.drools.base.base.ValueResolver;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
-import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.Sequence;
 import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
 
@@ -39,23 +38,10 @@ public class LogicCircuitStep extends AbstractStep implements Step {
 
     public void activate(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
         for (LogicGate gate : circuit.getGates()) {
-            gate.activate(sequenceMemory);
+            gate.activate(sequenceMemory, valueResolver);
         }
-        // For any veto (absence) gate, check if a matching fact already exists in WM.
-        // If so, fire the veto immediately — the blocker was present before this step activated.
-        for (LogicGate gate : circuit.getGates()) {
-            if (gate.isVetoGate()) {
-                for (int filterIndex : gate.getFilterIndexes()) {
-                    if (sequenceMemory.getSequencerMemory().hasActiveMatch(
-                            filterIndex,
-                            sequenceMemory.getSequencerMemory().getLeftTuple(),
-                            valueResolver)) {
-                        VetoSignalProcessor.get().consume(sequenceMemory, valueResolver);
-                        return; // step is poisoned, stop
-                    }
-                }
-            }
-        }
+        // No WM pre-scan. Arrival order governs: a veto gate fires only when a matching
+        // fact is inserted while this step is active, consistent with positive gates.
     }
 
     public void deactivate(SequenceMemory sequenceMemory, ValueResolver valueResolver) {

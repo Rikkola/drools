@@ -58,11 +58,14 @@ public class VetoSignalProcessorTest extends AbstractPhreakSequencerSubsequenceT
     }
 
     @Test
-    public void vetoProcessorSetsVetoedFlag() {
+    public void vetoProcessorResetsSequenceToStep0() {
+        // With reset semantics, consume() deactivates the current step, resets to step 0,
+        // activates step 0, and leaves stepVetoed=false (re-entry guard is cleared on exit).
         assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         VetoSignalProcessor.get().consume(1, sequenceMemory, session);
 
-        assertThat(sequenceMemory.isStepVetoed()).isTrue();
+        assertThat(sequenceMemory.isStepVetoed()).isFalse();
+        assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 }
