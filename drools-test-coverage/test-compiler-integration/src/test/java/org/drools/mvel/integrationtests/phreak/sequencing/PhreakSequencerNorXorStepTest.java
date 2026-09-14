@@ -29,9 +29,6 @@ import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProce
 import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
 import org.drools.base.rule.Pattern;
-import org.drools.mvel.integrationtests.phreak.B;
-import org.drools.mvel.integrationtests.phreak.C;
-import org.drools.mvel.integrationtests.phreak.D;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -90,7 +87,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
 
-        session.insert(new D(0, "d"));
+        session.insert(new DEvent(0, "d"));
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
@@ -103,7 +100,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
 
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
 
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
@@ -116,7 +113,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
 
-        session.insert(new C(0, "c"));
+        session.insert(new CEvent(0, "c"));
         session.fireAllRules();
 
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
@@ -129,7 +126,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
 
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
 
         // After reset: vetoed flag must be cleared, step must be 0 (back to start).
@@ -142,7 +139,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        org.kie.api.runtime.rule.FactHandle fhB = session.insert(new B(0, "b"));  // veto + reset
+        org.kie.api.runtime.rule.FactHandle fhB = session.insert(new BEvent(0, "b"));  // veto + reset
         session.fireAllRules();
 
         assertThat(sequenceMemory.getStep()).isEqualTo(0); // still alive at step 0
@@ -150,7 +147,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         session.retract(fhB);                // remove the blocker
         session.fireAllRules();
 
-        session.insert(new D(0, "d"));       // positive trigger: should complete sequence
+        session.insert(new DEvent(0, "d"));       // positive trigger: should complete sequence
         session.fireAllRules();
 
         // Sequence completed: getCurrentStep returns -1 (step pointer past end)
@@ -214,12 +211,12 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));   // XOR: 1 match (bit 1) → XOR MATCHED
+        session.insert(new BEvent(0, "b"));   // XOR: 1 match (bit 1) → XOR MATCHED
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // AND not yet complete
 
-        session.insert(new D(0, "d"));   // AND: both bits set → fires TerminatingSignalProcessor
+        session.insert(new DEvent(0, "d"));   // AND: both bits set → fires TerminatingSignalProcessor
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);    // sequence terminated
@@ -238,7 +235,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new D(0, "d"));   // AND bit 2 set, but XOR bit 1 never set
+        session.insert(new DEvent(0, "d"));   // AND bit 2 set, but XOR bit 1 never set
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // step still active
@@ -258,13 +255,13 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));   // XOR: 1 match → MATCHED, AND bit 1 set
+        session.insert(new BEvent(0, "b"));   // XOR: 1 match → MATCHED, AND bit 1 set
         session.fireAllRules();
 
-        session.insert(new C(0, "c"));   // XOR: 2 matches → REVERTS, AND bit 1 cleared
+        session.insert(new CEvent(0, "c"));   // XOR: 2 matches → REVERTS, AND bit 1 cleared
         session.fireAllRules();
 
-        session.insert(new D(0, "d"));   // D arrives, but XOR is UNMATCHED → AND never fires
+        session.insert(new DEvent(0, "d"));   // D arrives, but XOR is UNMATCHED → AND never fires
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // step still active
@@ -328,7 +325,7 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
         // Neither B nor C inserted. XNOR is initially matched (none matched is true for XNOR).
-        session.insert(new D(0, "d"));   // AND: both bits set (XNOR matches on activate, D matches now) → terminates step
+        session.insert(new DEvent(0, "d"));   // AND: both bits set (XNOR matches on activate, D matches now) → terminates step
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);    // sequence terminated
@@ -347,13 +344,13 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));   // XNOR: 1 match → UNMATCHED, AND bit 1 cleared
+        session.insert(new BEvent(0, "b"));   // XNOR: 1 match → UNMATCHED, AND bit 1 cleared
         session.fireAllRules();
 
-        session.insert(new C(0, "c"));   // XNOR: 2 matches → MATCHED again, AND bit 1 set
+        session.insert(new CEvent(0, "c"));   // XNOR: 2 matches → MATCHED again, AND bit 1 set
         session.fireAllRules();
 
-        session.insert(new D(0, "d"));   // AND: both bits set → terminates step
+        session.insert(new DEvent(0, "d"));   // AND: both bits set → terminates step
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);    // sequence terminated
@@ -372,10 +369,10 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));   // XNOR: 1 match → UNMATCHED, AND bit 1 cleared
+        session.insert(new BEvent(0, "b"));   // XNOR: 1 match → UNMATCHED, AND bit 1 cleared
         session.fireAllRules();
 
-        session.insert(new D(0, "d"));   // D arrives, but XNOR is UNMATCHED → AND never fires
+        session.insert(new DEvent(0, "d"));   // D arrives, but XNOR is UNMATCHED → AND never fires
         session.fireAllRules();
 
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1); // step still active

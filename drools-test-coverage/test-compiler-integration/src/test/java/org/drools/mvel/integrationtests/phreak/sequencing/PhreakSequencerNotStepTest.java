@@ -28,9 +28,6 @@ import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
-import org.drools.mvel.integrationtests.phreak.B;
-import org.drools.mvel.integrationtests.phreak.C;
-import org.drools.mvel.integrationtests.phreak.D;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -83,7 +80,7 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
 
 
         // Insert C to fire positiveLeaf → TerminatingSignalProcessor → sequence terminates
-        session.insert(new C(0, "c"));
+        session.insert(new CEvent(0, "c"));
         session.fireAllRules();
 
         // -1 means the sequence has terminated (no active leaf sequences)
@@ -98,7 +95,7 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
 
 
         // Insert B — the live signal adapter fires into VetoSignalProcessor → reset to step 0.
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
 
         // After reset: veto flag is cleared, step is 0, sequence is still active.
@@ -112,7 +109,7 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
 
         // After reset, step 0 re-activated: at least one adapter must be active.
@@ -179,17 +176,17 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
         // --- Run 1: advance to step 1, then veto with C ---
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
         assertThat(sequenceMemory.getStep()).as("after B: should advance to step 1").isEqualTo(1);
 
-        session.insert(new C(0, "c"));
+        session.insert(new CEvent(0, "c"));
         session.fireAllRules();
         // Veto fires, sequence resets to step 0.
         assertThat(sequenceMemory.getStep()).as("after C veto: should reset to step 0").isEqualTo(0);
 
         // --- Run 2: advance to step 1 again — C is still in WM ---
-        session.insert(new B(0, "b"));
+        session.insert(new BEvent(0, "b"));
         session.fireAllRules();
 
         // Bug: activate() finds the old C in WM and fires the veto again → step == 0.
