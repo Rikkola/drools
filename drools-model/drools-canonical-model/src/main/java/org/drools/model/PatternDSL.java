@@ -1939,6 +1939,13 @@ public class PatternDSL extends DSL {
         return new CombinedExprViewItem(Condition.Type.XOR, prependStep(first, second, rest));
     }
 
+    /**
+     * Exclusive-nor step: either zero or all of the listed patterns must match.
+     */
+    public static CombinedExprViewItem xnor(SequenceStep first, SequenceStep second, SequenceStep... rest) {
+        return new CombinedExprViewItem(Condition.Type.XNOR, prependStep(first, second, rest));
+    }
+
     public static SequenceViewItem sequence(SequenceStep... steps) {
         if (steps == null || steps.length == 0) {
             throw new IllegalArgumentException("sequence() requires at least one step");

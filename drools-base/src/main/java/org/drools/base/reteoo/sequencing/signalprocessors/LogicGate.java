@@ -147,11 +147,14 @@ public class LogicGate extends SignalProcessor {
         output.reset(memory, valueResolver);
     }
 
-    public void activate(SequenceMemory memory) {
+    public void activate(SequenceMemory memory, ValueResolver valueResolver) {
         for (int i = 0; i < filterIndexes.length; i++) {
             memory.activateSignalAdapter(filterIndexes[i], this, signalAdapterIndexes[i], i + 1); // bit indexes start at 1
         }
-
+        if (predicate.test(0L, allMatched)) {
+            memory.setLogicGateMatched(gateIndex, true);
+            propagate(memory, valueResolver);
+        }
     }
 
     public void deactivate(SequenceMemory memory, ValueResolver valueResolver) {

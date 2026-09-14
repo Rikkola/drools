@@ -551,9 +551,9 @@ public class KiePackagesBuilder {
 
                 for (int i = 0; i < n; i++) {
                     Condition step = steps.get(i);
-                    if (step.getType() == Condition.Type.XOR) {
+                    if (step.getType() == Condition.Type.XOR || step.getType() == Condition.Type.XNOR) {
                         throw new UnsupportedOperationException(
-                                "sequence(): bare xor() at the top level is not allowed " +
+                                "sequence(): bare xor()/xnor() at the top level is not allowed " +
                                 "(the gate's UNMATCHED rollback would propagate through the step's " +
                                 "terminator and call sequence.next() a second time). " +
                                 "Wrap inside and(...) with a positive trigger, e.g. " +
@@ -562,9 +562,8 @@ public class KiePackagesBuilder {
                     if (step.getType() == Condition.Type.NOT || step.getType() == Condition.Type.NOR) {
                         // Continuous absence guard (ADR 0002).
                         // Fold the absence pattern(s) with the following positive step into one LogicCircuit.
-                        // Each absence leaf gate fires into VetoSignalProcessor (live veto on insert).
+                        // Each absence leaf gate fires into VetoSignalProcessor (live veto on insert → reset to step 0).
                         // The positive step's gate tree fires into TerminatingSignalProcessor as normal.
-                        // DefaultController.next() checks sequenceMemory.isStepVetoed() before advancing.
                         if (i + 1 >= n) {
                             // Should have been caught by ViewPatternBuilder; defensive check.
                             throw new IllegalArgumentException(
@@ -733,7 +732,7 @@ public class KiePackagesBuilder {
         for (int i = 0; i < children.size(); i++) {
             inputs[i] = buildStepGate(ctx, group, children.get(i), filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
         }
-        boolean statusCanRevert = (type == Condition.Type.XOR);
+        boolean statusCanRevert = (type == Condition.Type.XOR || type == Condition.Type.XNOR);
         LogicGate parent = new LogicGate(
                 pred,
                 gateCounter[0]++,
@@ -754,6 +753,7 @@ public class KiePackagesBuilder {
             case AND: return Gates::and;
             case OR:  return Gates::or;
             case XOR: return Gates::xor;
+            case XNOR: return Gates::xnor;
             default:
                 throw new UnsupportedOperationException(
                         String.format(DEFERRED_GATE_ERROR, t));

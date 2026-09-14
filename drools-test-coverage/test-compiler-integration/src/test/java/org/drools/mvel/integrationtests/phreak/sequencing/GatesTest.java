@@ -93,4 +93,21 @@ public class GatesTest {
         assertThat(Gates.xor(0b011L, 0b111L)).isFalse();
         assertThat(Gates.xor(0b111L, 0b111L)).isFalse();
     }
+
+    @Test
+    public void testXnorTruthTable() {
+        // 2 inputs: allMatched = 0b11L
+        assertThat(Gates.xnor(0b00L, 0b11L)).isTrue();  // none matched
+        assertThat(Gates.xnor(0b01L, 0b11L)).isFalse(); // exactly one matched
+        assertThat(Gates.xnor(0b10L, 0b11L)).isFalse(); // exactly one matched
+        assertThat(Gates.xnor(0b11L, 0b11L)).isTrue();  // all matched
+
+        // 3 inputs: allMatched = 0b111L
+        assertThat(Gates.xnor(0b000L, 0b111L)).isTrue();  // none
+        assertThat(Gates.xnor(0b001L, 0b111L)).isFalse(); // exactly one
+        assertThat(Gates.xnor(0b010L, 0b111L)).isFalse(); // exactly one
+        assertThat(Gates.xnor(0b100L, 0b111L)).isFalse(); // exactly one
+        assertThat(Gates.xnor(0b011L, 0b111L)).isFalse(); // exactly two
+        assertThat(Gates.xnor(0b111L, 0b111L)).isTrue();  // all
+    }
 }

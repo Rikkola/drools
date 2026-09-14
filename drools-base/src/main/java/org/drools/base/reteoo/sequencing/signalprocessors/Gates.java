@@ -32,4 +32,10 @@ public class Gates {
         return v != 0L && (v & (v - 1)) == 0L;
     }
 
+    /** True when either zero input signals have matched or ALL input signals have matched. */
+    public static boolean xnor(long a, long b) {
+        long v = a & b;
+        return v == 0L || v == b;
+    }
+
 }

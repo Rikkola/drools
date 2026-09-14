@@ -41,7 +41,8 @@ public interface Condition {
         RECEIVER( false ), SENDER( false ),
         OR( true ), AND( true ), NOT( false ), EXISTS( false ), FORALL( false ), SEQUENCE( false ), CONSEQUENCE( false ),
         NOR( true ),
-        XOR( true );
+        XOR( true ),
+        XNOR(true);
 
         private final boolean composite;
 

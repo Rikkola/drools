@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.kie.api.KieBase;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.FactHandle;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,14 +84,16 @@ public class PatternDSLSequenceNotStepTest {
     }
 
     @Test
-    public void notStepVetoesWhenBlockerAlreadyPresent() {
+    public void notStepIgnoresBlockerInsertedBeforeStepActivated() {
         // sequence: ball → not(blocker) → bat
-        // Blocker already in WM when absence guard activates → rule must NOT fire.
+        // Blocker is already in WM when ball advances the sequence to the not-step.
+        // Arrival order governs: the blocker arrived before this step was active, so it is
+        // invisible to the absence guard — the rule must fire.
         ksession = makeKSession(buildThreeStepRule());
         insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("blocker-toy"), new Toy("ball")); // blocker present at guard activation
+        insertAndFire(new Toy("blocker-toy"), new Toy("ball")); // blocker present before guard activates
         insertAndFire(new Toy("bat"));
-        assertThat(results).isEmpty();
+        assertThat(results).containsExactly("fired");
     }
 
     @Test
@@ -293,8 +296,10 @@ public class PatternDSLSequenceNotStepTest {
     }
 
     @Test
-    public void norTwoPatternsBlockerAlreadyPresent_vetoes() {
-        // nor(blockerA, blockerB): blockerA already in WM at activation → veto
+    public void norTwoPatternsBlockerAlreadyPresent_ignored() {
+        // nor(blockerA, blockerB): blockerA is in WM before ball advances to the nor-step.
+        // Arrival order governs: the blocker arrived before this step was active, so it is
+        // invisible to the absence guard — the rule must fire.
         Variable<Toy> blockerA = declarationOf(Toy.class);
         Variable<Toy> blockerB = declarationOf(Toy.class);
 
@@ -313,9 +318,9 @@ public class PatternDSLSequenceNotStepTest {
 
         ksession = makeKSession(rule);
         insertAndFire(new Person("anchor"));
-        insertAndFire(new Toy("blockerA"), new Toy("ball")); // blockerA already in WM when guard activates
+        insertAndFire(new Toy("blockerA"), new Toy("ball")); // blockerA present before guard activates
         insertAndFire(new Toy("bat"));
-        assertThat(results).isEmpty();
+        assertThat(results).containsExactly("fired");
     }
 
     @Test
@@ -337,6 +342,50 @@ public class PatternDSLSequenceNotStepTest {
             )
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("ADR 0002");
+    }
+
+    /**
+     * Regression test for: not() re-vetoes on a pre-existing blocker after a sequence reset.
+     *
+     * sequence: ball → not(blocker-toy) → bat
+     *
+     * Run 1: insert ball (advance), insert blocker-toy (veto → reset to step 0) — OK.
+     * Run 2: insert ball again (advance to step 1). The blocker-toy is still in WM.
+     *        Bug: LogicCircuitStep.activate() finds the old fact and fires the veto
+     *        immediately, resetting back to step 0 without waiting for any new insert.
+     *        When the blocker is then retracted and bat is inserted, the sequence is at
+     *        step 0 (not step 1), so it never reaches the consequence — rule does not fire.
+     *
+     * Expected (fix): activate() ignores pre-existing WM facts. After retract + bat,
+     *                 the rule fires.
+     * Actual   (bug): activate() re-vetoes silently. Sequence resets to step 0. Rule
+     *                 does not fire even after retract + bat.
+     */
+    @Test
+    public void notStepDoesNotRevetoOnPreExistingBlockerAfterReset() {
+        ksession = makeKSession(buildThreeStepRule());
+        insertAndFire(new Person("anchor"));
+
+        // Run 1: advance to not-step, then veto.
+        insertAndFire(new Toy("ball"));
+        FactHandle blockerHandle = ksession.insert(new Toy("blocker-toy"));
+        ksession.fireAllRules(); // veto fires, sequence resets to step 0
+
+        // Run 2: advance to not-step again — blocker is still in WM.
+        insertAndFire(new Toy("ball"));
+
+        // Now retract the blocker and complete the sequence.
+        // With the bug: activate() already re-vetoed on the second ball insert, so
+        // the sequence is back at step 0 and bat never satisfies the not-step — rule silent.
+        // With the fix: activate() did not pre-check WM, sequence is at the not-step,
+        // retract clears the live absence filter, and bat completes the sequence.
+        ksession.retract(blockerHandle);
+        ksession.fireAllRules();
+        insertAndFire(new Toy("bat"));
+
+        assertThat(results)
+                .as("rule should fire once after blocker retracted and bat inserted on second run")
+                .containsExactly("fired");
     }
 
     @AfterEach
