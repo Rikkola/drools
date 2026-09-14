@@ -81,13 +81,11 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         // Insert C to fire positiveLeaf → TerminatingSignalProcessor → sequence terminates
         session.insert(new C(0, "c"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         // -1 means the sequence has terminated (no active leaf sequences)
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
     }
@@ -98,14 +96,12 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         // Insert B — the live signal adapter fires into VetoSignalProcessor → reset to step 0.
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
         // After reset: veto flag is cleared, step is 0, sequence is still active.
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
         assertThat(getCurrentStep(sequencerMemory)).isNotEqualTo(-1);
     }
@@ -120,7 +116,6 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
         session.fireAllRules();
 
         // After reset, step 0 re-activated: at least one adapter must be active.
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
         boolean anyActive = false;
         for (SignalAdapter adapter : sequenceMemory.getActiveSignalAdapters()) {

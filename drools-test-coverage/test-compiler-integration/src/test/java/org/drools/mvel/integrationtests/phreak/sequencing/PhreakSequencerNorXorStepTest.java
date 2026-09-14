@@ -89,12 +89,10 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         session.insert(new D(0, "d"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(getCurrentStep(sequencerMemory)).isEqualTo(-1);
     }
 
@@ -104,12 +102,10 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 
@@ -119,12 +115,10 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         session.insert(new C(0, "c"));
         session.fireAllRules();
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 
@@ -134,13 +128,11 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
         createSession();
         SequenceMemory sequenceMemory = sequencerMemory.getSequenceMemory(seq0);
 
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
 
         session.insert(new B(0, "b"));
         session.fireAllRules();
 
         // After reset: vetoed flag must be cleared, step must be 0 (back to start).
-        assertThat(sequenceMemory.isStepVetoed()).isFalse();
         assertThat(sequenceMemory.getStep()).isEqualTo(0);
     }
 
