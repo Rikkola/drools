@@ -33,9 +33,9 @@ import org.kie.api.KieBase;
 import org.kie.api.runtime.KieSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.drools.model.DSL.declarationOf;
 import static org.drools.model.DSL.execute;
-import static org.drools.model.PatternDSL.and;
 import static org.drools.model.PatternDSL.pattern;
 import static org.drools.model.PatternDSL.rule;
 import static org.drools.model.PatternDSL.sequence;
@@ -45,7 +45,8 @@ import static org.drools.model.PatternDSL.xor;
  * Specification tests for xor() as a sequence step.
  *
  * Contract: exactly one of the XOR children must match before the positive trigger.
- * xor(...) must be wrapped with a positive sibling in and(xor(...), trigger).
+ * Write {@code sequence(..., xor(a, b), trigger)} — the compiler wraps the pair into
+ * {@code and(xor(a, b), trigger)} automatically.
  * Zero matches → AND gate never fires, sequence does not advance.
  * Two or more matches → XOR gate reverts to UNMATCHED, AND gate never fires.
  */
@@ -58,7 +59,7 @@ public class PatternDSLSequenceXorStepTest {
 
     @Test
     public void xorExactlyOneMatch_fires() {
-        // and(xor(alarmA, alarmB), ack): exactly alarmA inserted, then ack → rule fires
+        // sequence(xor(alarmA, alarmB), ack): exactly alarmA inserted, then ack → rule fires
         Variable<Toy> alarmA = declarationOf(Toy.class);
         Variable<Toy> alarmB = declarationOf(Toy.class);
 
@@ -66,13 +67,11 @@ public class PatternDSLSequenceXorStepTest {
             pattern(person),
             sequence(
                 pattern(toy).expr("isStart", t -> t.getName().equals("start")),
-                and(
-                    xor(
-                        pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
-                        pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
-                    ),
-                    pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
-                )
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                ),
+                pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
             ),
             execute(() -> results.add("fired"))
         );
@@ -87,7 +86,7 @@ public class PatternDSLSequenceXorStepTest {
 
     @Test
     public void xorNeitherMatch_doesNotFire() {
-        // and(xor(alarmA, alarmB), ack): neither alarm inserted → XOR stays UNMATCHED → AND never fires
+        // sequence(xor(alarmA, alarmB), ack): neither alarm inserted → XOR stays UNMATCHED → AND never fires
         Variable<Toy> alarmA = declarationOf(Toy.class);
         Variable<Toy> alarmB = declarationOf(Toy.class);
 
@@ -95,13 +94,11 @@ public class PatternDSLSequenceXorStepTest {
             pattern(person),
             sequence(
                 pattern(toy).expr("isStart", t -> t.getName().equals("start")),
-                and(
-                    xor(
-                        pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
-                        pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
-                    ),
-                    pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
-                )
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                ),
+                pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
             ),
             execute(() -> results.add("fired"))
         );
@@ -115,7 +112,7 @@ public class PatternDSLSequenceXorStepTest {
 
     @Test
     public void xorBothMatch_rollsBackAndDoesNotFire() {
-        // and(xor(alarmA, alarmB), ack): both alarms → XOR reverts to UNMATCHED → AND never fires
+        // sequence(xor(alarmA, alarmB), ack): both alarms → XOR reverts to UNMATCHED → AND never fires
         Variable<Toy> alarmA = declarationOf(Toy.class);
         Variable<Toy> alarmB = declarationOf(Toy.class);
 
@@ -123,13 +120,11 @@ public class PatternDSLSequenceXorStepTest {
             pattern(person),
             sequence(
                 pattern(toy).expr("isStart", t -> t.getName().equals("start")),
-                and(
-                    xor(
-                        pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
-                        pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
-                    ),
-                    pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
-                )
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                ),
+                pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
             ),
             execute(() -> results.add("fired"))
         );
@@ -140,6 +135,83 @@ public class PatternDSLSequenceXorStepTest {
         insertAndFire(new Toy("alarmA")); // XOR: 1 match → MATCHED
         insertAndFire(new Toy("alarmB")); // XOR: 2 matches → reverts to UNMATCHED
         insertAndFire(new Toy("ack"));    // ack arrives but XOR is UNMATCHED → AND never fires
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void xorBareTopLevel_throws() {
+        // sequence(xor(a, b)) — bare XOR as the trailing step is rejected during rule.build()
+        // by ViewPatternBuilder's trailing-step guard.
+        Variable<Toy> alarmA = declarationOf(Toy.class);
+        Variable<Toy> alarmB = declarationOf(Toy.class);
+
+        assertThatThrownBy(() -> rule("xor-bare").build(
+            pattern(person),
+            sequence(
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                )
+            ),
+            execute(() -> results.add("fired"))
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("trailing not()/nor()/xor()/xnor() requires a following positive step");
+    }
+
+    @Test
+    public void xorBareFollowedByStep_sugarFiresOnExactlyOneMatch() {
+        // sequence(xor(a, b), c) — same rule, different name to confirm rewrite is idempotent.
+        // Exactly one alarm inserted, then ack → rule fires.
+        Variable<Toy> alarmA = declarationOf(Toy.class);
+        Variable<Toy> alarmB = declarationOf(Toy.class);
+
+        Rule rule = rule("xor-bare-followed-fires").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isStart", t -> t.getName().equals("start")),
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                ),
+                pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("start"));
+        insertAndFire(new Toy("alarmA")); // exactly one → XOR matched
+        insertAndFire(new Toy("ack"));    // ack closes the window → rule fires
+        assertThat(results).containsExactly("fired");
+    }
+
+    @Test
+    public void xorBareFollowedByStep_sugarDoesNotFireOnBothMatch() {
+        // sequence(xor(a, b), c) sugar: both alarms inserted → XOR reverts to UNMATCHED → ack arrives but no fire.
+        Variable<Toy> alarmA = declarationOf(Toy.class);
+        Variable<Toy> alarmB = declarationOf(Toy.class);
+
+        Rule rule = rule("xor-bare-followed-no-fire").build(
+            pattern(person),
+            sequence(
+                pattern(toy).expr("isStart", t -> t.getName().equals("start")),
+                xor(
+                    pattern(alarmA).expr("isAlarmA", t -> t.getName().equals("alarmA")),
+                    pattern(alarmB).expr("isAlarmB", t -> t.getName().equals("alarmB"))
+                ),
+                pattern(toy).expr("isAck", t -> t.getName().equals("ack"))
+            ),
+            execute(() -> results.add("fired"))
+        );
+
+        ksession = makeKSession(rule);
+        insertAndFire(new Person("anchor"));
+        insertAndFire(new Toy("start"));
+        insertAndFire(new Toy("alarmA")); // XOR: 1 match → MATCHED
+        insertAndFire(new Toy("alarmB")); // XOR: 2 matches → reverts UNMATCHED
+        insertAndFire(new Toy("ack"));    // ack arrives but XOR is UNMATCHED → does not fire
         assertThat(results).isEmpty();
     }
 

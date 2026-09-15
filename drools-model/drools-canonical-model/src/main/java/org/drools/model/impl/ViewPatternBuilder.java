@@ -185,7 +185,7 @@ public class ViewPatternBuilder implements ViewBuilder {
 
         if (ruleItem instanceof SequenceViewItem) {
             SequenceViewItem sv = (SequenceViewItem) ruleItem;
-            org.drools.model.SequenceStep[] rawSteps = sv.getSteps();
+            org.drools.model.SequenceStep[] rawSteps = rewriteXorSteps(sv.getSteps());
             if (rawSteps.length > 0) {
                 org.drools.model.SequenceStep last = rawSteps[rawSteps.length - 1];
                 if (last instanceof ExistentialExprViewItem) {
@@ -212,7 +212,7 @@ public class ViewPatternBuilder implements ViewBuilder {
                     }
                 }
             }
-            List<Condition> steps = Arrays.stream(sv.getSteps())
+            List<Condition> steps = Arrays.stream(rawSteps)
                     .map(s -> ruleItem2Condition((RuleItem) s))
                     .collect(toList());
             return new SequenceConditionImpl(steps);
@@ -220,6 +220,50 @@ public class ViewPatternBuilder implements ViewBuilder {
 
         throw new UnsupportedOperationException( "Unknown " + ruleItem );
     }
+
+    /**
+     * Rewrites bare xor()/xnor() steps in a sequence by folding each such step
+     * with the immediately following positive step into an and(xor(...), next) pair.
+     * <p>
+     * {@code sequence(xor(a, b), c)} is legal sugar for {@code sequence(and(xor(a, b), c))}.
+     * The trailing-XOR check in the caller will catch {@code sequence(xor(a, b))} (no following step).
+     */
+    private static org.drools.model.SequenceStep[] rewriteXorSteps(org.drools.model.SequenceStep[] steps) {
+        boolean hasXor = false;
+        for (int i = 0; i < steps.length; i++) {
+            org.drools.model.SequenceStep step = steps[i];
+            if (step instanceof CombinedExprViewItem) {
+                Condition.Type t = ((CombinedExprViewItem) step).getType();
+                if ((t == Condition.Type.XOR || t == Condition.Type.XNOR) && i + 1 < steps.length) {
+                    hasXor = true;
+                    break;
+                }
+            }
+        }
+        if (!hasXor) {
+            return steps;
+        }
+        List<org.drools.model.SequenceStep> result = new ArrayList<>();
+        for (int i = 0; i < steps.length; i++) {
+            org.drools.model.SequenceStep step = steps[i];
+            if (step instanceof CombinedExprViewItem) {
+                Condition.Type t = ((CombinedExprViewItem) step).getType();
+                if ((t == Condition.Type.XOR || t == Condition.Type.XNOR) && i + 1 < steps.length) {
+                    // Wrap: and(xor/xnor(...), nextStep)
+                    CombinedExprViewItem wrapped = new CombinedExprViewItem(
+                            Condition.Type.AND,
+                            new ViewItem[]{(ViewItem) step, (ViewItem) steps[i + 1]});
+                    result.add(wrapped);
+                    i++; // consume the following step
+                    continue;
+                }
+            }
+            result.add(step);
+        }
+        return result.toArray(new org.drools.model.SequenceStep[0]);
+    }
+
+
 
     private static ConditionalNamedConsequenceImpl createConditionalNamedConsequence( Map<String, Consequence> consequences, ConditionalConsequence cond) {
         return new ConditionalNamedConsequenceImpl( createConstraint( cond.getExpr() ),
