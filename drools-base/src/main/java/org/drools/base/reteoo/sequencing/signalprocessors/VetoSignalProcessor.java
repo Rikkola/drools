@@ -26,6 +26,16 @@ import org.drools.base.reteoo.sequencing.Sequence.SequenceMemory;
  * When the absence pattern fires (a matching fact is inserted while the step is active),
  * this processor resets the sequence: deactivates the current step, resets to step 0,
  * and re-activates step 0 so the sequence starts listening again from the beginning.
+ *
+ * <p><b>Full-reset semantics:</b> the reset always targets step 0, regardless of which
+ * step in the sequence contains the veto gate.  In a multi-not sequence such as
+ * {@code A → not(X) → B → not(Y) → C}, a veto while waiting at step 2 discards all
+ * earlier progress and restarts from step 0.  This is intentional — see ADR 0003.
+ *
+ * <p>Partial reset (resetting only to the step immediately preceding the veto gate)
+ * is deferred: it would require per-gate processor instances carrying a target-step index
+ * and a binding-retention mechanism for earlier matched facts.  See ADR 0003 for the
+ * full rationale.
  */
 public class VetoSignalProcessor extends SignalProcessor {
 
