@@ -28,7 +28,6 @@ import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.PathMemory;
 import org.drools.core.reteoo.SegmentMemory;
-import org.drools.core.reteoo.SequenceNode;
 import org.drools.core.reteoo.SequenceNode.SequenceNodeMemory;
 import org.drools.base.reteoo.SignalAdapter;
 import org.drools.core.reteoo.TupleFactory;
@@ -49,20 +48,17 @@ public class SequencerMemoryImpl implements SequencerMemory {
 
     private Sequencer sequencer;
 
-    private SequenceNode node;
-
     private SequenceNodeMemory nodeMemory;
 
     private SequenceMemory childSequenceMemory;
 
-    public SequencerMemoryImpl(Sequencer sequencer, TupleImpl lt, LeftTupleSink sink, SequenceNode node, SequenceNodeMemory nodeMemory) {
+    public SequencerMemoryImpl(Sequencer sequencer, TupleImpl lt, LeftTupleSink sink, SequenceNodeMemory nodeMemory) {
         this.sequencer        = sequencer;
         this.lt               = lt;
         int filterCount = sequencer.getSequence().getFilters().length;
         this.events           = new CircularArrayList<>(Object.class, Math.max(filterCount, 4));
         this.sink             = sink;
         this.sequenceMemories = new SequenceMemory[sequencer.getSequences().length];
-        this.node       = node;
         this.nodeMemory = nodeMemory;
     }
 

@@ -148,7 +148,7 @@ public class SequenceNode extends LeftTupleSource
     }
 
     public SequencerMemory createSequencerMemory(TupleImpl lt, LeftTupleSink sink, SequenceNodeMemory nodeMemory) {
-        SequencerMemory sequencerMemory = new SequencerMemoryImpl(sequencer, lt, sink, this, nodeMemory);
+        SequencerMemory sequencerMemory = new SequencerMemoryImpl(sequencer, lt, sink, nodeMemory);
 
         return sequencerMemory;
     }
