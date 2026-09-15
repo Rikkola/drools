@@ -75,12 +75,7 @@ public class DynamicFilter extends AbstractLinkedListNode<DynamicFilter> {
         }
     }
 
-    /**
-     * Returns true if the given fact handle passes this filter's constraint.
-     * Used by LogicCircuitStep to check for point-in-time WM matches at activation
-     * (continuous absence guard).
-     */
-    public boolean test(final FactHandle factHandle, final BaseTuple anchorTuple, final ValueResolver valueResolver) {
+    private boolean test(final FactHandle factHandle, final BaseTuple anchorTuple, final ValueResolver valueResolver) {
        if( constraint.getRequiredDeclarations().length == 0 ) {
            return constraint.isAllowed(factHandle, valueResolver);
        }
