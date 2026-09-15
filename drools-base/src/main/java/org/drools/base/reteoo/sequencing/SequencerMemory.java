@@ -44,11 +44,4 @@ public interface SequencerMemory {
     DynamicFilter getActiveDynamicFilter(int filterIndex);
 
     void removeActiveFilter(DynamicFilter filter);
-
-    /**
-     * Returns true if any fact currently in the working memory matches the
-     * filter at the given index.  Used by LogicCircuitStep to check for
-     * pre-existing blockers at activation time (continuous absence guard).
-     */
-    boolean hasActiveMatch(int filterIndex, BaseTuple leftTuple, ValueResolver valueResolver);
 }
