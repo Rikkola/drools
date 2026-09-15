@@ -541,7 +541,7 @@ public class KiePackagesBuilder {
                 List<Condition> steps = sc.getSubConditions();
                 int n = steps.size();
                 List<Pattern> filters = new ArrayList<>();
-                Step.StepFactory[] stepFactories = new Step.StepFactory[n];
+                List<Step.StepFactory> stepFactoryList = new ArrayList<>(n);
                 int[] gateCounter = new int[]{0};
                 // signalAdapterCounter is a compact index for signal adapter slots.
                 // It increments for every PATTERN in a step — including the absence leaf gate
@@ -616,23 +616,18 @@ public class KiePackagesBuilder {
 
                         // Combine: absence leaf(ves) + all positive gates into one LogicCircuit.
                         allGates.addAll(positiveGates);
-                        stepFactories[i] = Step.of(new LogicCircuit(allGates.toArray(new LogicGate[0])));
+                        stepFactoryList.add(Step.of(new LogicCircuit(allGates.toArray(new LogicGate[0]))));
 
-                        // The positive step at i+1 has been consumed — mark it as null sentinel.
-                        stepFactories[i + 1] = null;
                         i++; // skip the consumed positive step
                     } else {
                         List<LogicGate> stepGates = new ArrayList<>();
                         LogicGate root = buildStepGate(ctx, group, step, filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
                         root.setOutput(TerminatingSignalProcessor.get());
-                        stepFactories[i] = Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0])));
+                        stepFactoryList.add(Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0]))));
                     }
                 }
 
-                Step.StepFactory[] compactFactories = Arrays.stream(stepFactories)
-                    .filter(f -> f != null)
-                    .toArray(Step.StepFactory[]::new);
-                Sequence seq = new Sequence(0, compactFactories);
+                Sequence seq = new Sequence(0, stepFactoryList.toArray(new Step.StepFactory[0]));
                 seq.setFilters(filters.toArray(new Pattern[0]));
                 ctx.getRule().addSequence(seq);
                 return null;
