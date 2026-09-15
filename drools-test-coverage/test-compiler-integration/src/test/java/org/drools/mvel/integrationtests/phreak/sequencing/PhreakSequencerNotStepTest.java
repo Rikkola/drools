@@ -55,7 +55,6 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
                                               new int[]{0},  // signal adapter index 0
                                               0);
         absenceLeaf.setOutput(VetoSignalProcessor.get());
-        absenceLeaf.setVetoGate(true);
 
         // Positive leaf gate (filter 1 = cpattern): fires → TerminatingSignalProcessor
         LogicGate positiveLeaf = new LogicGate(Gates::and, 1,
@@ -156,7 +155,6 @@ public class PhreakSequencerNotStepTest extends AbstractPhreakSequencerSubsequen
                                               new int[]{1},  // signal adapter index 1
                                               0);
         absenceLeaf.setOutput(VetoSignalProcessor.get());
-        absenceLeaf.setVetoGate(true);
 
         // Step 1, positive leaf: gate on D (filter 2) → TerminatingSignalProcessor
         LogicGate positiveLeaf = new LogicGate(Gates::and, 2,

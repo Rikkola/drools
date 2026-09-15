@@ -603,7 +603,6 @@ public class KiePackagesBuilder {
                                 new int[]{absenceAdapterIdx},
                                 0);
                             absenceLeaf.setOutput(VetoSignalProcessor.get());
-                            absenceLeaf.setVetoGate(true);
                             allGates.add(absenceLeaf);
                         }
 

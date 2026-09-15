@@ -55,7 +55,6 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
                                                new int[]{0},  // signal adapter index 0
                                                0);
         absenceLeaf1.setOutput(VetoSignalProcessor.get());
-        absenceLeaf1.setVetoGate(true);
 
         // NOR blocker 2 (filter 1 = cpattern): fires -> VetoSignalProcessor
         LogicGate absenceLeaf2 = new LogicGate(Gates::and, 1,
@@ -63,7 +62,6 @@ public class PhreakSequencerNorXorStepTest extends AbstractPhreakSequencerSubseq
                                                new int[]{1},  // signal adapter index 1
                                                0);
         absenceLeaf2.setOutput(VetoSignalProcessor.get());
-        absenceLeaf2.setVetoGate(true);
 
         // Positive leaf gate (filter 2 = dpattern): fires -> TerminatingSignalProcessor
         LogicGate positiveLeaf = new LogicGate(Gates::and, 2,

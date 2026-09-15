@@ -37,8 +37,6 @@ public class LogicGate extends SignalProcessor {
 
     private int[] signalAdapterIndexes;
 
-    private boolean vetoGate;
-
     private boolean statusCanRevert;
 
     private static final LogicGate[] EMPTY_INPUT_GATES = new LogicGate[0];
@@ -71,14 +69,6 @@ public class LogicGate extends SignalProcessor {
 
     public int[] getSignalAdapterIndexes() {
         return signalAdapterIndexes;
-    }
-
-    public boolean isVetoGate() {
-        return vetoGate;
-    }
-
-    public void setVetoGate(boolean vetoGate) {
-        this.vetoGate = vetoGate;
     }
 
     public int[] getFilterIndexes() {
