@@ -185,7 +185,9 @@ public class TupleSetsImpl implements TupleSets {
             if ( next != null ) {
                 setPreviousTuple( next, previous );
             }
-            setNextTuple( previous, next );
+            if ( previous != null ) {
+                setNextTuple( previous, next );
+            }
         }
         tuple.clearStaged();
         insertSize--;
@@ -204,8 +206,9 @@ public class TupleSetsImpl implements TupleSets {
             if ( next != null ) {
                 setPreviousTuple( next, previous );
             }
-            setNextTuple( previous, next );
-
+            if ( previous != null ) {
+                setNextTuple( previous, next );
+            }
         }
         tuple.clearStaged();
     }
@@ -223,7 +226,9 @@ public class TupleSetsImpl implements TupleSets {
             if ( next != null ) {
                 setPreviousTuple( next, previous );
             }
-            setNextTuple( previous, next );
+            if ( previous != null ) {
+                setNextTuple( previous, next );
+            }
         }
         tuple.clearStaged();
     }

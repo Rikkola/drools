@@ -521,4 +521,81 @@ public class SubnetworkTest {
             kieSession.dispose();
         }
     }
+
+    // --- fact types for the not/exists shared-subnetwork NPE test ---
+    public static class InputFact   { private final int id; public InputFact(int id)    { this.id = id; }    public int getId() { return id; } }
+    public static class SubFact1    { private final int id; public SubFact1(int id)     { this.id = id; }    public int getId() { return id; } }
+    public static class SubFact2    { private final int id; public SubFact2(int id)     { this.id = id; }    public int getId() { return id; } }
+    public static class OtherFact   {                                                                                                           }
+    public static class Anchor      {                                                                                                           }
+
+    /**
+     * Regression test for apache/incubator-kie-issues#7121.
+     *
+     * When two rules wrap an identical CE in {@code not(...)} and {@code exists(...)}
+     * respectively, the engine shares one TupleToObjectNode feeding both beta nodes.
+     * A retraction that removes an insert staged on the shared subnetwork while a
+     * second subnetwork tuple is also staged concurrently causes
+     * {@code TupleSetsImpl.removeInsert/removeDelete/removeUpdate} to call
+     * {@code setNextTuple(previous, next)} with {@code previous == null} — NPE.
+     */
+    @ParameterizedTest(name = "KieBase type={0}")
+    @MethodSource("parameters")
+    @Timeout(10000)
+    public void sharedSubnetworkNotAndExistsDoesNotNpeOnConcurrentStagedDelete(KieBaseTestConfiguration kieBaseTestConfiguration) {
+        // apache/incubator-kie-issues#7121
+        final String drl =
+                "import " + InputFact.class.getCanonicalName() + ";\n" +
+                "import " + SubFact1.class.getCanonicalName() + ";\n" +
+                "import " + SubFact2.class.getCanonicalName() + ";\n" +
+                "import " + OtherFact.class.getCanonicalName() + ";\n" +
+                "import " + Anchor.class.getCanonicalName() + ";\n" +
+                "\n" +
+                // seed rule: each Anchor inserts two SubFact1 values logically
+                "rule Seed when\n" +
+                "    Anchor()\n" +
+                "then\n" +
+                "    insertLogical(new SubFact1(1));\n" +
+                "    insertLogical(new SubFact1(2));\n" +
+                "    insertLogical(new SubFact2(0));\n" +
+                "end\n" +
+                "\n" +
+                // Rule A wraps the shared CE in not()
+                "rule RuleA when\n" +
+                "    InputFact()\n" +
+                "    not( SubFact1() and SubFact2() )\n" +
+                "then\n" +
+                "end\n" +
+                "\n" +
+                // Rule B wraps the identical CE in exists() — forces node sharing
+                "rule RuleB when\n" +
+                "    InputFact()\n" +
+                "    exists( SubFact1() and SubFact2() )\n" +
+                "    OtherFact()\n" +
+                "then\n" +
+                "end\n";
+
+        final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("subnetwork-npe-test", kieBaseTestConfiguration, drl);
+        final KieSession ksession = kbase.newKieSession();
+        try {
+            // Multiple InputFacts ensure multiple subnetwork tuples are staged
+            ksession.insert(new InputFact(1));
+            ksession.insert(new InputFact(2));
+            ksession.insert(new OtherFact());
+            final FactHandle anchor = ksession.insert(new Anchor());
+            ksession.fireAllRules();
+
+            // Retract the anchor — the Seed rule's logical inserts are withdrawn,
+            // producing deletes on the shared subnetwork while inserts from the
+            // previous cycle may still be staged: triggers the null-previous NPE.
+            ksession.retract(anchor);
+            ksession.fireAllRules();
+
+            // Re-insert anchor and fire again to exercise the update path
+            ksession.insert(new Anchor());
+            ksession.fireAllRules();
+        } finally {
+            ksession.dispose();
+        }
+    }
 }
