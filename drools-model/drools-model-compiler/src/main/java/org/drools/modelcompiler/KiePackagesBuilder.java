@@ -132,15 +132,19 @@ import org.drools.model.patterns.GroupByPatternImpl;
 import org.drools.model.patterns.PatternImpl;
 import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
+import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.base.reteoo.sequencing.Sequence;
+import org.drools.base.reteoo.sequencing.Sequence.TimeoutController;
 import org.drools.base.reteoo.sequencing.signalprocessors.Gates;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicCircuit;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate;
+import org.drools.base.reteoo.sequencing.signalprocessors.LogicGate.TimeoutTimer;
 import org.drools.base.reteoo.sequencing.signalprocessors.LogicGateOutputSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.SignalIndex;
 import org.drools.base.reteoo.sequencing.signalprocessors.TerminatingSignalProcessor;
 import org.drools.base.reteoo.sequencing.signalprocessors.VetoSignalProcessor;
 import org.drools.base.reteoo.sequencing.steps.Step;
+import org.drools.core.time.impl.DurationTimer;
 import org.drools.model.view.SelfPatternBiding;
 import org.drools.modelcompiler.attributes.LambdaEnabled;
 import org.drools.modelcompiler.attributes.LambdaSalience;
@@ -566,7 +570,21 @@ public class KiePackagesBuilder {
         final int[] signalAdapterCounter = new int[]{0};
 
         for (int i = 0; i < n; i++) {
-            final Condition step = steps.get(i);
+            Condition step = steps.get(i);
+
+            // Unwrap a per-step timeout wrapper before routing by type.
+            Long stepTimeoutMillis = null;
+            if (step instanceof TimedConditionImpl) {
+                TimedConditionImpl tc = (TimedConditionImpl) step;
+                stepTimeoutMillis = tc.getTimeoutMillis();
+                step = tc.getInner();
+                if (step instanceof TimedConditionImpl) {
+                    throw new UnsupportedOperationException(
+                            "within(...) does not support nesting another within(...) on the same step; " +
+                            "one timeout per step.");
+                }
+            }
+
             if (step.getType() == Condition.Type.XOR || step.getType() == Condition.Type.XNOR) {
                 throw new UnsupportedOperationException(
                         "sequence(): bare xor()/xnor() at the top level is not allowed.");
@@ -645,12 +663,19 @@ public class KiePackagesBuilder {
                 final List<LogicGate> stepGates = new ArrayList<>();
                 final LogicGate root = buildStepGate(ctx, group, step, filters, stepGates, gateCounter, seqIdx, signalAdapterCounter);
                 root.setOutput(TerminatingSignalProcessor.get());
+                if (stepTimeoutMillis != null) {
+                    root.setPropagationTimer(new TimeoutTimer(root, new DurationTimer(stepTimeoutMillis)));
+                }
                 stepFactoryList.add(Step.of(new LogicCircuit(stepGates.toArray(new LogicGate[0]))));
             }
         }
 
         Sequence seq = new Sequence(0, stepFactoryList.toArray(new Step.StepFactory[0]));
         seq.setFilters(filters.toArray(new Pattern[0]));
+        long deadlineMillis = sc.getDeadlineMillis();
+        if (deadlineMillis > 0) {
+            seq.setController(new TimeoutController(new DurationTimer(deadlineMillis)));
+        }
         ctx.getRule().addSequence(seq);
         return null;
     }

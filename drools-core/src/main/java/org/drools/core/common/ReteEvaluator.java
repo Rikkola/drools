@@ -99,6 +99,24 @@ public interface ReteEvaluator extends ValueResolver {
 
     void addPropagation(PropagationEntry<ReteEvaluator> propagationEntry);
 
+    /**
+     * Schedule a timer action to run on the session evaluation thread.
+     * Implements {@link org.drools.base.base.ValueResolver.TimerAction} dispatch by wrapping
+     * the action in a {@link AbstractPropagationEntry} and enqueuing it.
+     */
+    @Override
+    default void addTimerAction(org.drools.base.base.ValueResolver.TimerAction action) {
+        addPropagation(new org.drools.base.phreak.actions.AbstractPropagationEntry<ReteEvaluator>() {
+            @Override
+            public boolean requiresImmediateFlushing() { return true; }
+
+            @Override
+            public void internalExecute(ReteEvaluator reteEvaluator) {
+                action.execute(reteEvaluator);
+            }
+        });
+    }
+
     long getNextPropagationIdCounter();
 
     default boolean isThreadSafe() {

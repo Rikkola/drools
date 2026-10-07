@@ -18,6 +18,7 @@
  */
 package org.drools.model;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -96,6 +97,7 @@ import org.drools.model.view.BindViewItem4;
 import org.drools.model.view.CombinedExprViewItem;
 import org.drools.model.view.ExistentialExprViewItem;
 import org.drools.model.view.ExprViewItem;
+import org.drools.model.view.TimedExprViewItem;
 import org.drools.model.view.ViewItem;
 import org.drools.model.view.ViewItemBuilder;
 
@@ -1780,6 +1782,7 @@ public class PatternDSL extends DSL {
 
     public static class SequenceViewItem implements RuleItemBuilder<SequenceViewItem>, RuleItem {
         private final SequenceStep[] steps;
+        private long deadlineMillis = 0; // 0 = no whole-sequence deadline
 
         public SequenceViewItem(SequenceStep... steps) {
             this.steps = steps;
@@ -1787,6 +1790,28 @@ public class PatternDSL extends DSL {
 
         public SequenceStep[] getSteps() {
             return steps;
+        }
+
+        /**
+         * Whole-sequence deadline: from step-0 activation, the sequence has
+         * {@code deadline} to reach its final step's match, else it aborts silently.
+         * Returns {@code this} so the call may be chained or nested.
+         */
+        public SequenceViewItem completeWithin(Duration deadline) {
+            if (deadline == null || deadline.isZero() || deadline.isNegative()) {
+                throw new IllegalArgumentException(
+                        "completeWithin(...) requires a positive duration, got: " + deadline);
+            }
+            if (this.deadlineMillis != 0) {
+                throw new IllegalStateException(
+                        "completeWithin(...) was already set on this sequence");
+            }
+            this.deadlineMillis = deadline.toMillis();
+            return this;
+        }
+
+        public long getDeadlineMillis() {
+            return deadlineMillis;
         }
 
         @Override
@@ -1906,6 +1931,25 @@ public class PatternDSL extends DSL {
     }
 
     // -- rule --
+
+    /**
+     * Wraps {@code step} with a per-step timeout deadline.
+     * If the step does not match within {@code timeout} of its activation, the
+     * whole sequence fails silently.
+     *
+     * @throws IllegalArgumentException if {@code timeout} is null, zero, or negative
+     * @throws IllegalArgumentException if {@code step} is null
+     */
+    public static TimedExprViewItem within(Duration timeout, SequenceStep step) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException(
+                    "within(...) requires a positive timeout, got: " + timeout);
+        }
+        if (step == null) {
+            throw new IllegalArgumentException("within(...) requires a non-null step");
+        }
+        return new TimedExprViewItem(timeout.toMillis(), (ViewItem) step);
+    }
 
     public static CombinedExprViewItem nor(SequenceStep first, SequenceStep... rest) {
         return new CombinedExprViewItem(Condition.Type.NOR, prependStep(first, rest));

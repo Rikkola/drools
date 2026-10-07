@@ -20,11 +20,13 @@ package org.drools.core.time;
 
 import java.util.Map;
 
+import org.drools.base.time.JobContext;
 import org.drools.base.time.JobHandle;
+import org.drools.base.base.ValueResolver;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.time.impl.TimerJobInstance;
 
-public class SelfRemovalJobContext implements JobContext {
+public class SelfRemovalJobContext implements org.drools.core.time.JobContext {
 
     private static final long serialVersionUID = 614425985040796356L;
 
@@ -52,8 +54,17 @@ public class SelfRemovalJobContext implements JobContext {
     }
 
     @Override
+    public ValueResolver getValueResolver() {
+        return jobContext.getValueResolver();
+    }
+
+    @Override
     public ReteEvaluator getReteEvaluator() {
-        return jobContext.getReteEvaluator();
+        ValueResolver vr = getValueResolver();
+        if (vr instanceof ReteEvaluator) {
+            return (ReteEvaluator) vr;
+        }
+        throw new IllegalStateException("JobContext does not carry a ReteEvaluator: " + jobContext);
     }
 
     public void remove() {

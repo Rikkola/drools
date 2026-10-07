@@ -25,7 +25,7 @@ import org.drools.base.phreak.actions.AbstractPropagationEntry;
 import org.drools.core.time.impl.TimerJobInstance;
 
 public class EnqueuedSelfRemovalJobContext extends SelfRemovalJobContext {
-    public EnqueuedSelfRemovalJobContext( JobContext jobContext, Map<Long, TimerJobInstance> timerInstances ) {
+    public EnqueuedSelfRemovalJobContext( org.drools.base.time.JobContext jobContext, Map<Long, TimerJobInstance> timerInstances ) {
         super( jobContext, timerInstances );
     }
 

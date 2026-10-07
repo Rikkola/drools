@@ -21,26 +21,16 @@ package org.drools.core.time;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
 
-public interface SchedulerService {
+/**
+ * Extends the base SchedulerService so drools-core timer implementations
+ * are compatible with the drools-base sequencing timer infrastructure.
+ * Implementations must accept drools-base Job/JobContext as well as any
+ * drools-core subtype.
+ */
+public interface SchedulerService extends org.drools.base.time.SchedulerService {
 
     /**
-     * Schedule a job for later execution
-     * 
-     * @param job
-     * @param ctx
-     * @param trigger
-     * 
-     * @return
-     */
-    JobHandle scheduleJob(Job job, JobContext ctx, Trigger trigger);
-
-    /**
-     * Remove the job identified by the given job handle from the 
-     * scheduled queue
-     * 
-     * @param jobHandle the job identity handle
-     * 
-     * @return
+     * Remove the job identified by the given job handle from the scheduled queue.
      */
     void removeJob(JobHandle jobHandle);
 }

@@ -28,6 +28,11 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.RuleConditionElement;
 import org.drools.base.reteoo.SignalAdapter;
+import org.drools.base.time.Job;
+import org.drools.base.time.JobContext;
+import org.drools.base.time.JobHandle;
+import org.drools.base.time.Trigger;
+import org.drools.base.time.impl.Timer;
 import org.drools.base.util.CircularArrayList;
 import org.kie.api.runtime.rule.FactHandle;
 
@@ -139,12 +144,30 @@ public class Sequence implements RuleConditionElement {
         throw new UnsupportedOperationException("Sequence does not support serialization");
     }
 
+    public void setController(SequenceController controller) {
+        this.controller = controller;
+    }
+
     public void start(SequenceMemory memory, ValueResolver valueResolver) {
         controller.start(memory, valueResolver);
     }
 
     public void next(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
-         controller.next(sequenceMemory, valueResolver);
+        controller.next(sequenceMemory, valueResolver);
+    }
+
+    /**
+     * Fail the sequence: deactivate the current step and mark the memory as terminal
+     * (step == steps.length) without firing the consequence.
+     * Called by timeout jobs when a deadline expires before the sequence completes.
+     */
+    public void fail(SequenceMemory sequenceMemory, ValueResolver valueResolver) {
+        int step = sequenceMemory.getStep();
+        if (step < steps.length) {
+            steps[step].deactivate(sequenceMemory, valueResolver);
+            sequenceMemory.setStep(steps.length); // mark terminal
+        }
+        // No consequence fires — silent failure.
     }
 
     public interface SequenceController {
@@ -210,6 +233,12 @@ public class Sequence implements RuleConditionElement {
         private final boolean[] gateMatched;
 
         private CircularArrayList<Object> data;
+
+        /** Whole-sequence deadline job handle, set by {@link TimeoutController}. */
+        private JobHandle jobHandle;
+
+        /** Per-gate timeout job handles, lazily created by {@link LogicGate.TimeoutTimer}. */
+        private JobHandle[] jobHandles;
 
         public SequenceMemory(SequencerMemory sequencerMemory, Sequence sequence, CircularArrayList<Object> data,
                               SignalAdapter[] signalAdapters, SignalAdapter[] activeSignalAdapters,
@@ -308,12 +337,172 @@ public class Sequence implements RuleConditionElement {
             gateMatched[gateIndex]    = false;
         }
 
+        // ---- whole-sequence timeout job handle ----
+
+        public JobHandle getJobHandle() {
+            return jobHandle;
+        }
+
+        public void setJobHandle(JobHandle jobHandle) {
+            this.jobHandle = jobHandle;
+        }
+
+        // ---- per-gate timeout job handles ----
+
+        public void setJobHandle(int gateIndex, JobHandle handle) {
+            if (jobHandles == null) {
+                jobHandles = new JobHandle[gateMemory.length];
+            }
+            jobHandles[gateIndex] = handle;
+        }
+
+        public JobHandle getJobHandle(int gateIndex) {
+            return jobHandles != null ? jobHandles[gateIndex] : null;
+        }
+
+        public void cancelJobHandle(int gateIndex, ValueResolver valueResolver) {
+            if (jobHandles != null) {
+                JobHandle handle = jobHandles[gateIndex];
+                if (handle != null) {
+                    valueResolver.getTimerService().removeJob(handle);
+                    jobHandles[gateIndex] = null;
+                }
+            }
+        }
+
+        public void clearJobHandle(int gateIndex) {
+            if (jobHandles != null) {
+                jobHandles[gateIndex] = null;
+            }
+        }
+
         @Override
         public String toString() {
             return "SequenceMemory{" +
                    "sequence=" + sequence.getSequenceIndex() +
                    ", step=" + step +
                    '}';
+        }
+    }
+
+    /**
+     * A whole-sequence deadline controller.
+     * Extends {@link DefaultController} so {@code next()} → {@code end()} routes through
+     * {@link TimeoutController#end}, which cancels the deadline job on normal completion.
+     */
+    public static class TimeoutController extends DefaultController {
+        private final Timer timer;
+
+        public TimeoutController(Timer timer) {
+            this.timer = timer;
+        }
+
+        @Override
+        public void start(SequenceMemory memory, ValueResolver valueResolver) {
+            super.start(memory, valueResolver);
+            Trigger trigger = timer.createTrigger(valueResolver.getTimerService().getCurrentTime(), null, null);
+            SequenceTimerJobContext ctx = new SequenceTimerJobContext(trigger, valueResolver, memory);
+            JobHandle jobHandle = valueResolver.getTimerService().scheduleJob(SequenceJob.getInstance(), ctx, trigger);
+            memory.setJobHandle(jobHandle);
+        }
+
+        @Override
+        public void end(SequenceMemory memory, ValueResolver valueResolver) {
+            // Cancel the deadline: sequence completed normally.
+            if (memory.getJobHandle() != null) {
+                valueResolver.getTimerService().removeJob(memory.getJobHandle());
+                memory.setJobHandle(null);
+            }
+            super.end(memory, valueResolver);
+        }
+
+        @Override
+        public String toString() {
+            return "TimeoutController{timer=" + timer + '}';
+        }
+    }
+
+    /**
+     * The timer-service job that fires when the whole-sequence deadline expires.
+     */
+    public static class SequenceJob implements Job {
+        private static final SequenceJob INSTANCE = new SequenceJob();
+
+        public static SequenceJob getInstance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public void execute(JobContext ctx) {
+            SequenceTimerJobContext timerJobCtx = (SequenceTimerJobContext) ctx;
+            ValueResolver valueResolver = timerJobCtx.getValueResolver();
+            valueResolver.addTimerAction(new SequenceTimerAction(timerJobCtx));
+        }
+    }
+
+    /**
+     * Context passed to the {@link SequenceJob} when a whole-sequence deadline is scheduled.
+     */
+    public static class SequenceTimerJobContext implements JobContext {
+        private static final long serialVersionUID = 1L;
+
+        private       JobHandle     jobHandle;
+        private final Trigger       trigger;
+        private final ValueResolver valueResolver;
+        private final SequenceMemory sequenceMemory;
+
+        public SequenceTimerJobContext(Trigger trigger, ValueResolver valueResolver, SequenceMemory sequenceMemory) {
+            this.trigger        = trigger;
+            this.valueResolver  = valueResolver;
+            this.sequenceMemory = sequenceMemory;
+        }
+
+        @Override
+        public JobHandle getJobHandle() {
+            return jobHandle;
+        }
+
+        @Override
+        public ValueResolver getValueResolver() {
+            return valueResolver;
+        }
+
+        @Override
+        public void setJobHandle(JobHandle jobHandle) {
+            this.jobHandle = jobHandle;
+        }
+
+        public Trigger getTrigger() {
+            return trigger;
+        }
+
+        public SequenceMemory getSequenceMemory() {
+            return sequenceMemory;
+        }
+    }
+
+    /**
+     * Action executed on the session thread when a whole-sequence deadline fires.
+     */
+    public static class SequenceTimerAction implements ValueResolver.TimerAction {
+
+        private final SequenceTimerJobContext jobCtx;
+
+        public SequenceTimerAction(SequenceTimerJobContext jobCtx) {
+            this.jobCtx = jobCtx;
+        }
+
+        @Override
+        public void execute(ValueResolver valueResolver) {
+            SequenceMemory sequenceMemory = jobCtx.getSequenceMemory();
+
+            // Clear the handle first — the job is firing, not being cancelled.
+            sequenceMemory.setJobHandle(null);
+
+            // Match-monotonicity: if the sequence already completed, do nothing.
+            if (sequenceMemory.getStep() < sequenceMemory.getSequence().getSteps().length) {
+                sequenceMemory.getSequence().fail(sequenceMemory, valueResolver);
+            }
         }
     }
 

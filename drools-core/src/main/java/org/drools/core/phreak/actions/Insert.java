@@ -28,7 +28,7 @@ import org.drools.base.phreak.PropagationEntry;
 import org.drools.core.reteoo.ClassObjectTypeConf;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.core.time.JobContext;
+import org.drools.base.time.JobContext;
 import org.drools.core.time.impl.DefaultJobHandle;
 import org.drools.core.time.impl.PointInTimeTrigger;
 import org.kie.api.prototype.PrototypeEventInstance;

@@ -20,6 +20,7 @@ package org.drools.base.base;
 
 import org.drools.base.RuleBase;
 import org.drools.base.rule.accessor.GlobalResolver;
+import org.drools.base.time.TimerService;
 
 public interface ValueResolver {
 
@@ -32,4 +33,24 @@ public interface ValueResolver {
     GlobalResolver getGlobalResolver();
 
     RuleBase getRuleBase();
+
+    /**
+     * Returns the session timer service.
+     * Used by the sequencing runtime to schedule per-step and whole-sequence
+     * timeout jobs.
+     */
+    TimerService getTimerService();
+
+    /**
+     * Enqueue an action to be executed on the rule evaluation thread.
+     * Used by the sequencing timer infrastructure to schedule timeout actions.
+     * The action receives this resolver as its argument.
+     */
+    void addTimerAction(TimerAction action);
+
+    /** A single-method action that the sequencing timer infrastructure can schedule. */
+    @FunctionalInterface
+    interface TimerAction {
+        void execute(ValueResolver valueResolver);
+    }
 }

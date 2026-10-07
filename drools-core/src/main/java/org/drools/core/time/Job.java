@@ -18,6 +18,18 @@
  */
 package org.drools.core.time;
 
-public interface Job {
+/**
+ * Extends the base Job interface so implementations in drools-core are
+ * compatible with the drools-base timer infrastructure used by sequencing.
+ * The base interface requires execute(org.drools.base.time.JobContext); this
+ * interface narrows the parameter to the drools-core JobContext (which itself
+ * extends org.drools.base.time.JobContext).
+ */
+public interface Job extends org.drools.base.time.Job {
     void execute(JobContext ctx);
+
+    @Override
+    default void execute(org.drools.base.time.JobContext ctx) {
+        execute((JobContext) ctx);
+    }
 }

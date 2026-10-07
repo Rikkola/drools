@@ -37,8 +37,8 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.impl.RuleBaseFactory;
 import org.drools.base.phreak.PropagationEntry;
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
+import org.drools.base.time.Job;
+import org.drools.base.time.JobContext;
 import org.drools.core.time.TimerService;
 import org.junit.jupiter.api.Test;
 
@@ -142,19 +142,22 @@ public class JDKTimerServiceTest {
             return list;
         }
 
+        private ReteEvaluator reteEvaluator = (ReteEvaluator) Proxy.newProxyInstance(
+                InternalWorkingMemory.class.getClassLoader(),
+                new Class[]{InternalWorkingMemory.class},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        if (method.getName().equals("addPropagation")) {
+                            ((PropagationEntry) args[0]).execute((InternalWorkingMemory) null);
+                        }
+                        return null;
+                    }
+                });
+
         @Override
-        public ReteEvaluator getReteEvaluator() {
-            return (ReteEvaluator) Proxy.newProxyInstance( InternalWorkingMemory.class.getClassLoader(),
-                                                                   new Class[]{InternalWorkingMemory.class},
-                                                                   new InvocationHandler() {
-                                                                       @Override
-                                                                       public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable {
-                                                                           if (method.getName().equals( "addPropagation" )) {
-                                                                               ( (PropagationEntry) args[0] ).execute( (InternalWorkingMemory)null );
-                                                                           }
-                                                                           return null;
-                                                                       }
-                                                                   } );
+        public org.drools.base.base.ValueResolver getValueResolver() {
+            return reteEvaluator;
         }
     }
 

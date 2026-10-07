@@ -18,20 +18,21 @@
  */
 package org.drools.core.time.impl;
 
+import org.drools.base.time.Job;
+import org.drools.base.time.JobContext;
 import org.drools.base.time.JobHandle;
 import org.drools.base.time.Trigger;
-import org.drools.core.time.Job;
-import org.drools.core.time.JobContext;
 
 public interface TimerJobInstance {
     JobHandle getJobHandle();
-    
+
     Job getJob();
-    
+
     Trigger getTrigger();
-    
+
     JobContext getJobContext();
-    
+
     void cancel();
+
     boolean isCanceled();
 }

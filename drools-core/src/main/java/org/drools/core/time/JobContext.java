@@ -26,15 +26,24 @@ import org.drools.core.common.InternalKnowledgeRuntime;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.ReteEvaluator;
 
-public interface JobContext extends Serializable {
+/**
+ * Extends the base JobContext so drools-core timer jobs are compatible with
+ * the drools-base sequencing timer infrastructure.
+ */
+public interface JobContext extends org.drools.base.time.JobContext {
     /**
      * This method should only be called by the scheduler
-     */    
+     */
     void setJobHandle(JobHandle jobHandle);
 
     JobHandle getJobHandle();
 
     ReteEvaluator getReteEvaluator();
+
+    @Override
+    default org.drools.base.base.ValueResolver getValueResolver() {
+        return getReteEvaluator();
+    }
 
     default Optional<InternalKnowledgeRuntime> getInternalKnowledgeRuntime() {
         return getReteEvaluator() instanceof InternalWorkingMemory ? Optional.ofNullable(((InternalWorkingMemory)getReteEvaluator()).getKnowledgeRuntime()) : Optional.empty();

@@ -62,6 +62,7 @@ import org.drools.model.patterns.GroupByPatternImpl;
 import org.drools.model.patterns.PatternImpl;
 import org.drools.model.patterns.QueryCallPattern;
 import org.drools.model.patterns.SequenceConditionImpl;
+import org.drools.model.patterns.TimedConditionImpl;
 import org.drools.model.view.AccumulateExprViewItem;
 import org.drools.model.view.CombinedExprViewItem;
 import org.drools.model.view.ExistentialExprViewItem;
@@ -80,6 +81,7 @@ import org.drools.model.view.Expr8ViewItemImpl;
 import org.drools.model.view.Expr9ViewItemImpl;
 import org.drools.model.view.ExprViewItem;
 import org.drools.model.view.FixedValueItem;
+import org.drools.model.view.TimedExprViewItem;
 import org.drools.model.view.GroupByExprViewItem;
 import org.drools.model.view.QueryCallViewItem;
 import org.drools.model.view.ViewItem;
@@ -174,6 +176,14 @@ public class ViewPatternBuilder implements ViewBuilder {
             return new AccumulatePatternImpl(ruleItem2Condition( acc.getExpr() ), null, acc.getAccumulateFunctions());
         }
 
+        // TimedExprViewItem must be checked before the generic ExprViewItem branch, which would
+        // otherwise swallow it as an EvalImpl.
+        if ( ruleItem instanceof TimedExprViewItem ) {
+            TimedExprViewItem timed = (TimedExprViewItem) ruleItem;
+            Condition inner = ruleItem2Condition((RuleItem) timed.getStep());
+            return new TimedConditionImpl(inner, timed.getTimeoutMillis());
+        }
+
         if ( ruleItem instanceof ExprViewItem ) {
             return new EvalImpl( createConstraint( (ExprViewItem) ruleItem ) );
         }
@@ -198,7 +208,7 @@ public class ViewPatternBuilder implements ViewBuilder {
             List<Condition> steps = Arrays.stream(rawSteps)
                     .map(s -> ruleItem2Condition((RuleItem) s))
                     .collect(toList());
-            return new SequenceConditionImpl(steps);
+            return new SequenceConditionImpl(steps, sv.getDeadlineMillis());
         }
 
         throw new UnsupportedOperationException( "Unknown " + ruleItem );

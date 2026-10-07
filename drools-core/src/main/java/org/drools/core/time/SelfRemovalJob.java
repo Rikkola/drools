@@ -23,20 +23,19 @@ import java.io.Serializable;
 public class SelfRemovalJob implements Job, Serializable {
 
     private static final long serialVersionUID = 8876468420174364422L;
-    private Job job;
-    
-    public SelfRemovalJob(Job job) {
+    private final org.drools.base.time.Job job;
+
+    public SelfRemovalJob(org.drools.base.time.Job job) {
         this.job = job;
     }
 
-    public Job getJob() {
+    public org.drools.base.time.Job getJob() {
         return job;
     }
 
+    @Override
     public void execute(JobContext ctx) {
         job.execute(  ((SelfRemovalJobContext)ctx).getJobContext() );
-        ((SelfRemovalJobContext)ctx).remove(); 
-        
+        ((SelfRemovalJobContext)ctx).remove();
     }
-
 }
