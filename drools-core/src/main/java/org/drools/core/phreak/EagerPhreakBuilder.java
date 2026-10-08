@@ -527,9 +527,6 @@ public class EagerPhreakBuilder implements PhreakBuilder {
                                 sm.getPathMemories().add(pmem);
                                 notifyImpactedSegments(wm, sm, smemsToNotify);
                             } else if (pmem != null) {
-                                // Node has no memory yet (new segment introduced by cross-package split).
-                                // Lazily create the segment so sibling's pmem.segmentMemories[] slot is
-                                // filled and linkedSegmentMask can be satisfied after a retraction.
                                 SegmentMemory sm = wm.getSegmentMemorySupport().getOrCreateSegmentMemory(sproto.getRootNode());
                                 if (sm != null) {
                                     pmem.getSegmentMemories()[sproto.getPos()] = sm;
@@ -650,8 +647,6 @@ public class EagerPhreakBuilder implements PhreakBuilder {
 
                 for (PathEndNode endNode : tn.getPathEndNodes()) {
                     if (endNode.getAssociatedTerminalsSize() > 1) {
-                        // The subnetwork (TupleToObjectNode) is still shared by surviving rules —
-                        // do not remove its SubnetworkPathMemory from the inner segments.
                         continue;
                     }
                     PathMemory pmem = (PathMemory) wm.getNodeMemories().peekNodeMemory(endNode);

@@ -216,9 +216,6 @@ public class SegmentMemorySupportImpl implements SegmentMemorySupport {
         if (!smem.isEmpty() && sinkPropagator.size() == 1) {
             return; // threading guard: single-sink child already initialized
         }
-        // When the tip node has multiple sinks (segment split by a sharing rule), some children
-        // may already have been added to smem while sibling children are still missing.
-        // Iterate all sinks, create any missing child segment, and add it only if not already present.
         for (LeftTupleSinkNode sink = sinkPropagator.getFirstLeftTupleSink(); sink != null; sink = sink
                 .getNextLeftTupleSinkNode()) {
             SegmentMemory childSmem = PhreakBuilder.isEagerSegmentCreation() ? createChildSegment(sink)
