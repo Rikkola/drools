@@ -31,6 +31,7 @@ import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.io.ResourceType;
+import org.drools.kiesession.session.StatefulKnowledgeSessionImpl;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
@@ -207,6 +208,49 @@ public class PropertyChangeSupportTest {
 
             FactHandle handle = ksession.insert(fact);
             assertThat(fact.getListenerCount()).isEqualTo(1);
+
+            ksession.fireAllRules(10);
+
+            assertThat(fact.getName()).isEqualTo("user2");
+            assertThat(fact.getValue()).isEqualTo("VAL1");
+
+            ksession.delete(handle);
+            assertThat(fact.getListenerCount()).isZero();
+        } finally {
+            ksession.dispose();
+        }
+    }
+
+    @Test
+    public void testClassAnnotationNotSilencedByDrlDeclareWithoutAnnotation() {
+        String drl =
+                "import " + AnnotatedDynamicFact.class.getCanonicalName() + ";\n" +
+                "declare AnnotatedDynamicFact\n" +
+                "end\n" +                   // no @propertyChangeSupport here — Java annotation must still win
+                "rule rule1\n" +
+                "   when\n" +
+                "     $fact: AnnotatedDynamicFact(name == \"user1\")\n" +
+                "   then\n" +
+                "     $fact.setName(\"user2\");\n" +
+                " end\n" +
+                " rule rule2\n" +
+                "   when\n" +
+                "     $fact: AnnotatedDynamicFact(name == \"user2\")\n" +
+                "   then\n" +
+                "     $fact.setValue($fact.getValue() + \"VAL1\");\n" +
+                " end";
+
+        KieSession ksession = new KieHelper().addContent(drl, ResourceType.DRL).build().newKieSession();
+        try {
+            AnnotatedDynamicFact fact = new AnnotatedDynamicFact();
+            fact.setName("user1");
+            fact.setValue("");
+
+            FactHandle handle = ksession.insert(fact);
+            // The Java annotation must have registered a listener
+            assertThat(fact.getListenerCount())
+                    .as("@PropertyChangeSupport on the Java class must register a listener even when the DRL declare block omits the annotation")
+                    .isEqualTo(1);
 
             ksession.fireAllRules(10);
 
