@@ -541,7 +541,13 @@ public class NamedEntryPoint implements InternalWorkingMemoryEntryPoint, Propert
     public void removeFromObjectStore(InternalFactHandle handle) {
         this.objectStore.removeHandle( handle );
         ObjectTypeConf typeConf = getObjectTypeConfigurationRegistry().getObjectTypeConf( handle.getObject() );
-        removeDynamicPropertyChangeListener( handle, typeConf );
+        // expiration reaches here without the entry point lock, which guards dynamicFacts
+        lock();
+        try {
+            removeDynamicPropertyChangeListener( handle, typeConf );
+        } finally {
+            unlock();
+        }
         deleteFromTMS( handle, handle.getEqualityKey(), typeConf, null );
     }
 
